@@ -1,0 +1,137 @@
+## compare variance estimates
+## mostly cleaning up 12/08/18 sim, refactoring and using notation consistent with ms
+## 12/29 -- with no L effect
+## 1/6 -- simple markov model
+
+require(parallel)
+require(abind)
+source('../../iv.msmm.R')
+mc.cores <- detectCores()
+start.time <- Sys.time()
+print(mc.cores)
+## J=3
+
+args <- commandArgs(trailingOnly=TRUE)
+J <- T <- as.numeric(args[1])
+n <- as.numeric(args[2])
+reps <- as.numeric(args[3])
+J <- T <- 1;n <- 5e2;reps <- 1e3
+print(J)
+print(n)
+
+
+
+est.nuisance.par <- function(A,L,Z) {
+    A.pooled <- as.numeric(A)
+    Z.pooled <- as.numeric(Z)
+    L.pooled <- as.numeric(L)
+    mle <- optim(c(rep(1/4,2),rep(.5,1)),control=list(trace=0,maxit=2e3),function(par){
+        alpha <- par[1:2]; nu <- par[3]# alpha aka (\delta_0,\delta_1), nu aka (p_L,p_U,q)
+        delta.par <- (-1)^(1-Z.pooled)*alpha[L.pooled+1]/1
+        A.mean.par <- .5*(p.B + 2*(1-p.B)*nu[1]^(L.pooled==1)*(1-nu[1])^(L.pooled!=1)) + delta.par
+        if(min(A.mean.par)<=0 | max(A.mean.par)>=1) {
+            return(jitter(.Machine$double.xmax/1e4))
+        }
+        loglik <- A.pooled*log(A.mean.par) + (1-A.pooled)*log(1-A.mean.par)
+        return(-sum(loglik))
+    })$par
+    list(alpha=mle[1:2],beta=NULL,nu=mle[3])
+}
+est.nuisance.inf <- function(A,Z,L,alpha.hat,beta.hat,nu.hat,score.beta) { ## write interface
+    A.pooled <- as.numeric(A)
+    Z.pooled <- as.numeric(Z)
+    L.pooled <- as.numeric(L)
+    ## Delta.mle <- (-1)^(1-Z.pooled)*alpha.hat[L.pooled+1]#pnorm(L.pooled%*%alpha.hat)
+    A.mean.mle <- .5*(p.B + 2*(1-p.B)*nu.hat^(L.pooled==A.pooled)*(1-nu.hat)^(L.pooled!=A.pooled))#pnorm(L.pooled%*%nu.hat)*(1-delta.mle) + Z.pooled*delta.mle
+    A.mean.deriv <- cbind((-1)^Z.pooled*(1-L.pooled)*(alpha.hat[2]/alpha.hat[1])^L.pooled,(-1)^(1-Z.pooled)*L.pooled*(alpha.hat[1]/alpha.hat[2])^(1-L.pooled),(1-p.B)*L.pooled*(1/nu.hat-1)^(1-L.pooled) - (1-p.B)*(1-L.pooled)*(nu.hat/(1-nu.hat))^L.pooled)#cbind((Z.pooled-ppnn)*ddaa*L.pooled,(1-ppaa)*ddnn*L.pooled)
+    ## score.nui <- t((A.pooled/A.mean.mle - (1-A.pooled)/(1-A.mean.mle)) * A.mean.deriv)#t(apply(array(dd*A.mean.deriv,dim=c(n,J,ncol(A.mean.deriv))), c(1,3), sum))
+    score.nui <- with(list(dd=A.pooled/A.mean.mle - (1-A.pooled)/(1-A.mean.mle)),t(apply(array(dd*A.mean.deriv,dim=c(n,J,ncol(A.mean.deriv))), c(1,3), sum)))
+    I.nui <- t((- A.pooled/A.mean.mle^2 - (1-A.pooled)/(1-A.mean.mle)^2) * A.mean.deriv)%*%A.mean.deriv
+    ## I.nui.3 <- t(as.numeric(A.pooled/A.mean.mle^2 + (1-A.pooled)/(1-A.mean.mle)^2)*A.mean.deriv)%*%A.mean.deriv
+    ## I.nui <- rbind(cbind(I.nui.11,I.nui.12),cbind(I.nui.21,I.nui.22)) - I.nui.3
+    I.beta.alpha <- cbind(rowSums((1-L)*alpha.hat[1]),rowSums(L*alpha.hat[2]))#with(list(ee=alpha.hat[1] + alpha.hat[2]*L), { d.scalar=dnorm(ee)/pnorm(ee); cbind(rowSums(d.scalar),rowSums(L*d.scalar))})
+    I.beta.alpha <- score.beta%*%I.beta.alpha
+    I.beta.nu <- matrix(0,nrow=length(beta),ncol=length(nu.hat))
+    list(I.nuisance=I.nui,I.beta.alpha=I.beta.alpha,I.beta.gamma=NULL,I.beta.nu=I.beta.nu,score.nuisance=score.nui)
+}
+## n <- 1e3
+## J <- 3
+## J <- 4
+## Z.mean <- .5
+## ## by.n <- mclapply(ns, function(n){
+## p.L <- .6
+## p.U <- .6
+## p.B <- .5
+## delta <- c(.4,.4)
+## lambda <- 1
+## L.coefs <- rep(lambda,J)#runif(T)*.0
+## U.coefs <- rep(lambda,J)#runif(T)*.0
+## sigma <- 1/4
+## grid <- expand.grid(0:1,0:1)
+## beta <- 1#runif(1,0,5)
+## reps <- 5e1
+bootstrap.reps <- 1e3
+p.L <- .6
+p.U <- .8
+p.B <- .5
+delta <- c(.2,.15)
+lambda <- 1
+L.coefs <- rep(lambda,T)#runif(T)*.0
+U.coefs <- 6*rep(lambda,T)#runif(T)*.0
+sigma <- 1/4
+grid <- expand.grid(0:1,0:1)
+beta <- 1#runif(1,0,5)
+Z.mean <- 1/2
+fits <- mclapply(1:reps,mc.cores=mc.cores-2,FUN=function(jj) {
+    A <- Z <- L <- U <- A.mean <- matrix(nrow=n,ncol=T+2)
+    L[,1] <- rbinom(n,1,.5)
+    U[,1] <- rbinom(n,1,.5)
+    Z <- matrix(rbinom(n*(T+2),1,Z.mean),nrow=n,ncol=T+2)
+    B <- matrix(rbinom(n*(T+2),1,p.B),nrow=n)
+    for(t in 1:(T+1)) {
+        A.mean[,t] <- (1-p.B)*p.L^L[,t]*(1-p.L)^(1-L[,t]) + p.B*p.U^U[,t]*(1-p.U)^(1-U[,t]) + (-1)^(1-Z[,t])*delta[L[,t]+1]
+        stopifnot(min(A.mean[,t])>0 & max(A.mean[,t])<1)
+        A[,t] <- rbinom(n,1,prob=A.mean[,t])
+        probs <- apply(grid, 1, function(r) ((1-p.B)*dbinom(r[1]==A[,t],1,p.L) + p.B*dbinom(r[2]==A[,t],1,p.U))/2)
+        idx <- apply(probs, 1, function(prob)which(1==rmultinom(1,1,prob)))
+        L[,t+1] <- grid[idx,1]
+        U[,t+1] <- grid[idx,2]
+    }
+    A.lag <- matrix(A[,1:T],ncol=T)
+    A <- matrix(A[,2:(T+1)],ncol=T); L <- matrix(L[,2:(T+1)],ncol=T); U <- U[,2:(T+1)]
+    Z <- matrix(Z[,2:(T+1)],ncol=T); A.mean <- matrix(A.mean[,2:(T+1)],ncol=T)
+    eta <- (L - (1-p.B)*p.L^A.lag*(1-p.L)^(1-A.lag) - p.B/2)%*%L.coefs + (U - p.B*p.U^A.lag*(1-p.U)^(1-A.lag) - (1-p.B)/2)%*%U.coefs
+    epsilon <- rnorm(n)*sigma
+    design <- matrix(rowSums(A),ncol=1)
+    Y <- eta + beta*design + epsilon
+    ## estimation
+    Delta.fn  <- function(alpha,A,L,Z) alpha[L+1]*(-1)^(1-A)
+    f.Z <- function(A,L,Z) Z.mean^Z*(1-Z.mean)^(1-Z)
+    iv.msmm(Y=Y,A=A,L=L,Z=Z,design=design,f.Z=f.Z,Delta.fn=Delta.fn,stabilization=(-1)^(1-A),get.sandwich=TRUE,get.bootstrap=TRUE,nuisance.estimates=est.nuisance.par,nuisance.inf=est.nuisance.inf)
+})
+
+fits <- simplify2array(fits)
+
+
+target.idx <- 1
+beta.causal <- fits[target.idx,]
+## sd.empirical <- fits[target.idx,]
+sd.sandwich <- fits[length(beta)+target.idx,]
+sd.bootstrap <- fits[2*length(beta)+target.idx,]
+## hist(sd.bootstrap);abline(v=sd.empirical,col='red')
+levels <- seq(0,1,length.out=21)
+coverages <- lapply(list(sandwich=sd.sandwich,bootstrap=sd.bootstrap),function(sd.hat) {
+    coverage <- sapply(levels,function(level) {
+        q <- qnorm(1-level/2)
+        upper <- fits[target.idx,] + q*sd.hat
+        lower <- fits[target.idx,] - q*sd.hat
+        mean((upper > beta[target.idx]) & (lower < beta[target.idx]))
+    })
+    names(coverage) <- round(1-levels,2)
+    coverage
+})
+
+
+filename <- paste0('save',as.integer(abs(rnorm(1))*1e8),'.RData')
+save(reps,n,J,target.idx,beta,beta.causal,coverages,sd.sandwich=sd.sandwich,sd.bootstrap=sd.bootstrap,file=filename)
+print(Sys.time() - start.time)
