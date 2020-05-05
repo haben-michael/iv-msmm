@@ -167,11 +167,9 @@ iv.msmm <- function(Y,A,Z,L,design,f.Z,delta,get.sandwich=FALSE,get.bootstrap=FA
 
     if(get.bootstrap) {
         bootstrap.ests <- replicate(bootstrap.reps, {
+            ## !! transfer from other ver, re-estimate parameters
             idx <- sample(n,replace=TRUE)
             lm.wt(Y=Y[idx],W=W.causal[idx],design=design[idx,])
-            ## if(max(solve(t(design[idx,])%*%(design[idx,]/W.causal[idx])))>15) browser()
-            ## print(3)
-            ## c(max(solve(t(design[idx,])%*%(design[idx,]/W.causal[idx]))),max(eigen(solve(t(design[idx,])%*%(design[idx,]/W.causal[idx])))$values))
         })
         sd.bootstrap <- apply(matrix(bootstrap.ests,nrow=ncol(design),byrow=TRUE),1,function(v)sd(v))
     }
