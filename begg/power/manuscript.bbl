@@ -1,0 +1,20 @@
+\begin{thebibliography}{}
+
+\bibitem[\protect\citeauthoryear{Nolan and Pollard}{Nolan and
+  Pollard}{1987}]{nolan87}
+Nolan, D. and D.~Pollard (1987).
+\newblock U-processes: rates of convergence.
+\newblock {\em The Annals of Statistics\/}, 780--799.
+
+\bibitem[\protect\citeauthoryear{Nolan and Pollard}{Nolan and
+  Pollard}{1988}]{nolan88}
+Nolan, D. and D.~Pollard (1988).
+\newblock Functional limit theorems for $ u $-processes.
+\newblock {\em The Annals of Probability\/}~{\em 16\/}(3), 1291--1298.
+
+\bibitem[\protect\citeauthoryear{Pollard}{Pollard}{1984}]{pollard84}
+Pollard, D. (1984).
+\newblock {\em Convergence of stochastic processes}.
+\newblock Springer-Verlag New York.
+
+\end{thebibliography}

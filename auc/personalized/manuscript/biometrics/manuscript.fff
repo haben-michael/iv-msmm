@@ -1,0 +1,101 @@
+\begin{figure}[!tbp]
+  \centering
+  \subfloat[]{\includegraphics[width=0.5\textwidth]{220816a.pdf}\label{fig:comparison:a}}
+  \hfill
+  \subfloat[]{\includegraphics[width=0.5\textwidth]{211223b.pdf}\label{fig:comparison:b}}
+  \caption{Two visualizations contrasting the individual and
+    population AUCs. Each gives rug plots of fifteen clusters of data, each cluster sampled IID
+    according to a bivariate normal model, with the unclustered
+    data combined at the bottom. Case observations are represented with ``$-$'' and
+    control observations with ``$|$''. On the left, the personalized AUC is
+    informative and the population AUC uninformative. The reverse situation is
+    presented on the right.}  \label{fig:comparison}
+\end{figure}
+\efloatseparator
+ 
+\begin{figure}
+\subfloat[]{
+\begin{tikzpicture}[scale=1.5]
+\input{dags_common.tex}
+\draw[->] (Z) -- (D);
+\end{tikzpicture}
+}
+\subfloat[]{
+\begin{tikzpicture}[scale=1.5]
+\input{dags_common.tex}
+\draw[->] (D) -- (Z);
+\end{tikzpicture}
+}
+\subfloat[]{
+\begin{tikzpicture}[scale=1.5]
+\input{dags_common.tex}
+\draw[->] (xi) -- (D);
+\end{tikzpicture}
+}
+\subfloat[]{
+\begin{tikzpicture}[scale=1.5]
+\input{dags_common.tex}
+\draw[->] (D) -- (xi);
+\end{tikzpicture}
+}
+\caption{Causal DAGs for the four instances given in Section \ref{section:examples:threshold}.}\label{fig:dags}
+\end{figure}
+\efloatseparator
+ 
+\begin{figure}[!tbp]
+  \centering
+  % \includegraphics[width=\textwidth]{220103.png}
+\begin{tikzpicture}[scale=1.5]
+  \def\xmin{-1}
+  \def\xmax{3}
+  \def\ymin{\xmin}
+  \def\ymax{\xmax}
+  \draw[->] (\xmin,0) -- (\xmax,0) coordinate (x axis);
+  \draw[->] (0,\ymin) -- (0,\ymax) coordinate (y axis);
+  \draw (\xmin+.5,\ymin+.5) -- (\xmax,\ymax);
+  \node (origin) at (0,0) {};
+  \node (A) at (\xmax-1,\ymax-.3 ) {\textbullet $p_1$};
+  \node (B) at ($ (A) - (.8,.4)$) {\textbullet $p_2$};
+  \node (C) at ($ (A) - (1.3,1.5)$) {\textbullet $p_3$};
+ \foreach \startpoint [count=\i] in {(origin),(A),(B),(C)}{
+   \foreach \endpoint [count=\j] in {(origin),(A),(B),(C)} {
+     \ifnum \i < 5
+     \ifnum \j < 5
+     \draw[dotted] \startpoint -| \endpoint ;
+     % \draw[dashed] \endpoint -- \endpoint |- \startpoint;
+     % \draw[dashed] \startpoint -| \endpoint -- \endpoint;
+     \fi
+     \fi
+      }
+    }
+  \end{tikzpicture}
+  \caption{The case $M=N=1$ and finitely supported $(X,Y)$. The
+    distance between the atoms $p_1$ and $p_2$ is small relative to
+    their distances to the line $x=y$, so they contribute
+    $(p_1+p_2)^2$ to the mass of $\{x<y\}$ under product of the
+    marginals. The distance between $p_1$ and $p_3$ is relatively
+    large, so they contribute only
+    $(p_1+p_3)^2-p_1p_3$.}  \label{fig:inequality}
+\end{figure}
+\efloatseparator
+ 
+\begin{figure}[!tbp]
+  \centering
+  % \subfloat[Bivariate normal model \eqref{model:binormal}]{\includegraphics[width=0.5\textwidth]{../sim/220813/a/220813.pdf}}
+  \subfloat[Bivariate normal model \eqref{model:binormal}]{\includegraphics[width=0.5\textwidth]{220813a.pdf}}
+  \hfill
+  % \subfloat[Bivariate normal model with censoring \eqref{model:censored binormal}]{\includegraphics[width=0.5\textwidth]{../sim/220813/b/220813.pdf}}
+  \subfloat[Bivariate normal model with censoring \eqref{model:censored binormal}]{\includegraphics[width=0.5\textwidth]{220813b.pdf}}
+  \caption{Empirical power function of the test of $H_0:\aucpop=\aucindiv$ versus $\aucpop<\aucindiv$ using the
+     asymptotic estimator given in Section
+     \ref{section:asymptotics}. In the bivariate normal model with or without censoring, the null is equivalent to $H_0:|\aucpop-1/2|=|\aucindiv-1/2|,$ equal informativity.}  \label{fig:power}
+\end{figure}
+\efloatseparator
+ 
+\begin{figure}[!tbp]
+  \centering
+  \subfloat[NYC]{\includegraphics[width=0.5\textwidth]{220823_nyc.pdf}}
+  \hfill
+  \subfloat[Boston]{\includegraphics[width=0.5\textwidth]{220823_boston.pdf}}
+  \caption{Level 95\% and 99\% Confidence ellipses for the estimates of $(\aucindiv,\aucpop)$ for duration of Terry stop by non-Black/Black status.}  \label{fig:data analysis:confidence ellipses}
+\end{figure}

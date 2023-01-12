@@ -1,0 +1,309 @@
+\documentclass{article}
+\usepackage{amsmath}
+\newcommand{\sel}[1]{#1^*}
+\begin{document}
+
+Egger model: $y ~ \mu + \epsilon, y/\sigma ~ \mu/\sigma +
+\epsilon/\sigma$. whatever $\sigma$ is, intercept of regression vs
+$1/\sigma$ will be 0 so will control FPR, even under heterogeneity, with
+no need to account for between-study variance, at least as far as
+fpr.[actually no because inference requires homoskedasticity--will need to use heteroskedasticity-robust variance]
+
+
+lin unfair comparison
+
+
+(1/31) Invariant test. test statistic should be same for any translation of
+the within variances, besides translations of the effect sizes. so a
+function of the differences of the within variances, and of the effect
+sizes. is this maximal invariant? Seems something like concordance
+test would work: proportion of pairs of effects and variances that
+concord. This is similar to Begg's test but not using the standardized
+effect sizes (which depend directly on the variances).
+
+old egger ms has local power calculations and talks about the
+dependence of egger test power on the location of sigma, unlike begg
+test. otoh begg test power depends on the dispersion of sigma, whereas
+egger more sensibly depends on the ratio of the dspersion of z to that
+of sigma. update: actually in formula for begg test asymptotic local
+power there is the term $E(f(Z))$ which may be viewed as a measure of
+concentration ie it is small when the dispersion is large, so the
+situation is perhaps analogous to the egger formula. Eg
+$E(log(f(Z))) \le log(E(f(Z))), 1/E(f(Z)) \le \exp(-E(log(f(Z)))),
+E(f(Z)) \ge \exp(\text{entropy of }Z).$ not sure if this is useful
+direction of inequality. but the distributional parameter
+$D(Z)=1/E(f(Z))$ has properties of a statistical dispersion measure,
+since $D(aZ+b)=|a|D(Z)$. Does $D(Z)\to 0$ as $Z$ approximates a
+constant? Maybe for continuous densities, which go to impulse
+function.
+
+Found that simulation showing that begg's/egger's test were
+inconsistent with heterogeneity, with fpr control worse with sample
+size, only shows that for unif[0,1] as distribution for the within
+variances. even unif[.1,1.1] the tests look OK under
+heterogeneity. This led me to look back at the old calculations on
+egger regression fpr under heteogeneity.
+
+
+(2/1--2/3) Worked on formulas for FPR of egger test under
+heterogeneity. Got expression 1) without assuming normality. Maybe try
+to use old calculations to get mean and variance of the statistic in
+the P( ... >0) statement to say something. And 2) assuming normality,
+in terms of a weighted sum of chi-square. And 3) assuming normality
+and $n\to\infty$. Latter suggests FPR could be higher or lower than
+nominal level depending on moments of precision distribution. Found a
+linear relationship between beta parameters (as precision
+distribution) determining whether FPR is higher than lower.
+
+Maybe find similar relationship for uniform prior.
+
+Maybe this dependence on the precision explains some of the
+conflicting assessments from simulation studies in the literature.
+
+Planning on working on expressions for $\tau^2$ under selection.
+
+
+(2/4) [worked on begg manuscript. added simulation for random effects model]
+
+(2/5) Worked out way to implement rlin (sample simulated meta-analysis
+data sets with pvalue thresholding and randomly keeping some studes
+that don't meet the threshold) without using the loop. Didn't write out or implement.
+
+Worked on distribution of dersimonian-laird tau.hat under
+hetrogeneity. Tried to get some inequalities to compare it to the true
+tau.hat. Realized the data under selection won't be using the true
+tau.hat either.
+
+[pollard: section on coupling, probably finished with chapter on
+distribution theory in metric spaces]
+
+(2/6) Partially implemented fast/direct version of Lin algo for sampling
+ma data subject to p-val pub bias. Managed for mu=0 case but not
+general mu, which requires sampling from the join distr of (z,s) under
+a linear constraint. Had forgotten that when $\mu\neq 0$, pval selection
+affects s, just like effect size selection. this was in egger\#1 notes,
+had decides at the time to set aside the $\mu\neq 0$ case, maybe now
+too.
+
+
+(2/7) Tried (starting yesterday) to maximize bias ratio. Found a quad
+form to maximize over a polytope, but the form is indefinite. [pollard--started chapter on unif convergence]
+
+
+(2/8) worked more on maximizng bias ratio. a few visualizations for
+the 2-simplex. guessed form of argmax, couldn't confirm. Begg.R \#3
+(2022 section).
+
+Added sim to begg manuscript for negative bias (bad FPR) example--t with low df. 
+
+(2/9) realized t example from last night was bad since variances are
+defined so the meta analysis model isn't great. did beta and added to
+ms. though originally chose t since bimodal study distribution seemed
+pathological.
+
+
+(2/12) from simulations found that lin's modification to the egger
+test (estimating $\tau^2$) is consistent under hard thresholding
+alternatives--as is the test ignoring heterogeneity. the estimate of
+$\tau^2$ usually truncates to 0 except for very large between/within
+variances anyway.
+
+Tried the alternative method of heteroskedasticity consistent
+regression with egger's test. Found that it's power was often better
+but fpr also inflated (sometimes a lot--20% rejection at 10% nominal
+rate), just a higher power curve.
+
+
+(2/13) under pval thresholding, when the grand mean is 0, egger
+statistic and begg statistic both test whether the mean of the
+post-selection distribution is 0. egger is testing the intercept in
+the model $\sel{y} \sim \beta_0 + \beta_1\sel{1/\sigma}$ but under pval
+thresholding $z$ and $\sigma$ are independent so
+$E\sel{y}\mid\sel{1/\sigma}$ is constant and equals the
+intercept. begg test is testing for trend $y/\sigma - \mu/\sigma$
+agains $1/\sigma$. From the above $y/\sigma$ has no trend vs
+$1/\sigma$ so the trend of $y/\sigma - \mu/\sigma$ is all due to
+$\mu$.
+
+tried resampling on a few statistics. begg stat seemed to do
+best. then realized lin had anohter paper on using resampling,
+lin2020.
+
+then tried testing the slope in the egger regression for equality with
+the mean of $y$, looked promising. (2/14) then realized the intercept
+being 0 is the same as the slope coefficient being equal to the fixed
+effects summary estimate $\hat\theta$ (since then the slope
+coefficient is the same as projection onto the $1/\sigma$ predictor
+which has size equal to $\hat\theta$) so the tests are the same.
+
+found that the regression of the begg lm approximation,
+$(y-\hat\theta_{fe})/\sigma \sim 1 + 1/\sigma$ gives intercept equal
+to the egger statistic and intercept is similar to the begg
+statistic. also have the joint distr here so can compute pval that
+they are jointly 0. can also add a skewness analysis. however the
+slope of the begg-lm statistic, ie the z-statistic regressands above,
+is nonzero almost exactly when the egger intercept is nonzero in
+simulations, and give the same pvals of significan difference from 0,
+so not much power gain it seems, at least in the scenarios tested. if
+they are the same across all scenarios the question becomes, what is
+the difference of hte slope of the z-statistics and the begg
+statistic, kendalls tau. The former reduces in the gaussian case to
+the pearson correlation multiplied by the ratio of the variances of
+the predictor and response. so that ratio must be driving the
+difference. (besides robustness of the rank statistic.)  (2/15)
+intercept (=egger stat) and slope of z-stat slope test are almost
+identical, and the difference between this slope and begg test are due
+entirely to a) (minor) the O(1/n) $1/\sum(1/v)$ terms in begg test and
+(mainly) b) using kendall vs pearson method of correlation. Tried
+bounding the difference of the intercept and slope. expression seems
+related to $m(1)/sqrt(m(2))$, where $m$ gives the moments of the
+precision. would be nice to have a result of the form: The difference
+between begg's test computed using pearson instead of kendall
+correlation is a) the O(1/n) $1/\sum(1/v)$ terms and the difference
+between slope and intercept. (latter may actually be large. will need
+to check the difference for precisions with large $m(1)/sqrt(m(2))$;
+if it is large, that just means we have found a usual combined
+statistic, the slope and inercept of the z-test...which can hopefully
+be augmented with the skewness test.)
+
+
+need to verify lin2018 argument about the independence of their
+skewness statistic and the egger statistic. the lm residuals are
+independent of the betahats (or uncorrelated at least) but the test
+stat isn't the betahats but the t-stats. the se in the denominator
+uses the residuals. so this would at most be asymptotically
+independent?
+
+
+(2/19) comparing pearson-begg test to egger test. found that the
+pearson-begg test always has a larger p-value than egger test. so i
+guess egger has higher fpr and power both. expression is given on
+egger \#2.
+
+(2/20) verified egger coef and t-statistic are the intercept estimate
+and t-stat in the pearson-begg regression (hadn't done this
+analytically before). did not yet verify analytically that pearson
+correlation between $(y-\hat\theta_{fe})/\sigma$ and $1/\sigma$ is the
+same as the slope in the pearson-begg regression, did a quick google
+search and found plenty of sources talking about their equivalence of
+testing.
+
+drew a picture of begg pearson regression to understand why egger stat
+shows up as the intercept. tried to figure out if it's possible for
+the intercept to be 0 but not the slope or vice versa; seems they
+should both be 0 at the same time.
+
+
+(2/21) verified testing pearson correlation is the same as slope, so
+begg stat using pearson corr (and without the O(1/n) sigma corrections
+in the denominator) is the same as testing slope is 0 in the
+pearson-begg linear regression. in so doing found a much nicer
+expression for the t-statistic of the slope than i was using, may try
+to find something corresponding for the egger statistic, and the
+difference between the two.
+
+looked at pearson-begg regression under the null, comparing intercept
+t-stat, slope t-stat, and f-stat. found intercept/egger always more
+significant than slope, f somewhere in between. difference is most
+dramatic for larger $E(m^2)/E(m)^2$.
+
+the discrepancy is a problem with the slope term. the regression does
+not use iid data because of the thetahat in the regressand. just like
+in the other manuscript. this leads the slope pvalues to be less
+significant, a loss of power. looking at the formula prevoiusly
+derived for the difference in magnitudes of the test stats, this
+difference goes to 0 as $n\to\infty$ at least under the null when $ys$
+and $s$ are orthogonal. unlike the actual begg test, where the bias
+persists. [does not agree with sims--at least for f-test holds for
+n\~1000] (2/22) found in fact pearson-begg slope is asymptotically
+biased, i was forgetting about a $\sqrt(n)$ factor. so it is analogous
+to the kendall begg estimator. found simpler formulas for the egger
+t-statistic (analogous to the one yesterday for the pearson-begg
+t-stat). found the coefficients are related by
+$\hat\beta_0 m_1 = -\hat\beta_1 m_2$. some linear relationship would
+have to hold between the coefficients since the projection of the
+regressand onto the design column space $M(1,s)$ lies in the one
+dimensional subspace $M(1,s)\cap s^\perp$. need to look at
+asymptotics.
+
+
+(3/4) Last week when trying to find the local power function for
+begg's test, I realized I could obtain the asymptotic normality of the
+begg statistic for general $Z$ using the stochastic equicontinuity
+arguments. so i worked on showing that, which will require revising
+the old begg manuscript.
+
+Two furthe issues with the old begg ms: first, this approach gives a
+clearer picture of when the test bias is positive or negative, the
+sign of $E(f_Z(Z)) - 2E(ZF_Z(Z))$ for standardized and centered
+$Z$. By looking at beta distributions, found that many but not all
+bimodal distributions are underconservative. Then focused on unimodal
+distributions and found that Student's $t$ with df $<=$ around 2.4 is
+also underconservative. Wondering now if log concavity of the density
+is a sufficient condition for the test not to be underconservative.
+second, still working on find the $S$ distribution that maximizes the
+bias for fixed $Z$.  I had looked at discrete approximations and found
+an approximation that seems to maximize. R's optim does not change
+when started at the distribution.
+
+
+
+(4/28) Checked to make sure the hard thresholding alternatives model
+isn't qmd. Verified for uniform and normal responses. For uniform Z,
+that it is not qmd is actually van der vaart's counter-example to qmd
+families. Thought it was qmd for the normal but realized I was
+miscalculating--what i showed was that it is qmd for Z^2. This
+actually means that normal(0,1/2) response is qmd. Not sure if there's
+anything here, var(Z)=1 is part of the model.
+
+(4/29) Tried using lecam's 3rd lemma in the abstract form directly to
+get distribution under alternatives, but couldn't use it even for the
+simple uniform model. Can't figure out what is implied by van der
+vaart's theorem that this sequence of experiments converges to a
+shifted exponential experiment. Surely can't be that every test
+statistic converges can't be asy normal. See here:
+https://stats.stackexchange.com/questions/573484/exponential-limit-of-experiments
+. More importantly, that would violate my 'theorem' about the asy
+power of the egger statistic. Decided to return focus to using u-stat
+theory to investigate asy power under hard thresholding for begg's
+test. Might be possible to use lecam's approach for other thresholding
+model than the hard one, such as weights, where the support isn't
+changing.
+
+(4/30) May have established the asy normality of the begg stat. Needed
+an equicontinuity condition that was causing me difficulty all last
+month. One of the alst things I tried earlier this week was showing
+that the fluctuations of the process are bounded for sequences
+converging to 0, then realized that this wasn't enough, that the
+fluctuations betewen the points of the sequence still weren't
+controlled, and that I would need to control them on a dense set
+around 0. The last couple of days I read pollard's stat sci article on
+empirical processes and realized the chaining argument could
+accomplish this. tomorrow I will verify and maybe extend to the case
+of probabilities changing with $n$, to get the local power.
+
+(5/1) Reviewed proof of asy normality, looked fine. (5/2) Woke up and
+found an error in the proof, my maximal inequality had the jensen
+function applied to the differences, $H_{(-1)}(|\theta-\theta'|)$ in
+Pollard's notation. Realized this can be fixed. (pubbias \#7.) Resumed
+work on asy power function for begg's test.
+
+(6/15) When trying to figure out why my asymptotic approximation to
+the covariance of theta.fe and tau didn't seem to match simulation
+(sims \#18a). Realized it was due to the approximation used in
+cor.test to kendall's tau when n is $>50$. Seems begg stat is very
+close to egger stat when this approximation is used. What is the
+approximation? This may lead to another link between begg stat and
+egger stat.
+
+
+(6/26) Was worried: If the primary study effects are gaussian, can
+compute the finite sample variance. so what is the point of computing
+the limit as the number of studies, if the gaussian assumption is
+being made? It seemed like a confusion about the asymptotic
+regime. letting the number of studies increase to infinity doesnt make
+the individual studies more gaussian. Then realized the point of
+letting the number of studies go to inf is so that the begg stat is
+asy normal. even though we have the finite sample variance of the begg
+stat (assuming z gaussian) we dont know the distribution.
+\end{document}

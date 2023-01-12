@@ -1,0 +1,747 @@
+require(mvtnorm)
+
+concord.xy <- function(x,y) {
+    m <- length(x)
+    n <- length(y)
+    ## stopifnot(m>1,n>1)
+    if(length(x)==0 | length(y)==0)return(0)
+
+    sum(sapply(y,function(y.i)x<y.i))
+    ## sum(outer(x,y,`<`))
+}
+concord <- function(x,y) mean(outer(x,y,`<`))
+concord.sum <- function(x,y)sum(outer(x,y,`<`))
+
+
+
+auc.obu <- function(x,y,alpha=.05) {
+
+    I <- length(x)
+    stopifnot(length(x)==length(y))
+    m <- sapply(x,length)
+    n <- sapply(y,length)
+    I.10 <- sum(m>0)
+    I.01 <- sum(n>0)
+    M <- sum(m)
+    N <- sum(n)
+
+    theta.hat <- concord.xy(unlist(x),unlist(y)) / (M*N)
+    V.10 <- sapply(x,function(x.i)concord.xy(x.i,unlist(y)))/N
+    V.01 <- sapply(y,function(y.i)concord.xy(unlist(x),y.i))/M
+
+    S.10 <- sum((V.10 - m*theta.hat)^2) * I.10 / ((I.10-1)*M)
+    S.01 <- sum((V.01 - n*theta.hat)^2) * I.01 / ((I.01-1)*N)
+    S.11 <- sum((V.10 - m*theta.hat)*(V.01 - n*theta.hat)) * I / (I-1)
+
+    var.hat <- S.10/M + S.01/N + 2*S.11/(M*N)
+    q <- qnorm(1-alpha/2)
+    return(c(theta.hat=theta.hat,var.hat=var.hat,CI.lower=theta.hat-q*sqrt(var.hat),CI.upper=theta.hat+q*sqrt(var.hat)))
+
+}
+
+
+auc.jk <- function(x,y,alpha=.05) {
+    concord <- function(x,y) mean(outer(x,y,`<`))
+    concord.sum <- function(x,y)sum(outer(x,y,`<`))
+    m <- sapply(x,length); n <- sapply(y,length)
+    M <- sum(m); N <- sum(n)
+    I <- length(x); stopifnot(length(x)==length(y))
+
+    theta.hat <- concord(unlist(x),unlist(y))
+    theta.del <- sapply(1:I,function(i)concord(unlist(x[-i]),unlist(y[-i])))
+    pseudo <- I*theta.hat - (I-1)*theta.del
+    theta.jk <- mean(pseudo)
+    var.hat <- var(pseudo)/I
+    q <- qnorm(1-alpha/2)
+
+    return(c(theta.hat=theta.jk,var.hat=var.hat,CI.lower=theta.jk-q*sqrt(var.hat),CI.upper=theta.jk+q*sqrt(var.hat)))
+}
+
+
+
+auc.bs <- function(x,y,alpha=.05,reps=5e2) {
+    concord <- function(x,y) mean(outer(x,y,`<`))
+
+    I <- length(x)
+    theta.hat <- concord(unlist(x),unlist(y))
+    theta.bs <- replicate(reps,{
+        idx <- sample(1:I,I,replace=TRUE)
+        concord(unlist(x[idx]),unlist(y[idx]))
+    })
+
+    var.hat <- var(theta.bs)
+    q <- qnorm(1-alpha/2)
+
+    return(c(theta.hat=theta.hat,var.hat=var.hat,CI.lower=theta.hat-q*sqrt(var.hat),CI.upper=theta.hat+q*sqrt(var.hat)))
+}
+
+I <- 20
+m <- 5
+rho <- .3
+delta <- .5
+lengths <- replicate(1e3,{
+Sigma <- matrix(0,nrow=m,ncol=m)
+Sigma <- rho^(abs(row(Sigma)-col(Sigma)))
+Sigma <- rbind(cbind(Sigma,Sigma/2),cbind(Sigma/2,Sigma))
+xy <- rmvnorm(I,c(rep(0,m),rep(delta,m)),sigma=Sigma)
+x <- xy[,1:m]; y <- xy[,(m+1):(2*m)]
+x <- split(x,1:I); y <- split(y,1:I)
+est.obu <- auc.obu(x,y)
+est.bs <- auc.bs(x,y,reps=100)
+c(obu = unname(est.obu['CI.upper'] - est.obu['CI.lower']), bs = unname(est.bs['CI.upper'] - est.bs['CI.lower']))
+})
+rowMeans(lengths)
+hist(lengths[1,])
+hist(lengths[2,],add=TRUE,col='red')
+
+
+
+
+
+concord <- function(x,y) mean(outer(x,y,`<`))
+concord.sum <- function(x,y)sum(outer(x,y,`<`))
+I <- 20
+m <- floor(runif(I,5,20)); n <- floor(runif(I,5,20))
+m <- rep(10,I); n <- rep(5,I)
+M <- sum(m); N <- sum(n)
+x <- lapply(m,function(m.i)rnorm(m.i))
+y <- lapply(n,function(n.i)rnorm(n.i))
+phi <- sapply(x,function(x.i)sapply(y,function(y.j)concord.sum(x.i,y.j)))
+phi <- t(phi)
+Vx <- sapply(x,function(x.i)concord.sum(x.i,unlist(y)))/N
+Vy <- sapply(y,function(y.i)concord.sum(unlist(x),y.i))/M
+theta.hat <- concord.sum(unlist(x),unlist(y))/(M*N)
+stopifnot(all.equal(sum(Vx)/M,theta.hat))
+stopifnot(all.equal((sum(Vx)/M+sum(Vy)/N)/2,theta.hat))
+theta.del <- sapply(1:I,function(i)concord(unlist(x[-i]),unlist(y[-i])))
+all.equal(sapply(1:I,function(k)
+    sum( (N*Vx + M*Vy - sapply(x,function(x.i)concord.sum(x.i,y[[k]])) - sapply(y,function(y.i)concord.sum(x[[k]],y.i)))[-k])/((M-m[k])*(N-n[k])*2)
+    ),
+theta.del
+)
+pseudo <- I*theta.hat - (I-1)*theta.del
+I*(Vx/M+Vy/N) + sapply(1:I,function(k)sum(((I/M-(I-1)*N/(M-m[k])/(N-n[k]))*Vx + (I/N-(I-1)*M/(M-m[k])/(N-n[k]))*Vy)[-k])) + sapply(1:I,function(k)(I-1)/(M-m[k])/(N-n[k])*sum((phi[,k]+phi[k,])[-k]))
+2*I*theta.hat
+I*(Vx/M+Vy/N) + sapply(1:I,function(k)sum(((I/M-(I-1)*N/(M-m[k])/(N-n[k]))*Vx + (I/N-(I-1)*M/(M-m[k])/(N-n[k]))*Vy)[-k]))+ sapply(1:I,function(k)(I-1)/(M-m[k])/(N-n[k])*sum((phi[,k]+phi[k,])[-k]))
+
+I*(Vx/M+Vy/N) + (I/M-(I-1)*N/(M-m)/(N-n))*M*theta.hat +(I/N-(I-1)*M/(N-n)/(M-m))*N*theta.hat-(I/M-(I-1)*N/(M-m)/(N-n))*Vx - (I/N - (I-1)*M/(M-m)/(N-n))*Vy + (I-1)*(M*Vy+N*Vx-2*diag(phi))/(M-m)/(N-n)
+2*I^2*theta.hat - 2*(I-1)*M*N*theta.hat*sum(1/(M-m)/(N-n)) +2*(I-1)*sum((N*Vx+M*Vy)/(M-m)/(N-n)) - 2*(I-1)*sum(diag(phi)/(M-m)/(N-n))
+auc.jk(x,y)
+I*theta.hat - (I-1)/I*M*N*theta.hat*sum(1/(M-m)/(N-n)) +(I-1)/I*sum((N*Vx+M*Vy - diag(phi))/(M-m)/(N-n))
+
+# constant m,n formulas
+pseudo <- I/(I-1)*(Vx/m[1]+Vy/n[1] - diag(phi)/(m[1]*n[1]*I) - theta.hat)
+I/(I-1)*theta.hat - 1/(m[1]*n[1]*I*(I-1))*sum(diag(phi))
+theta.jk <- auc.jk(x,y)['theta.hat']
+all.equal((I/(I-1))^3*sum((Vx/M+Vy/N-2*theta.hat/I-1/M/N*(diag(phi)-1/I*sum(diag(phi))))^2),auc.jk(x,y)['var.hat'],check.attributes=FALSE)
+all.equal((I/(I-1))*sum((Vx/M+Vy/N-2*theta.hat/I)^2),auc.obu(x,y)['var.hat'],check.attributes=FALSE)
+
+
+## max diff of jk and obu variance estimators
+ps.to.m <- function(ps) t(sapply(ps, function(p) c(rep(0,p-1),rep(1,length(ps)+1-p))))
+tr <- function(m){m[m==1] <- 2;m[m==0] <- 1;m[m==2] <- 0;m[nrow(m):1,][,ncol(m):1]}
+I <- 7
+ps.list <- expand.grid(rep(list(1:(I+1)),I))
+vars <- apply(ps.list,1,function(ps) {
+    t <- sum(ps<=(1:I))
+    phi <- ps.to.m(ps)
+    theta.hat <- mean(phi)
+    obu <- colMeans(phi)/I + rowMeans(phi)/I - 2*theta.hat/I
+    jk <- obu - 1/I^2*(diag(phi)-t/I)
+    c(t,sum(jk^2 - obu^2))
+})
+by.t <- split(cbind(vars=vars[2,],ps.list),vars[1,])
+max.phis <- lapply(by.t,function(ps){
+    ps.to.m(ps[which.max(abs(ps$vars)),-1])
+    lapply(split(ps[abs(abs(ps$vars)-max(abs(ps$vars)))<1e-5,],1:sum(abs(abs(ps$vars)-max(abs(ps$vars)))<1e-5)),function(row)list(diff=row[1],ps.to.m(row[-1])))
+})
+sapply(max.phis,length)
+
+I <- 10
+obj <- function(phi) {
+    I <- nrow(phi)
+    t <- sum(diag(phi))
+    theta.hat <- mean(phi)
+    obu <- colMeans(phi)/I + rowMeans(phi)/I - 2*theta.hat/I
+    jk <- obu - 1/I^2*(diag(phi)-t/I)
+    ## cat('diff: ',abs(sum(jk^2-obu^2)),'\n')
+    ## cat('jk: ',sum(jk^2),'\n')
+    ## cat('obu: ',sum(obu^2),'\n')
+    return(list(diff=abs(sum(jk^2-obu^2)),jk=sum(jk^2),obu=sum(obu^2)))
+}
+gen <- function(I=10,a=2,b=2,print=FALSE) {
+    phi <- matrix(0,nrow=I,ncol=I)
+    phi[(I-a+1):I,] <- 1
+    phi[,(I-a+1):I] <- 1
+    phi[(I-a-b+1):I,(I-a-b+1):I] <- 1
+    ## obj(phi)
+    if(print){
+        print(phi)
+    } else {
+        return(list(phi=phi,unlist(obj(phi))))
+    }
+}
+
+
+
+
+## 11
+require(mvtnorm)
+require(abind)
+I <- 20
+m <- 5
+rho <- .3
+Sigma <- matrix(0,nrow=m,ncol=m)
+Sigma <- rho^(abs(row(Sigma)-col(Sigma)))
+Sigma <- rbind(cbind(Sigma,Sigma/2),cbind(Sigma/2,Sigma))
+mu.X <- 0; mu.Y <- .5
+xy <- rmvnorm(I,c(rep(mu.X,m),rep(mu.Y,m)),sigma=Sigma)
+x <- t(xy[,1:m]); y <- t(xy[,(m+1):(2*m)])
+
+i <- 1;r <- 1;s <- 2
+x1 <- x[1,i]; x2 <- x[2,i]
+
+ijil <- numeric()
+## for (i in 1:ncol(x)) {
+##     print(i)
+
+##     for (r in 1:length(x[,i])) {
+##     for (s in 1:length(x[,i])) {
+
+for (i in 1:ncol(x)) {
+for(j in 1:(ncol(y[,-i])-1)) {
+            for (l in (j+1):ncol(y[,-i])) {
+                for (row1 in 1:length(y[,-i][,j])) {
+                    for (row2 in 1:length(y[,-i][,l])) {
+                        ijil <- c(ijil, (x[r,i]<y[,-i][row1,j])*(x[s,i]<y[,-i][row2,l]))
+                    }}}}
+}
+mean(ijil)
+##     }}
+## }
+                
+
+
+i <- 1; j <- 2
+Sigma.X <- Sigma[1:m,1:m]
+Sigma.XX <- matrix(c(1,rep(Sigma.X[i,j],2),1),nrow=2)
+integrate(Vectorize(function(x1)integrate(Vectorize(function(x2)prod(pnorm(c(x1,x2),mu.Y,1,FALSE))*dmvnorm(x=c(x1,x2),sigma=Sigma.XX)),mu.X-15,mu.X+15)$value),mu.X-10,mu.X+10)$value
+
+
+## means <- replicate(1e1,{
+## x <- rmvnorm(1,sigma=matrix(c(1,.3,.3,1),nrow=2))
+## mean(replicate(5e3,(x[1]<rnorm(1,mean=mu.Y)) & (x[2]<rnorm(1,mean=mu.Y))))
+## })
+## mean(means)
+## hist(means)
+
+## I <- 10
+## r <- 1; s <- 2
+## xy <- rmvnorm(I,c(rep(mu.X,m),rep(mu.Y,m)),sigma=Sigma)
+## x <- t(xy[,1:m]); y <- t(xy[,(m+1):(2*m)])
+
+## ijil <- numeric()
+## for(j in 1:(ncol(y[,-i])-1)) {
+##     for (l in (j+1):ncol(y[,-i])) {
+##         for (row1 in 1:length(y[,-i][,j])) {
+##             for (row2 in 1:length(y[,-i][,l])) {
+##                 ijil <- c(ijil, (x[r,i]<y[,-i][row1,j])*(x[s,i]<y[,-i][row2,l]))
+##                 stopifnot(length(ijil)<1.5e4)
+##             }}}}
+## mean(ijil)
+
+## ijil <- sapply(1:I,function(i) {
+##     y.del <- y[,-i]
+##     y.pairs <- sapply(1:(ncol(y.del)-1),function(j)as.matrix(expand.grid(y.del[,j],y.del[,(j+1):ncol(y.del)])))
+##     y.pairs <- do.call(rbind,y.pairs)
+##     (x[1,i] < y.pairs[,1]) & (x[2,i] < y.pairs[,2])
+## })
+## mean(ijil)
+
+I <- 100
+m <- 3
+n <- 3
+rho <- .3
+Sigma.XX <- matrix(0,nrow=m,ncol=m)
+Sigma.XX <- rho^(abs(row(Sigma.XX)-col(Sigma.XX)))
+Sigma.YY <- matrix(0,nrow=n,ncol=n)
+Sigma.YY <- rho^(abs(row(Sigma.YY)-col(Sigma.YY)))
+Sigma.XY <- matrix(0,nrow=m,ncol=n)
+Sigma.XY <- rho^(abs(row(Sigma.XY)-col(Sigma.XY)))/2
+Sigma <- rbind(cbind(Sigma.XX,Sigma.XY),cbind(t(Sigma.XY),Sigma.YY))
+mu.X <- 0; mu.Y <- .5
+xy <- rmvnorm(I,c(rep(mu.X,m),rep(mu.Y,n)),sigma=Sigma)
+x <- t(xy[,1:m]); y <- t(xy[,(m+1):(m+n)])
+
+## Sigma.X <- Sigma[1:m,1:m]
+V.ijil <- matrix(0,nrow=m,ncol=m)
+diag(V.ijil) <-  integrate(Vectorize(function(x1)pnorm(x1,mu.Y,1,FALSE)^2*dnorm(x=x1,sd=1)),mu.X-15,mu.X+15)$value
+for(i in 1:m) {
+    for(j in 1:m) {
+        if(i!=j) {
+            Sigma.XiXj <- matrix(c(1,rep(Sigma.XX[i,j],2),1),nrow=2)
+            V.ijil[i,j] <- integrate(Vectorize(function(x1)integrate(Vectorize(function(x2)prod(pnorm(c(x1,x2),mu.Y,1,FALSE))*dmvnorm(x=c(x1,x2),sigma=Sigma.XiXj)),mu.X-15,mu.X+15)$value),mu.X-10,mu.X+10)$value
+        }}}
+
+
+xy <- rmvnorm(I,c(rep(mu.X,m),rep(mu.Y,m)),sigma=Sigma)
+x <- t(xy[,1:m]); y <- t(xy[,(m+1):(2*m)])
+ijil <- lapply(1:I,function(i) {
+    y.del <- y[,-i]
+    y.pairs <- sapply(1:(ncol(y.del)-1),function(j)as.matrix(expand.grid(y.del[,j],y.del[,(j+1):ncol(y.del)])))
+    y.pairs <- do.call(rbind,y.pairs)
+    ## mean((x[1,i] < y.pairs[,1]) & (x[2,i] < y.pairs[,2]))
+    lt1 <- x[,i] < rep(y.pairs[,1],each=m); dim(lt1) <- c(m,length(lt1)/m)
+    lt2 <- x[,i] < rep(y.pairs[,2],each=m); dim(lt2) <- c(m,length(lt2)/m)
+    lt <- structure(sapply(1:nrow(y.pairs),function(y.pair)outer(lt1[,y.pair],lt2[,y.pair], `&`)),dim=c(m,m,nrow(y.pairs)))
+})
+ijil <- abind(ijil)
+V.ijil.hat <- apply(ijil,1:2,mean)
+plot(V.ijil ~ V.ijil.hat);abline(a=0,b=1)
+
+
+
+V.ijki <- matrix(0,nrow=m,ncol=n)
+Sigma.XY <- Sigma[1:m,(m+1):(m+n)]
+for(i in 1:m) {
+    for(j in 1:n) {
+            Sigma.XiYj <- matrix(c(1,rep(Sigma.XY[i,j],2),1),nrow=2)
+            V.ijki[i,j] <- integrate(Vectorize(function(x)integrate(Vectorize(function(y)pnorm(x,mean=mu.Y,lower.tail=FALSE)*pnorm(y,mean=mu.X)*dmvnorm(x=c(x,y),mean=c(mu.X,mu.Y),sigma=Sigma.XiYj)),mu.Y-15,mu.Y+15)$value),mu.X-10,mu.X+10)$value
+        }}
+
+
+## xy <- rmvnorm(I,c(rep(mu.X,m),rep(mu.Y,m)),sigma=Sigma)
+## x <- t(xy[,1:m]); y <- t(xy[,(m+1):(2*m)])
+ijki <- lapply(1:I,function(i) {
+    y.del <- y[,-i]; x.del <- x[,-i]
+    yjxk.pairs <- lapply(1:ncol(y.del),function(j)as.matrix(expand.grid(y.del[,j],x.del[,-j])))
+    yjxk.pairs <- do.call(rbind,yjxk.pairs)
+    ## mean((x[1,i] < y.pairs[,1]) & (x[2,i] < y.pairs[,2]))
+    lt1 <- x[,i] < rep(yjxk.pairs[,1],each=m); dim(lt1) <- c(m,length(lt1)/m)
+    lt2 <- y[,i] > rep(yjxk.pairs[,2],each=n); dim(lt2) <- c(n,length(lt2)/n)
+    lt <- structure(sapply(1:nrow(yjxk.pairs),function(yjxk)outer(lt1[,yjxk],lt2[,yjxk], `&`)),dim=c(m,n,nrow(yjxk.pairs)))
+})
+ijki <- abind(ijki)
+V.ijki.hat <- apply(ijki,1:2,mean)
+plot(V.ijki ~ V.ijki.hat);abline(a=0,b=1)
+
+## I <- 4
+## m <- 3
+## rho <- .3
+## Sigma <- matrix(0,nrow=m,ncol=m)
+## Sigma <- rho^(abs(row(Sigma)-col(Sigma)))
+## Sigma <- rbind(cbind(Sigma,Sigma/2),cbind(Sigma/2,Sigma))
+## mu.X <- 0; mu.Y <- .5
+## r <- 1; s <- 2
+## xy <- rmvnorm(I,c(rep(mu.X,m),rep(mu.Y,m)),sigma=Sigma)
+## x <- t(xy[,1:m]); y <- t(xy[,(m+1):(2*m)])
+## x.del <- x[,-i]; y.del <- y[,-i]
+## jk <- lapply(1:(I-1),function(j)as.matrix(expand.grid(y.del[,j],x.del[,-j])))
+## jk <- do.call(rbind,jk)
+
+
+
+## trying variance estimator from 2017 note
+
+## Phi <- function(x.i,y.j) {
+##     m <- length(x)
+##     n <- length(y)
+##     if(length(x)==0 | length(y)==0)return(0)
+##     mean(outer(x.i,y.j,`<`))
+##     }
+## }
+
+I <- 4
+m <- 3
+n <- 3
+rho <- .3
+Sigma.XX <- matrix(0,nrow=m,ncol=m)
+Sigma.XX <- rho^(abs(row(Sigma.XX)-col(Sigma.XX)))
+Sigma.YY <- matrix(0,nrow=n,ncol=n)
+Sigma.YY <- rho^(abs(row(Sigma.YY)-col(Sigma.YY)))
+Sigma.XY <- matrix(0,nrow=m,ncol=n)
+Sigma.XY <- rho^(abs(row(Sigma.XY)-col(Sigma.XY)))/2
+Sigma <- rbind(cbind(Sigma.XX,Sigma.XY),cbind(t(Sigma.XY),Sigma.YY))
+mu.X <- 0; mu.Y <- .5
+xy <- rmvnorm(I,c(rep(mu.X,m),rep(mu.Y,n)),sigma=Sigma)
+x <- t(xy[,1:m]); y <- t(xy[,(m+1):(m+n)])
+
+
+triples <- combn(I,3)
+Phis <- apply(triples,2,function(triple) {
+    list(
+        ijil=c(concord(x[,triple[1]],y[,triple[2]]),concord(x[,triple[1]],y[,triple[3]])),
+        ijki=c(concord(x[,triple[1]],y[,triple[2]]),concord(x[,triple[3]],y[,triple[1]])),
+        ijjl=c(concord(x[,triple[1]],y[,triple[2]]),concord(x[,triple[2]],y[,triple[3]])),
+        ijkj=c(concord(x[,triple[1]],y[,triple[2]]),concord(x[,triple[3]],y[,triple[2]]))
+        )
+})
+Phis <- lapply(Phis,function(m)do.call(rbind,m))
+Phis <- abind(Phis,along=3)
+cov.hats <- apply(Phis,1,function(m)cov(t(m))[1,2])
+var.hat <- (I-2)*sum(cov.hats)
+
+x <- unname(as.list(as.data.frame(x)))
+y <- unname(as.list(as.data.frame(y)))
+Phi <- outer(x,y,Vectorize(concord))
+diag(Phi) <- 0
+W.hat <- sum(Phi)/(I*(I-1))
+
+
+I <- 20
+m <- 10
+n <- 10
+rho <- .3
+Sigma.XX <- matrix(0,nrow=m,ncol=m)
+Sigma.XX <- rho^(abs(row(Sigma.XX)-col(Sigma.XX)))
+Sigma.YY <- matrix(0,nrow=n,ncol=n)
+Sigma.YY <- rho^(abs(row(Sigma.YY)-col(Sigma.YY)))
+Sigma.XY <- matrix(0,nrow=m,ncol=n)
+Sigma.XY <- rho^(abs(row(Sigma.XY)-col(Sigma.XY)))/2
+Sigma <- rbind(cbind(Sigma.XX,Sigma.XY),cbind(t(Sigma.XY),Sigma.YY))
+mu.X <- 0; mu.Y <- .5
+auc.hats <- replicate(3e2,{
+    xy <- rmvnorm(I,c(rep(mu.X,m),rep(mu.Y,n)),sigma=Sigma)
+    x <- t(xy[,1:m]); y <- t(xy[,(m+1):(m+n)])
+    x <- unname(as.list(as.data.frame(x)))
+    y <- unname(as.list(as.data.frame(y)))
+    Phi <- outer(x,y,Vectorize(concord))
+    auc.obu <- mean(Phi)
+    diag(Phi) <- 0
+    W.hat <- sum(Phi)/(I*(I-1))
+    auc.new <- mean(Phi)
+    c(obu=auc.obu,new=auc.new)
+})
+apply(auc.hats,1,var)
+
+
+
+I <- 1e1
+m <- 5
+n <- 5
+rho <- .3
+Sigma.XX <- matrix(0,nrow=m,ncol=m)
+Sigma.XX <- rho^(abs(row(Sigma.XX)-col(Sigma.XX)))
+Sigma.YY <- matrix(0,nrow=n,ncol=n)
+Sigma.YY <- rho^(abs(row(Sigma.YY)-col(Sigma.YY)))
+Sigma.XY <- matrix(0,nrow=m,ncol=n)
+Sigma.XY <- rho^(abs(row(Sigma.XY)-col(Sigma.XY)))/2
+Sigma <- rbind(cbind(Sigma.XX,Sigma.XY),cbind(t(Sigma.XY),Sigma.YY))
+mu.X <- 0; mu.Y <- .5
+auc.hats <- replicate(5e2,{
+    xy <- rmvnorm(I,c(rep(mu.X,m),rep(mu.Y,n)),sigma=Sigma)
+    x <- t(xy[,1:m]); y <- t(xy[,(m+1):(m+n)])
+    x <- unname(as.list(as.data.frame(x)))
+    y <- unname(as.list(as.data.frame(y)))
+    auc.obu(x,y)
+    ## auc.jk(x,y)
+})
+hist(auc.hats['var.hat',])
+abline(v=c(var(auc.hats['theta.hat',]),mean(auc.hats['var.hat',])),col=c('red','blue'))
+legend('topright',col=c('red','blue'),legend=c('mc','obu'),lty=1)
+diff(c(var(auc.hats['theta.hat',]),mean(auc.hats['var.hat',])))
+
+auc.hats <- replicate(5e2,{
+    xy <- rmvnorm(I,c(rep(mu.X,m),rep(mu.Y,n)),sigma=Sigma)
+    x <- t(xy[,1:m]); y <- t(xy[,(m+1):(m+n)])
+    x <- unname(as.list(as.data.frame(x)))
+    y <- unname(as.list(as.data.frame(y)))
+    rbind(obu=auc.obu(x,y), jk=auc.jk(x,y))
+})
+diff(c(var(auc.hats['obu','theta.hat',]),mean(auc.hats['obu','var.hat',])))
+diff(c(var(auc.hats['jk','theta.hat',]),mean(auc.hats['jk','var.hat',])))
+
+
+
+
+I <- 5e2
+Sigma <- matrix(c(1,rep(.3,2),1),nrow=2)
+trans <- with(eigen(Sigma), {vectors%*%diag(sqrt(values))%*%t(vectors)})
+Is <- floor(seq(1e1,1e2,length.out=10))
+by.I <- lapply(Is, function(I) {
+    print(I)
+    auc.hats <- replicate(4e2, {
+        xy <- trans %*% matrix(rnorm(2*I),nrow=2)        
+        x <- xy[1,]; y <- xy[2,]; y <- y+.5
+        rbind(obu=auc.obu(x,y),jk=auc.jk(x,y))
+    })
+})
+est.means <- sapply(by.I,function(auc.hats)rowMeans(auc.hats[,'var.hat',]))
+mc.means <- sapply(by.I,function(auc.hats)apply(auc.hats[,'theta.hat',],1,var))
+
+## est.means <- sapply(by.I,function(auc.hats)mean(auc.hats['var.hat',]))
+## mc.means <- sapply(by.I,function(auc.hats)var(auc.hats['theta.hat',]))
+## plot(est.means ~ Is,col='red',ylim=range(c(est.means,mc.means)))
+## points(mc.means ~ Is)
+
+plot(est.means['obu',] ~ Is,ylim=range(c(est.means,mc.means)))
+points(mc.means['obu',] ~ Is,col=2)
+points(mc.means['jk',] ~ Is,col=3)
+legend('topright',col=1:3,legend=c('obu est','mc','jk est'),lty=1)
+
+diffs <- abs(est.means - mc.means)
+plot(diffs['obu',],diffs['jk',]);abline(a=0,b=1)
+## points(est.means['jk',] ~ Is,col='green')
+
+hist(auc.hats['var.hat',])
+abline(v=c(var(auc.hats['theta.hat',]),mean(auc.hats['var.hat',])),col=c('red','blue'))
+legend('topright',col=c('red','blue'),legend=c('mc','obu'),lty=1)
+
+
+
+
+
+
+
+## 12a
+I <- 10
+m <- floor(runif(I,5,20)); n <- floor(runif(I,5,20))
+m <- m*0 + 1; n <- n*0+1
+M <- sum(m); N <- sum(n)
+## m <- rep(1,I); n <- rep(1,I)
+ss <- sapply(1:I,function(i)sapply((1:I)[-i],function(j)sapply((1:I)[-c(i,j)],function(k)sapply((1:I)[-c(i,j,k)],function(l)m[i]*n[j]*m[k]*m[l]))))
+sum(ss)
+M^2*N^2 +4*N*sum(m^2*n) + 4*M*sum(m*n^2) - 4*M*N*sum(m*n) - 6*sum(m^2*n^2) + 2*sum(m*n)^2 - sum(m^2)*N^2 + sum(m^2)*sum(n^2) - M^2*sum(n^2)
+sum(sapply(1:I,function(i)sapply((1:I)[-i],function(j)sapply((1:I)[-c(i,j)],function(l)m[i]^2*n[j]*n[l]))))
+N^2*sum(m^2) - sum(m^2)*sum(n^2) - 2*N*sum(m^2*n) + 2*sum(m^2*n^2)
+
+## 13a
+concord <- function(x,y) mean(outer(x,y,`<`))
+concord.sum <- function(x,y)sum(outer(x,y,`<`))
+I <- 10
+m <- floor(runif(I,5,20)); n <- floor(runif(I,5,20))
+M <- sum(m); N <- sum(n)
+## m <- rep(1,I); n <- rep(1,I)
+x <- lapply(m,function(m.i)rnorm(m.i))
+y <- lapply(n,function(n.i)rnorm(n.i))
+Phi <- outer(x,y,Vectorize(concord))
+Vx <- sapply(x,function(x.i)concord.sum(x.i,unlist(y)))/N
+Vy <- sapply(y,function(y.i)concord.sum(unlist(x),y.i))/M
+theta.hat <- concord.sum(unlist(x),unlist(y))/(M*N)
+crossterms <- apply(expand.grid(rep(list(1:I),3)),1,function(idx)
+{
+    i <- idx[1]; j <- idx[2]; k <- idx[3]
+    c(ijik=m[i]^2*n[j]*n[k]*Phi[i,j]*Phi[i,k],
+      ijki=2*m[i]*n[i]*n[j]*m[k]*Phi[i,j]*Phi[k,i],
+      jiki=n[i]^2*m[j]*m[k]*Phi[j,i]*Phi[k,i])
+    })
+
+I/M^2/N^2/(I-1)*(theta.hat^2*sum((N*m+M*n)^2) - 2*theta.hat*sum((N*m+M*n)*(m*colSums(n*t(Phi))+n*colSums(m*Phi))) + sum(crossterms['ijik',]) + sum(crossterms['ijki',]) + sum(crossterms['jiki',]))
+
+
+## coverage of obu estimator
+I <- 5e1
+m <- 7
+n <- 7
+rho <- .3
+Sigma.XX <- matrix(0,nrow=m,ncol=m)
+Sigma.XX <- rho^(abs(row(Sigma.XX)-col(Sigma.XX)))
+Sigma.YY <- matrix(0,nrow=n,ncol=n)
+Sigma.YY <- rho^(abs(row(Sigma.YY)-col(Sigma.YY)))
+Sigma.XY <- matrix(0,nrow=m,ncol=n)
+Sigma.XY <- rho^(abs(row(Sigma.XY)-col(Sigma.XY)))/2
+Sigma <- rbind(cbind(Sigma.XX,Sigma.XY),cbind(t(Sigma.XY),Sigma.YY))
+mu.X <- 0; mu.Y <- .5
+theta.true <- pnorm(-mu.Y,mean=0,sd=sqrt(2),lower.tail=FALSE)
+## xy <- replicate(1e5,rnorm(2))
+## print(c(auc.true,mean(xy[1,] < xy[2,]+mu.Y)))
+## alpha <- .01
+alphas <- round(seq(.1,.95,length.out=10),2)
+by.method <- replicate(5e2,{
+    cat('.')
+    xy <- rmvnorm(I,c(rep(mu.X,m),rep(mu.Y,n)),sigma=Sigma)
+    x <- t(xy[,1:m]); y <- t(xy[,(m+1):(m+n)])
+    x <- unname(as.list(as.data.frame(x)))
+    y <- unname(as.list(as.data.frame(y)))
+    est <- rbind(jk=auc.jk(x,y,alphas),obu=auc.obu(x,y,alphas))
+    ## prod(est['theta.hat'] + c(-1,1)*qnorm(1-alpha)*sqrt(est['var.hat']) - theta.true) < 0
+})
+coverages <- apply(by.method,1,function(CIs) {
+CI.lower <- CIs[grep('CI.lower',rownames(CIs)),]
+CI.upper <- CIs[grep('CI.upper',rownames(CIs)),]
+coverages <- rev(apply((CI.upper - theta.true)*(CI.lower - theta.true) < 0,1,mean))
+names(coverages) <- alphas
+coverages
+})
+coverages
+coverages - alphas
+plot(alphas,coverages[,'jk']); abline(a=0,b=1)
+points(alphas,coverages[,'obu'],col=2)
+legend('topleft',legend=c('jk','obu'),lty=1,col=1:2)
+
+hist(auc.hats['var.hat',])
+abline(v=c(var(auc.hats['theta.hat',]),mean(auc.hats['var.hat',])),col=c('red','blue'))
+legend('topright',col=c('red','blue'),legend=c('mc','obu'),lty=1)
+diff(c(var(auc.hats['theta.hat',]),mean(auc.hats['var.hat',])))
+
+
+
+
+## 1 coverage of obu estimator versus I
+require(parallel)
+Is <- round(seq(10,2e2,length.out=20))
+## Is <- round(seq(10,20,length.out=10))
+m <- 1
+n <- 1
+Sigma.XX <- matrix(0,nrow=m,ncol=m)+.0
+## Sigma.XX <- rho^(abs(row(Sigma.XX)-col(Sigma.XX)))
+Sigma.YY <- matrix(0,nrow=n,ncol=n)+.0
+## Sigma.YY <- rho^(abs(row(Sigma.YY)-col(Sigma.YY)))
+Sigma.XY <- matrix(0,nrow=m,ncol=n)+.0
+## Sigma.XY <- rho^(abs(row(Sigma.XY)-col(Sigma.XY)))/2
+Sigma <- rbind(cbind(Sigma.XX,Sigma.XY),cbind(t(Sigma.XY),Sigma.YY))
+diag(Sigma) <- 1
+mu.X <- 0; mu.Y <- .5
+theta.true <- pnorm(-mu.Y,mean=0,sd=sqrt(2),lower.tail=FALSE)
+## xy <- replicate(1e5,rnorm(2))
+## print(c(auc.true,mean(xy[1,] < xy[2,]+mu.Y)))
+alpha <- .1
+alphas <- round(seq(.1,.95,length.out=10),2)
+by.I <- mclapply(Is, function(I) {
+    cat('.')
+    coverage <- replicate(5e2,{
+        ## cat('.')
+        xy <- rmvnorm(I,c(rep(mu.X,m),rep(mu.Y,n)),sigma=Sigma)
+        x <- t(xy[,1:m]); y <- t(xy[,(m+1):(m+n)])
+        x <- unname(as.list(as.data.frame(x)))
+        y <- unname(as.list(as.data.frame(y)))
+        est <- auc.obu(x,y,alpha)
+        ## est <- auc.bs(x,y,alphas)
+        prod(est['theta.hat'] + c(-1,1)*qnorm(1-alpha)*sqrt(est['var.hat']) - theta.true) < 0
+    })
+    mean(coverage)
+},mc.cores=detectCores()-2)
+by.I <- simplify2array(by.I)
+## png('figs/1.png')
+plot(abs(by.I-(1-alpha)) ~ Is)
+abline(lm(abs(by.I-(1-alpha)) ~ Is))
+## dev.off()
+names(by.I) <- Is
+by.I
+
+## 1a m=n=1 case
+I <- 5e2
+mu.X <- 0; mu.Y <- .5
+Sigma <- matrix(c(1,rep(.3,2),1),nrow=2)
+trans <- with(eigen(Sigma), {vectors%*%diag(sqrt(values))%*%t(vectors)})
+Is <- floor(seq(1e1,1e2,length.out=10))
+theta.true <- pnorm(-mu.Y,mean=0,sd=sqrt(2),lower.tail=FALSE)
+alpha <- .1
+
+coverages <- replicate(2e2,{
+    xy <- trans %*% matrix(rnorm(2*I),nrow=2)        
+    x <- xy[1,]; y <- xy[2,]; y <- y+mu.Y
+    prod(auc.obu(x,y,alpha)[c('CI.lower','CI.upper')] - theta.true) < 0
+    ## Phi <- outer(x,y,Vectorize(concord))
+    ## idx <- combn(I,3)
+})
+mean(coverages)
+
+
+## new estimator
+
+I <- 10
+m <- rep(5,I)
+n <- rep(7,I)
+rho <- .3
+Sigma.XX <- matrix(0,nrow=m,ncol=m)
+Sigma.XX <- rho^(abs(row(Sigma.XX)-col(Sigma.XX)))
+Sigma.YY <- matrix(0,nrow=n,ncol=n)
+Sigma.YY <- rho^(abs(row(Sigma.YY)-col(Sigma.YY)))
+Sigma.XY <- matrix(0,nrow=m,ncol=n)
+Sigma.XY <- rho^(abs(row(Sigma.XY)-col(Sigma.XY)))/2
+Sigma <- rbind(cbind(Sigma.XX,Sigma.XY),cbind(t(Sigma.XY),Sigma.YY))
+mu.X <- 0; mu.Y <- .5
+theta.true <- pnorm(-mu.Y,mean=0,sd=sqrt(2),lower.tail=FALSE)
+xy <- rmvnorm(I,c(rep(mu.X,m),rep(mu.Y,n)),sigma=Sigma)
+x <- t(xy[,1:m]); y <- t(xy[,(m+1):(m+n)])
+x <- unname(as.list(as.data.frame(x)))
+y <- unname(as.list(as.data.frame(y)))
+Phi <- outer(x,y,Vectorize(concord))
+diag(Phi) <- 0
+theta.hat <- sum(Phi)/(I*(I-1))
+count.ijkl <- sum(sapply(1:I,function(i)sapply((1:I)[-i],function(j)sapply((1:I)[-c(i,j)],function(k)sapply((1:I)[-c(i,j,k)],function(l)m[i]*n[j]*m[k]*m[l])))))
+count.ijil <- sum(sapply(1:I,function(i)sapply((1:I)[-i],function(j)sapply((1:I)[-c(i,j)],function(l)m[i]^2*n[j]*n[l]))))
+count.ijki <- sum(sapply(1:I,function(i)sapply((1:I)[-i],function(j)sapply((1:I)[-c(i,j)],function(k)m[i]*n[j]*m[k]*n[i]))))
+count.ijkj <- sum(sapply(1:I,function(i)sapply((1:I)[-i],function(j)sapply((1:I)[-c(i,j)],function(k)m[i]*n[j]^2*m[k]))))
+mean.ijil <- mean(sapply(1:I,function(i)sapply((1:I)[-i],function(j)sapply((1:I)[-c(i,j)],function(l)Phi[i,j]*Phi[i,l]))))
+mean.ijki <- mean(sapply(1:I,function(i)sapply((1:I)[-i],function(j)sapply((1:I)[-c(i,j)],function(k)Phi[i,j]*Phi[k,i]))))
+mean.ijkj <- mean(sapply(1:I,function(i)sapply((1:I)[-i],function(j)sapply((1:I)[-c(i,j)],function(k)Phi[i,j]*Phi[k,j]))))
+(count.ijkl*theta.hat^2 + count.ijil*mean.ijil + 2*count.ijki*mean.ijki + count.ijkj*mean.ijkj) / (N*M - sum(m*n))^2 - theta.hat^2
+
+mean.ijil <- mean(sapply(1:I,function(i)sapply((1:I)[-i],function(j)sapply((1:I)[-c(i,j)],function(l)m[i]^2*n[j]*n[l]*Phi[i,j]*Phi[i,l]))))
+mean.ijki <- mean(sapply(1:I,function(i)sapply((1:I)[-i],function(j)sapply((1:I)[-c(i,j)],function(k)m[i]*n[j]*m[k]*n[i]*Phi[i,j]*Phi[k,i]))))
+mean.ijkj <- mean(sapply(1:I,function(i)sapply((1:I)[-i],function(j)sapply((1:I)[-c(i,j)],function(k)m[i]*n[j]^2*m[k]*Phi[i,j]*Phi[k,j]))))
+(count.ijkl*theta.hat^2 + mean.ijil + 2*mean.ijki + mean.ijkj) / (N*M - sum(m*n))^2 - theta.hat^2
+
+
+
+## 2. estimate finite sample variance when m=n=1
+
+## 2a estimates of ijil, etc terms
+I <- 5e1
+mu.X <- 0; mu.Y <- .5
+Sigma <- matrix(c(1,rep(.3,2),1),nrow=2)
+trans <- with(eigen(Sigma), {vectors%*%diag(sqrt(values))%*%t(vectors)})
+Is <- floor(seq(1e1,1e2,length.out=10))
+V.ijil <- integrate(Vectorize(function(x1)pnorm(x1,mu.Y,1,FALSE)^2*dnorm(x1,mu.X)),mu.X-15,mu.X+15)$value
+V.ijki <- integrate(Vectorize(function(x1)integrate(Vectorize(function(x2)pnorm(x1,mu.Y,1,FALSE)*pnorm(x2,mu.X)*dmvnorm(x=c(x1,x2),mean=c(mu.X,mu.Y),sigma=Sigma)),mu.X-15,mu.X+15)$value),mu.X-10,mu.X+10)$value
+V.ijkj <- integrate(Vectorize(function(y)pnorm(y,mu.X,1)^2*dnorm(y,mu.Y)),mu.Y-15,mu.Y+15)$value
+V.true <- c(V.ijil,V.ijki,V.ijkj)
+V.hats <- replicate(1e2,{
+    xy <- trans %*% matrix(rnorm(2*I),nrow=2)        
+    x <- xy[1,]; y <- xy[2,]; y <- y+mu.Y
+    Phi <- outer(x,y,Vectorize(concord))
+    idx <- combn(I,3)
+    c(
+        ijil=mean(apply(idx,2,function(ijl)Phi[ijl[1],ijl[2]]*Phi[ijl[1],ijl[3]])),
+        ijki=mean(apply(idx,2,function(ijk)Phi[ijk[1],ijk[2]]*Phi[ijk[3],ijk[1]])),
+        ijkj=mean(apply(idx,2,function(ijk)Phi[ijk[1],ijk[2]]*Phi[ijk[3],ijk[2]]))
+      )
+})
+
+op <- par(mfrow=c(1,nrow(V.hats)))
+for(r in 1:nrow(V.hats)) {
+    hist(V.hats[r,])
+    abline(v=V.true[r],col='red')
+    abline(v=mean(V.hats[r,]),col='blue')
+}
+par(op)
+
+## 2b
+
+I <- 5e1
+mu.X <- 0; mu.Y <- .5
+Sigma <- matrix(c(1,rep(.3,2),1),nrow=2)
+trans <- with(eigen(Sigma), {vectors%*%diag(sqrt(values))%*%t(vectors)})
+Is <- floor(seq(1e1,1e2,length.out=10))
+theta.true <- pnorm(-mu.Y,mean=0,sd=sqrt(2),lower.tail=FALSE)
+V.ijil <- integrate(Vectorize(function(x1)pnorm(x1,mu.Y,1,FALSE)^2*dnorm(x1,mu.X)),mu.X-15,mu.X+15)$value
+V.ijki <- integrate(Vectorize(function(x1)integrate(Vectorize(function(x2)pnorm(x1,mu.Y,1,FALSE)*pnorm(x2,mu.X)*dmvnorm(x=c(x1,x2),mean=c(mu.X,mu.Y),sigma=Sigma)),mu.X-15,mu.X+15)$value),mu.X-10,mu.X+10)$value
+V.ijkj <- integrate(Vectorize(function(y)pnorm(y,mu.X,1)^2*dnorm(y,mu.Y)),mu.Y-15,mu.Y+15)$value
+V.ijij <- theta.true
+V.ijji <- theta.true^1
+V.true <- c(V.ijil,V.ijki,V.ijkj)
+
+theta.hats <- replicate(7e2,{
+    xy <- trans %*% matrix(rnorm(2*I),nrow=2)        
+    x <- xy[1,]; y <- xy[2,]; y <- y+mu.Y
+    Phi <- outer(x,y,Vectorize(concord))
+    ## idx <- combn(I,3)
+    ## c(
+    ##     ijil=mean(apply(idx,2,function(ijl)Phi[ijl[1],ijl[2]]*Phi[ijl[1],ijl[3]])),
+    ##     ijki=mean(apply(idx,2,function(ijk)Phi[ijk[1],ijk[2]]*Phi[ijk[3],ijk[1]])),
+    ##     ijkj=mean(apply(idx,2,function(ijk)Phi[ijk[1],ijk[2]]*Phi[ijk[3],ijk[2]]))
+    ##   )
+    diag(Phi) <- 0
+    theta.hat <- mean(Phi)
+    c(theta.hat=theta.hat,var.hat.obu=unname(auc.obu(x,y)['var.hat']))
+})
+var(theta.hats['theta.hat',])
+mean(theta.hats['var.hat.obu',])
+(prod(I-(0:3))/(I*(I-1))^2 - 1)*theta.true^2 + (prod(I-(0:2))/(I*(I-1))^2)*(V.ijil + 2*V.ijki + V.ijkj) + 1/(I*(I-1))*(V.ijij + V.ijji)
+
+
+sd(theta.hats['theta.hat',])
+mean(sqrt(theta.hats['var.hat.obu',]))
+sqrt((prod(I-(0:3))/(I*(I-1))^2 - 1)*theta.true^2 + (prod(I-(0:2))/(I*(I-1))^2)*(V.ijil + 2*V.ijki + V.ijkj) + 1/(I*(I-1))*(V.ijij + V.ijji))

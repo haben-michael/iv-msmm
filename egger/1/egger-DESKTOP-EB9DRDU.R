@@ -1,0 +1,4014 @@
+## https://math.stackexchange.com/questions/326944/evaluating-eigenvalues-of-a-product-of-two-positive-definite-matrices?noredirect=1&lq=1
+## https://mathoverflow.net/questions/272635/bound-of-the-eigenvalues-of-a-matrix-product-of-two-diagonal-and-one-symmetric-p?noredirect=1&lq=1 
+## assuming design matrix is full rank ie not all sigma equal
+
+
+## ## 1. bias of d-l estimator
+## tau <- 3
+## n <- 20
+## ns <- round(seq(20,400,length.out=20))
+## by.n <- sapply(ns, function(n) {
+## tau2.hats <- replicate(5e3, {
+##     theta <- rnorm(n,mean=0,sd=tau)
+##     sigma <- rchisq(n,df=10)
+##     y <- rnorm(n,mean=theta,sd=sigma)
+##     mu.fe <- sum(1/sigma^2 * y) / sum(1/sigma^2)
+##     Q <- sum((y-mu.fe)^2/sigma^2)
+##     tau.dl <- max(0, (Q - (n-1)) / (sum(1/sigma^2) - sum(1/sigma^4)/sum(1/sigma^2)))
+## })
+## ## hist(tau2.hats); abline(v=c(tau^2,mean(tau2.hats)),col=c('red','blue'))
+## (mean(tau2.hats) - tau^2)
+## })
+## plot(ns,by.n,type='l'); abline(h=0)
+
+
+## ## 2. level of egger regression
+## tau <- 10
+## n <- 200
+## p.vals <- replicate(1e3, {
+##     theta <- rnorm(n,mean=0,sd=tau)
+##     sigma <- rchisq(n,df=10)
+##     y <- rnorm(n,mean=theta,sd=sigma)
+##     mu.fe <- sum(1/sigma^2 * y) / sum(1/sigma^2)
+##     Q <- sum((y-mu.fe)^2/sigma^2)
+##     tau.dl <- max(0, (Q - (n-1)) / (sum(1/sigma^2) - sum(1/sigma^4)/sum(1/sigma^2)))
+##     coef(summary(lm(I(y/sqrt(sigma^2+tau^2)) ~ 1 + I(1/sqrt(sigma^2+tau^2)))))['(Intercept)','Pr(>|t|)']
+## })
+## plot(ecdf(p.vals));abline(a=0,b=1,col='red')
+
+## ## 2a level with heterogeneity present
+## tau <- 10
+## n <- 200
+## p.vals <- replicate(1e3, {
+##     theta <- rnorm(n,mean=0,sd=tau)
+##     sigma <- rchisq(n,df=10)
+##     y <- rnorm(n,mean=theta,sd=sigma)
+##     coef(summary(lm(I(y/sigma) ~ 1 + I(1/sigma))))['(Intercept)','Pr(>|t|)']
+## })
+## plot(ecdf(p.vals));abline(a=0,b=1,col='red')
+
+
+## n <- 200
+## p.vals <- replicate(1e3, {
+##     theta <- rnorm(n,mean=300,sd=0)
+##     sigma <- 1/runif(n,1,22)#rchisq(n,df=10)
+##     y <- rnorm(n,mean=theta,sd=sigma)
+##     coef(summary(lm(I(y/sigma) ~ 1 + I(1/sigma))))['(Intercept)','Pr(>|t|)']
+## })
+## plot(ecdf(p.vals));abline(a=0,b=1,col='red')
+## mean(p.vals<.05)
+## plot(1/sigma,y/sigma,ylim=c(0,max(y/sigma)),xlim=c(0,max(1/sigma)));abline(lm(I(y/sigma) ~ I(1/sigma)))
+
+## ## 3. funnel plot
+## tau <- 3
+## n <- 100
+## theta <- rnorm(n,mean=0,sd=tau)
+## sigma <- rchisq(n,df=10)
+## y <- rnorm(n,mean=theta,sd=sigma)
+## mu.fe <- sum(1/sigma^2 * y) / sum(1/sigma^2)
+## Q <- sum((y-mu.fe)^2/sigma^2)
+## tau.dl <- max(0, (Q - (n-1)) / (sum(1/sigma^2) - sum(1/sigma^4)/sum(1/sigma^2)))
+## p.vals <- pnorm(y/sigma,lower.tail=FALSE)
+## insig.idx <- p.vals>.1
+## ## insig.idx <- with(list(p.vals=pnorm(y/sigma,lower.tail=FALSE)), p.vals > quantile(p.vals,.5))
+## keep.idx <- c(which(!insig.idx),which(insig.idx)[as.logical(rbinom(length(which(insig.idx)), 1, prob=1))])
+## sigma <- sigma[keep.idx]; y <- y[keep.idx]
+## plot(I(1/sigma) ~ y)
+## abline(v=mu.fe)
+
+
+## ## 4. power of egger regression
+## tau <- 0
+## keep.prob <- .8
+## n <- 1e2
+## keep.probs <- seq(0,1,length.out=10)
+## powers <- sapply(keep.probs,function(keep.prob) {
+##     p.vals <- replicate(1e3, {
+##         theta <- rnorm(n,mean=0,sd=tau)
+##         sigma <- rchisq(n,df=10)
+##         y <- rnorm(n,mean=theta,sd=sigma)
+##         mu.fe <- sum(1/sigma^2 * y) / sum(1/sigma^2)
+##         Q <- sum((y-mu.fe)^2/sigma^2)
+##         tau.dl <- max(0, (Q - (n-1)) / (sum(1/sigma^2) - sum(1/sigma^4)/sum(1/sigma^2)))    
+##         ## insig.idx <- pnorm(y/sigma,lower.tail=FALSE) > .1
+##         insig.idx <- with(list(p.vals=pnorm(y/sigma,lower.tail=FALSE)), p.vals > quantile(p.vals,.8))
+##         keep.idx <- c(which(!insig.idx),which(insig.idx)[as.logical(rbinom(length(which(insig.idx)), 1, prob=keep.prob))])
+##         sigma <- sigma[keep.idx]; y <- y[keep.idx]
+##         coef(summary(lm(I(y/sqrt(sigma^2+tau^2)) ~ 1 + I(1/sqrt(sigma^2+tau^2)))))['(Intercept)','Pr(>|t|)']
+##     })
+##     ## plot(ecdf(p.vals));abline(a=0,b=1,col='red')
+##     mean(p.vals<.05)
+## })
+## plot(keep.probs,powers)
+
+## ## 4a. power of egger regression
+## tau <- 0
+## keep.prob <- .8
+## n <- 1e2
+## keep.probs <- seq(0,1,length.out=10)
+## powers <- sapply(keep.probs,function(keep.prob) {
+##     p.vals <- replicate(1e3, {
+##         theta <- rnorm(n,mean=0,sd=tau)
+##         sigma <- rchisq(n,df=10)
+##         y <- rnorm(n,mean=theta,sd=sigma)
+##         mu.fe <- sum(1/sigma^2 * y) / sum(1/sigma^2)
+##         Q <- sum((y-mu.fe)^2/sigma^2)
+##         tau.dl <- max(0, (Q - (n-1)) / (sum(1/sigma^2) - sum(1/sigma^4)/sum(1/sigma^2)))    
+##         ## insig.idx <- pnorm(y/sigma,lower.tail=FALSE) > .1
+##         insig.idx <- with(list(p.vals=pnorm(y/sigma,lower.tail=FALSE)), p.vals > quantile(p.vals,.8))
+##         keep.idx <- c(which(!insig.idx),which(insig.idx)[as.logical(rbinom(length(which(insig.idx)), 1, prob=keep.prob))])
+##         sigma <- sigma[keep.idx]; y <- y[keep.idx]
+##         coef(summary(lm(I(y/sqrt(sigma^2+tau^2)) ~ 1 + I(1/sqrt(sigma^2+tau^2)))))['(Intercept)','Pr(>|t|)']
+##     })
+##     ## plot(ecdf(p.vals));abline(a=0,b=1,col='red')
+##     mean(p.vals<.05)
+## })
+## plot(keep.probs,powers)
+
+
+## ## 5. checking formulas
+## n <- 10
+## x <- rnorm(n)
+## y <- rnorm(n)
+## w <- abs(rnorm(n))
+## ans <- 0
+## for(j in 1:n)
+##     for(k in 1:n)
+##         ans <- ans + w[j]*w[k]*(x[j]-x[k])*(y[j]-y[k])
+## ans <- ans / sum(w)/2
+## ans - sum(w*(x*y - sum(x*w)/sum(w)*sum(y*w)/sum(w)))
+
+## n <- 10
+## sigma <- rchisq(n,df=10)
+## y <- rnorm(n,mean=0,sd=sigma)
+## ans <- 0
+## for(j in 1:n)
+##     for(k in 1:n)
+##         ans <- ans + 1/sigma[j]/sigma[k]*(y[j]-y[k])*(1/sigma[j]-1/sigma[k])
+## ans <- ans/2
+## ans - sum(1/sigma)*sum(1/sigma*(y/sigma - sum(y/sigma)*sum(1/sigma^2)/sum(1/sigma)^2))
+## coef(summary(lm(I(y/sigma) ~ 1 + I(1/sigma))))[1] + ans / (n*sum((1/sigma-mean(1/sigma))^2))
+## coef(summary(lm(I(y/sigma) ~ 1 + I(1/sigma))))[1] + mean(1/sigma)/((n-1)*var(1/sigma))*sum(1/sigma*(y/sigma - sum(y/sigma)*sum(1/sigma^2)/sum(1/sigma)^2))
+
+## tau <- 0
+## keep.prob <- .8
+## n <- 1e2
+## keep.probs <- seq(0,1,length.out=10)
+## theta <- rnorm(n,mean=0,sd=tau)
+## sigma <- rchisq(n,df=10)
+## y <- rnorm(n,mean=theta,sd=sigma)
+## egger.lm <- lm(I(y/sqrt(sigma^2+tau^2)) ~ 1 + I(1/sqrt(sigma^2+tau^2)))
+## coef(summary(egger.lm))['(Intercept)','Estimate'] - - mean(1/sigma)/((n-1)*var(1/sigma))*sum(1/sigma*(y/sigma - sum(y/sigma)*sum(1/sigma^2)/sum(1/sigma)^2))
+## coef(summary(egger.lm))['(Intercept)','Std. Error']^2
+## X <- cbind(1,1/sigma); proj <- diag(1,nrow=n) - X%*%solve(t(X)%*%X)%*%t(X)
+## proj%*%(y/sigma) - resid(egger.lm)
+## sqrt(t(y/sigma)%*%proj%*%(y/sigma)/(n-2)) - summary(egger.lm)$sigma
+## sum(1/sigma^2)/(n*sum(1/sigma^2) - sum(1/sigma)^2)*summary(egger.lm)$sigma^2
+## summary(egger.lm)$sigma^2 * sum(1/sigma^2) / (n*(n-1)*var(1/sigma))
+## coef(summary(egger.lm))['(Intercept)','t value'] - -mean(1/sigma)/(summary(egger.lm)$sigma*sqrt(mean(1/sigma^2))*sqrt((n-1)*var(1/sigma))) * sum(1/sigma * (y/sigma - sum(y/sigma)*sum(1/sigma^2)/sum(1/sigma)^2))
+
+## coef(summary(lm(I(y/sigma) ~ 1 + I(1/sigma))))[2]
+## coef(summary(lm(I(y/sigma) ~ 1 + I(1/sigma))))[2]
+## (sum(y/sigma^2) - n*mean(1/sigma)*mean(y/sigma)) / ((n-1)*var(1/sigma))
+## 1/(n*(n-1)*var(1/sigma))*(n*sum(y/sigma^2) - sum(1/sigma)*sum(y/sigma))
+## (sum(y/sigma^2) - n*mean(1/sigma)*mean(y/sigma))
+## cov(y/sigma,1/sigma)/var(1/sigma)
+## summary(lm(I(y/sigma) ~ 1 + I(1/sigma)))
+## summary(lm(I(y/sigma) ~ I(1/sigma)-1))
+
+## ## 5a
+## n <- 4
+## x <- runif(n,1,2)
+## X <- cbind(1,x)
+## proj <- X%*%solve(t(X)%*%X)%*%t(X)
+## ones <- matrix(1,nrow=n); x <- matrix(x,nrow=n)
+## sum(abs(proj - (ones%*%(mean(x^2)*t(ones) - mean(x)*t(x)) + x%*%(t(x)-mean(x)*t(ones)))  /  (sum(x^2)-n*mean(x)^2)))
+## sum(abs(proj - (ones%*%t(ones)/n + (ones*mean(x)-x)%*%t(ones*mean(x)-x) / (sum(x^2)-n*mean(x)^2))))
+
+## 5b transforming orthog projection by diag(1/x)
+## n <- 4
+## x <- runif(n,1,2)
+## X <- cbind(1,x)
+## proj <- X%*%solve(t(X)%*%X)%*%t(X)
+## ## ones <- matrix(1,nrow=n); x <- matrix(x,nrow=n)
+## v.image <- diag(1/x)%*%(diag(1,n) - proj)%*%rnorm(n)
+## sum(v.image*x)
+## sum(v.image*x^2)
+## X.bar <- cbind(x,x^2)
+## proj.bar <- X.bar%*%solve(t(X.bar)%*%X.bar)%*%t(X.bar)
+## v.image <- (diag(1,n) - proj.bar)%*%rnorm(n)
+## sum(diag(x%*%v.image)*x)
+## sum(diag(x%*%v.image))
+
+
+n <- 10
+x <- sort(runif(n,0,10))
+v <- rnorm(n-2)
+v <- c(v, 1/(x[n-1]*(x[n]-x[n-1])) * sum(x[1:(n-2)]*(x[1:(n-2)]-x[n])*v[1:(n-2)]))
+v <- c(v, 1/(x[n]*(x[n]-x[n-1])) * sum(x[1:(n-2)]*(x[n-1]-x[1:(n-2)])*v[1:(n-2)]) )
+sum(v*x)
+sum(v*x^2)
+v[n]
+sum((x*v)[1:(n-2)]*(x[n-1]-x[1:(n-2)])) / (x[n]*(x[n]-x[n-1])+sum(x^2)-x[n-1]*sum(x)) * (1 + (sum(x^2)-x[n-1]*sum(x))/(x[n]*(x[n]-x[n-1])))
+
+w <- x[1:(n-2)]*(x[n-1]-x[1:(n-2)])
+sum(w*v[1:(n-2)])/(x[n]*(x[n]-x[n-1]))
+xn <- function(diff){
+    x <- c(x[-n],x[n-1]+diff)
+    w <- x[1:(n-2)]*(x[n-1]-x[1:(n-2)])
+    sum(w*v[1:(n-2)])/(x[n]*(x[n]-x[n-1]))
+})
+xn <- Vectorize(xn)
+curve(xn,0,.1)
+
+
+n <- 10
+signs <- replicate(1e3, {
+    x <- sort(runif(n,0,10))
+    ## x[n] <- x[n]*50
+    v <- runif(n-2,-1,2)
+    v <- c(v, 1/(x[n-1]*(x[n]-x[n-1])) * sum(x[1:(n-2)]*(x[1:(n-2)]-x[n])*v[1:(n-2)]))
+    v <- c(v, 1/(x[n]*(x[n]-x[n-1])) * sum(x[1:(n-2)]*(x[n-1]-x[1:(n-2)])*v[1:(n-2)]) )
+    sign(v[n-1]*v[n])
+    ## if(sign(v[n-1]*v[n])==1) {
+    ##     browser()
+    ##     cat('.')
+    ## }
+    if(v[n]<v[n-1])
+        if(sum((x*v)[1:(n-2)])*(x[n-1]^2+x[n]^2) > sum((x^2*v)[1:(n-2)])*(x[n]+x[n-1]))
+            cat('!!!')
+    ## with(list(a=mean((x*v)[1:(n-2)]),b=mean((x^2*v)[1:(n-2)])), a*b - (a^2*x[n]*x[n-1]+b^2)/(x[n]+x[n-1]))
+})
+
+sum(signs==1)
+
+n <- 30
+n <- 10
+x <- matrix(rnorm(n),ncol=1); x2 <- x^2
+X <- cbind(x,x^2)
+proj <- X%*%solve(t(X)%*%X)%*%t(X)
+m2 <- mean(x^2); m3 <- mean(x^3); m4 <- mean(x^4)
+proj2 <- 1/n/(m2*m4-m3^2) * (m4*x%*%t(x) - m3*x%*%t(x2) + m2*x2%*%t(x2) - m3*x2%*%t(x))
+sum(proj-proj2)
+proj3 <- 1/n/(m2*m4-m3^2) * ((sqrt(m4)*x-sqrt(m2)*x2)%*%t(sqrt(m4)*x-sqrt(m2)*x2) + (sqrt(m4)*sqrt(m2)-m3)*(x%*%t(x2)+x2%*%t(x)))
+sum(proj-proj3)
+v <- rnorm(n)
+1/n/(m2*m4-m3^2) * ((m4*sum(x*v)-m3*sum(x^2*v))*x + (m2*sum(x^2*v)-m3*sum(x*v))*x^2)
+proj%*%v
+c(m4*sum(x*v)-m3*sum(x^2*v), m2*sum(x^2*v)-m3*sum(x*v))
+
+ddd
+
+## ## 6. egger regression for p-value bias, no small sample effect, using
+## ## y/s picks nothing
+## tau <- 0
+## keep.prob <- .8
+## n <- 4e3
+## keep.probs <- seq(0,1,length.out=10)
+## keep.prob <- 0#keep.probs[4]
+## ## powers <- sapply(keep.probs,function(keep.prob) {
+## ## p.vals <- replicate(1e3, {
+## theta <- rnorm(n,mean=0,sd=tau)
+## ## sigma <- rchisq(n,df=1e2)
+## sigma <- 1/runif(n,5,25)
+## y <- rnorm(n,mean=theta,sd=sigma)
+## mu.fe <- sum(1/sigma^2 * y) / sum(1/sigma^2)
+## study.p <- pnorm(y/sigma,lower.tail=FALSE)
+## plot(y, 1/sigma)
+## abline(v=mu.fe)
+## points(1/sigma[study.p>.8] ~ y[study.p>.8], col='red')
+
+## plot( y/sigma,1/sigma)
+## abline(v=mu.fe)
+## with(list(cutoff=.5),points((y/sigma)[study.p>cutoff], 1/sigma[study.p>cutoff], col='red'))
+
+## insig.idx <- study.p > quantile(study.p,.8)
+## keep.idx <- c(which(!insig.idx),which(insig.idx)[as.logical(rbinom(length(which(insig.idx)), 1, prob=keep.prob))])
+## sigma <- sigma[keep.idx]; y <- y[keep.idx]
+## ## coef(summary(lm(I(y/sqrt(sigma^2+tau^2)) ~ 1 + I(1/sqrt(sigma^2+tau^2)))))['(Intercept)','Pr(>|t|)']
+## egger.lm <- lm(I(y/sigma) ~ 1 + I(1/sigma))
+## ## plot(y/sigma ~ 1/sigma)
+## ## })
+## ## plot(ecdf(p.vals));abline(a=0,b=1,col='red')
+## ##     mean(p.vals<.05)
+## ## })
+## ## plot(keep.probs,powers)
+
+
+## ## theta <- rnorm(n,mean=0,sd=tau)
+## n <- 5
+## sigma <- rchisq(n,df=3)
+## y <- rnorm(n,mean=0,sd=1)
+## ## coef(summary(lm(I(y/sigma) ~ 1 + I(1/sigma))))['(Intercept)','Pr(>|t|)']
+## ## abs(-mean(1/sigma)/(summary(egger.lm)$sigma*sqrt(mean(1/sigma^2))*sqrt((n-1)*var(1/sigma))) * sum(1/sigma * (y/sigma - sum(y/sigma)*sum(1/sigma^2)/sum(1/sigma)^2)))
+## ## fn <- Vectorize(function(tau)with(list(y=y*sqrt(sigma^2+tau^2)), abs(sum(1/sigma * (y/sigma - sum(y/sigma)*sum(1/sigma^2)/sum(1/sigma)^2)))))
+## ## curve(fn,.1,5)
+## ## ## abs(mean(1/sigma)/(summary(egger.lm)$sigma*sqrt(mean(1/sigma^2))
+## ## tau <- 3
+## ## with(list(y=y*sqrt(sigma^2+tau^2)), abs(sum(1/sigma * (y/sigma - sum(y/sigma)*sum(1/sigma^2)/sum(1/sigma)^2))))
+## fn <- Vectorize(function(tau)abs(coef(summary(lm(I(y*sqrt(sigma^2+tau^2)) ~ I(1/sigma))))['(Intercept)','t value']))
+## curve(fn,.1,100)
+## X <- cbind(1,1/sigma); proj <- diag(1,nrow=n) - X%*%solve(t(X)%*%X)%*%t(X)
+## RSS <- (t(y*sqrt(tau^2+sigma^2)) %*% proj %*% matrix(y*sqrt(tau^2+sigma^2),ncol=1))/(n-2)
+## op <- par(mfrow=c(1,2))
+## with(list(numer=Vectorize(function(tau)t(1/sigma - sum(1/sigma^2)/sum(1/sigma)) %*% diag(sqrt(1+tau^2/sigma^2)) %*% y)), curve(numer,0,20))
+## with(list(se=Vectorize(function(tau)sqrt((t(y*sqrt(tau^2+sigma^2)) %*% proj %*% matrix(y*sqrt(tau^2+sigma^2),ncol=1))/(n-2)))), curve(se,0,10))
+## par(op)
+## with(list(ratio=Vectorize(function(tau)  (t(1/sigma - sum(1/sigma^2)/sum(1/sigma)) %*% diag(sqrt(1+tau^2/sigma^2)) %*% y) / sqrt((t(y*sqrt(tau^2+sigma^2)) %*% proj %*% matrix(y*sqrt(tau^2+sigma^2),ncol=1))/(n-2)))), curve(ratio,0,100))
+## abline(h=(t(1/sigma - sum(1/sigma^2)/sum(1/sigma)) %*% diag(1/sigma) %*% y) / sqrt((t(y*sigma) %*% proj %*% matrix(y*sigma,ncol=1))/(n-2)))
+
+
+
+
+## ## 7. level with heterogeneity present--finding source of type 1 errors
+## ## tau <- 4
+## n <- 10
+## taus <- seq(0,20,length.out = 30)
+## by.tau <- sapply(taus, function(tau) {
+##     t.stat <- replicate(2e2, {
+##         theta <- rnorm(n,mean=0,sd=tau)
+##         sigma <- rchisq(n,df=10)
+##         y <- rnorm(n,mean=theta,sd=sigma)
+##         coef(summary(lm(I(y/sigma) ~ 1 + I(1/sigma))))['(Intercept)','Pr(>|t|)']
+##         ## abs(-mean(1/sigma)/(summary(egger.lm)$sigma*sqrt(mean(1/sigma^2))*sqrt((n-1)*var(1/sigma))) * sum(1/sigma * (y/sigma - sum(y/sigma)*sum(1/sigma^2)/sum(1/sigma)^2)))
+##         ## abs(sum(1/sigma * (y/sigma - sum(y/sigma)*sum(1/sigma^2)/sum(1/sigma)^2)))
+##         ## abs(mean(1/sigma)/(summary(egger.lm)$sigma*sqrt(mean(1/sigma^2))*sqrt((n-1)*var(1/sigma))))
+##         ## abs(sum(1/sigma * (y/sigma - sum(y/sigma)*sum(1/sigma^2)/sum(1/sigma)^2)) *         mean(1/sigma)/(summary(egger.lm)$sigma*sqrt(mean(1/sigma^2))*sqrt((n-1)*var(1/sigma))))
+##     })    
+## })
+## matplot(t(by.tau),pch='.',cex=3,col='gray')
+## lines( colMeans(by.tau))
+## ## lines(taus, apply(by.tau,2,median))
+
+
+## ## 7a. level under heterogeneity converges, different from nominal level
+## ## mean sigma = 2, n=60, converges to ~ .3, sigma=10, ~ .2, sigma=20, ~.1
+## ## problems are at higher sample size
+## n <- 5
+## taus <- seq(0,40,length.out = 30)
+## by.tau <- sapply(taus, function(tau) {
+##     t.stat <- replicate(4e2, {
+##         theta <- rnorm(n,mean=0,sd=tau)
+##         sigma <- rchisq(n,df=2)
+##         y <- rnorm(n,mean=theta,sd=sigma)
+##         coef(summary(lm(I(y/sigma) ~ 1 + I(1/sigma))))['(Intercept)','Pr(>|t|)']
+##     })    
+## })
+## plot(taus,apply(by.tau,2,function(p.vals)mean(p.vals<.05)),type='l'); abline(h=.05)
+
+
+## ## 7b. checking converged level vs tau + n
+## n <- 60
+## ns <- round(seq(5,100,length.out = 10))
+## mean.sigmas <- round(seq(1,30,length.out=10))
+## by.n <- sapply(ns, function(n) {
+##     by.sigma <- sapply(mean.sigmas, function(mean.sigma) {
+##         tau <- mean.sigma*0#!!20
+##         replicate(4e2, {
+##             theta <- rnorm(n,mean=0,sd=tau)
+##             sigma <- rchisq(n,df=mean.sigma)
+##             y <- rnorm(n,mean=theta,sd=sigma)
+##             coef(summary(lm(I(y/sigma) ~ 1 + I(1/sigma))))['(Intercept)','Pr(>|t|)']
+##         })    
+##     })
+##     apply(by.sigma,2,function(p.vals)mean(p.vals<.05))
+## })
+## ## save.image('081320.RData')
+## filled.contour(x=mean.sigmas,y=ns,z=by.n,xlab='sigma',ylab='n',plot.axes={contour(x=mean.sigmas,y=ns,z=by.n,add=TRUE);axis(1);axis(2)})
+
+
+## ## 7c. tracking down source of over conservativeness
+## n <- 60
+## taus <- seq(0,100,length.out = 70)
+## by.tau <- sapply(taus, function(tau) {
+##     t.stat <- replicate(4e2, {
+##         theta <- rnorm(n,mean=0,sd=tau)
+##         sigma <- rchisq(n,df=5)
+##         y <- rnorm(n,mean=theta,sd=sigma)
+##         ## egger.lm <- lm(I(y/sigma) ~ 1 + I(1/sigma))
+##         ## coef(summary(egger.lm))['(Intercept)','t value']
+##         ## coef(egger.lm)
+##         ## (solve(t(X)%*%X)%*%t(X)%*%(y/sigma))[1]   /     sqrt((summary(egger.lm)$sigma^2*solve(t(X)%*%X))[1,1])
+##         X <- cbind(1,1/sigma); proj <- diag(1,nrow=n) - X%*%solve(t(X)%*%X)%*%t(X)
+##         RSS <- (t(y/sigma) %*% proj %*% matrix(y/sigma,ncol=1))/(n-2)
+##         numer <- sum(1/sigma * (y/sigma - sum(y/sigma)*sum(1/sigma^2)/sum(1/sigma)^2))
+##         denom <- mean(1/sigma)/(sqrt(RSS)*sqrt(mean(1/sigma^2))*sqrt((n-1)*var(1/sigma)))
+##         ## numer * denom
+##         numer
+##     })    
+## })
+## with(list(colmeans=colMeans(by.tau)), { plot(taus,colmeans); abline(lm(colmeans ~ taus))})
+## with(list(colmeans=apply(by.tau,2,sd)), { plot(taus,colmeans); abline(lm(colmeans ~ taus)); print(summary(lm(colmeans ~ taus)))})
+
+## ## 7d. variance by n
+## tau <- 5
+## ns <- round(seq(5,100,length.out=40))
+## by.n <- sapply(ns, function(n) {
+##     t.stat <- replicate(4e2, {
+##         theta <- rnorm(n,mean=0,sd=tau)
+##         sigma <- rchisq(n,df=5)
+##         y <- rnorm(n,mean=theta,sd=sigma)
+##         ## egger.lm <- lm(I(y/sigma) ~ 1 + I(1/sigma))
+##         ## coef(summary(egger.lm))['(Intercept)','t value']
+##         ## coef(egger.lm)
+##         X <- cbind(1,1/sigma); proj <- diag(1,nrow=n) - X%*%solve(t(X)%*%X)%*%t(X)
+##         RSS <- (t(y/sigma) %*% proj %*% matrix(y/sigma,ncol=1))/(n-2)
+##         numer <- sum(1/sigma * (y/sigma - sum(y/sigma)*sum(1/sigma^2)/sum(1/sigma)^2))
+##         denom <- mean(1/sigma)/(sqrt(RSS)*sqrt(mean(1/sigma^2))*sqrt((n-1)*var(1/sigma)))
+##         ## numer * denom
+##         numer
+##     })    
+## })
+## with(list(colmeans=colMeans(by.n)), { plot(ns,colmeans); abline(lm(colmeans ~ ns))})
+## with(list(colmeans=apply(by.n,2,sd)), { plot(ns,colmeans); abline(lm(colmeans ~ ns)); print(summary(lm(colmeans ~ ns)))})
+
+
+## ## 7e. checking converged variance vs tau + n
+## ns <- round(seq(5,150,length.out = 10))
+## mean.sigmas <- round(seq(1,30,length.out=10))
+## by.n <- sapply(ns, function(n) {
+##     by.sigma <- sapply(mean.sigmas, function(mean.sigma) {
+##         tau <- mean.sigma*100
+##         t.stats <- replicate(4e2, {
+##             theta <- rnorm(n,mean=0,sd=tau)
+##             sigma <- rchisq(n,df=mean.sigma)
+##             y <- rnorm(n,mean=theta,sd=sigma)
+##             coef(summary(lm(I(y/sigma) ~ 1 + I(1/sigma))))['(Intercept)','t value']
+##         })
+##         sd(t.stats)
+##     })
+## })
+## ## save.image('081320.RData')
+## filled.contour(x=mean.sigmas,y=ns,z=by.n,xlab='sigma',ylab='n',plot.axes={contour(x=mean.sigmas,y=ns,z=by.n,add=TRUE);axis(1);axis(2)})
+
+
+## ## 7f. checking variance vs tau + n, uniform dist on sigma
+## ns <- round(seq(5,150,length.out = 10))
+## mean.sigmas <- round(seq(10,30,length.out=10))
+## by.n <- sapply(ns, function(n) {
+##     by.sigma <- sapply(mean.sigmas, function(mean.sigma) {
+##         tau <- mean.sigma#*20
+##         t.stats <- replicate(4e2, {
+##             theta <- rnorm(n,mean=0,sd=tau)
+##             ## sigma <- runif(n, mean.sigma - mean.sigma/2, mean.sigma + mean.sigma/2)
+##             sigma <- runif(n, mean.sigma - 10, mean.sigma+10)
+##             y <- rnorm(n,mean=theta,sd=sigma)
+##             coef(summary(lm(I(y/sigma) ~ 1 + I(1/sigma))))['(Intercept)','t value']
+##         })
+##         sd(t.stats)
+##     })
+## })
+## ## save.image('081320.RData')
+## filled.contour(x=mean.sigmas,y=ns,z=by.n,xlab='sigma',ylab='n',plot.axes={contour(x=mean.sigmas,y=ns,z=by.n,add=TRUE);axis(1);axis(2)})
+
+
+## ## 8. formula for variance of numerator
+## n <- 30
+## tau <- 0
+## sigma <- rchisq(n,df=5)
+## X <- cbind(1,1/sigma); proj <- X%*%solve(t(X)%*%X)%*%t(X)
+## numers <- replicate(4e2, {
+##     theta <- rnorm(n,mean=4,sd=tau)
+##     y <- rnorm(n,mean=theta,sd=sigma)
+##     ## egger.lm <- lm(I(y/sigma) ~ 1 + I(1/sigma))
+##     ## coef(summary(egger.lm))['(Intercept)','t value']
+##     ## coef(egger.lm)    
+##     ## coef(summary(egger.lm))['(Intercept)','Std. Error']
+##     ## sqrt(mean(1/sigma^2) / ((n-1)*var(1/sigma))) * summary(egger.lm)$sigma
+##     numer <- (solve(t(X)%*%X)%*%t(X)%*%(y/sigma))[1]
+## })    
+## hist(numers)
+## mean(numers)
+## var(numers)
+## sum((c(1,0)%*%solve(t(X)%*%X)%*%t(X)%*%diag(sqrt(1+tau^2/sigma^2)))^2)
+## (n*(n-1)*var(1/sigma))^(-2) * sum((c(sum(1/sigma^2),-sum(1/sigma)) %*% rbind(1,1/sigma) %*% diag(sqrt(1+tau^2/sigma^2)))^2)
+## (n*(n-1)*var(1/sigma))^(-2) * ( sum(1/sigma^2)^2*(n+tau^2*sum(1/sigma^2)) - 2*sum(1/sigma^2)*sum(1/sigma)*sum(1/sigma*(1+tau^2/sigma^2))  +  sum(1/sigma)^2*(sum(1/sigma^2)+tau^2*sum(1/sigma^2)) )
+
+## ## 8a formula for variance of numerator redux
+## n <- 30
+## tau <- 0
+## sigma <- rchisq(n,df=5)
+## X <- cbind(1,1/sigma); proj <- X%*%solve(t(X)%*%X)%*%t(X)
+## numers <- replicate(4e2, {
+##     theta <- rnorm(n,mean=4,sd=tau)
+##     y <- rnorm(n,mean=theta,sd=sigma)
+##     ## egger.lm <- lm(I(y/sigma) ~ 1 + I(1/sigma))
+##     ## coef(summary(egger.lm))['(Intercept)','t value']
+##     ## coef(egger.lm)    
+##     ## coef(summary(egger.lm))['(Intercept)','Std. Error']
+##     ## sqrt(mean(1/sigma^2) / ((n-1)*var(1/sigma))) * summary(egger.lm)$sigma
+##     numer <- (solve(t(X)%*%X)%*%t(X)%*%(y/sigma))[1]
+## })    
+## var(numers)
+## (n*(n-1)*var(1/sigma))^(-2) * ( sum(1/sigma^2)^2*(n+tau^2*sum(1/sigma^2)) - 2*sum(1/sigma^2)*sum(1/sigma)*sum(1/sigma*(1+tau^2/sigma^2))  +  sum(1/sigma)^2*(sum(1/sigma^2)+tau^2*sum(1/sigma^2)) )
+## ((n-1)*var(1/sigma))^(-2) * n * ( mean(1/sigma^2)^2*(1+tau^2*mean(1/sigma^2)) - 2*tau^2*mean(1/sigma)*mean(1/sigma^2)*mean(1/sigma^3) - mean(1/sigma)^2*mean(1/sigma^2) + tau^2*mean(1/sigma)^2*mean(1/sigma^4))
+## ((n-1)*var(1/sigma))^(-2) * n * ( tau^2 * (mean(1/sigma^2)^3 + mean(1/sigma)^2*mean(1/sigma^4) - 2*mean(1/sigma)*mean(1/sigma^2)*mean(1/sigma^3)) + mean(1/sigma^2)*(mean(1/sigma^2) - mean(1/sigma)^2))
+
+## n <- 30
+## tau <- 2
+## sigma <- rchisq(n,df=5)
+## X <- cbind(1,1/sigma); proj <- X%*%solve(t(X)%*%X)%*%t(X)
+## numers <- replicate(4e2, {
+##     theta <- rnorm(n,mean=4,sd=tau)
+##     y <- rnorm(n,mean=theta,sd=sigma)
+##     ## egger.lm <- lm(I(y/sigma) ~ 1 + I(1/sigma))
+##     ## coef(summary(egger.lm))['(Intercept)','t value']
+##     ## coef(egger.lm)    
+##     ## coef(summary(egger.lm))['(Intercept)','Std. Error']
+##     ## sqrt(mean(1/sigma^2) / ((n-1)*var(1/sigma))) * summary(egger.lm)$sigma
+##     numer <- (solve(t(X)%*%X)%*%t(X)%*%(y/sigma))[1] / sqrt( mean(1/sigma^2)/((n-1)*var(1/sigma)))
+## })    
+## var(numers)
+## ((n-1)*var(1/sigma))^(-1) * n * ( tau^2 * (mean(1/sigma^2)^2 + mean(1/sigma)^2*mean(1/sigma^4)/mean(1/sigma^2) - 2*mean(1/sigma)*mean(1/sigma^3)) + (mean(1/sigma^2) - mean(1/sigma)^2))
+## u <- sqrt( n/(n-1) / var(1/sigma) * (tau^2*(mean(1/sigma^2)^2 + mean(1/sigma)^2*mean(1/sigma^4)/mean(1/sigma^2) - 2*mean(1/sigma)*mean(1/sigma^3)) + mean(1/sigma^2) - mean(1/sigma)^2))
+## u^2
+
+
+## ## 8b checking eigens for q form matrix
+## n <- 5
+## tau <- 3
+## sigma <- rchisq(n,df=5)
+## X <- cbind(1,1/sigma); proj <- diag(1,nrow=n) - X%*%solve(t(X)%*%X)%*%t(X)
+## ## X <- cbind(1,1/sigma); proj <-  X%*%solve(t(X)%*%X)%*%t(X)
+## A <- diag(sqrt(1+tau^2/sigma^2)) %*% proj %*% diag(sqrt(1+tau^2/sigma^2))
+## eigen(A)$val
+## eigen(A)$vec
+## U <- eigen(proj)$vec
+## lam <- diag(eigen(proj)$val)
+## D <- diag(sqrt(1+tau^2/sigma^2))
+## sum(proj - U%*%lam%*%t(U))
+## proj %*% U - U
+## v <- U[,1]
+## sum(lam%*%t(U)%*%D%*%v - t(U)%*%solve(D)%*%v)
+## lam %*% t(U) %*% (D - solve(D)) %*% eigen(A)$vec
+## lam%*%t(U)%*%D%*%eigen(A)$vec
+## t(U)%*%solve(D)%*%eigen(A)$vec
+## ( diag(sqrt(1+tau^2/sigma^2)) %*% U %*% lam %*% t(U) %*% diag(sqrt(1+tau^2/sigma^2)) ) %*% eigen(A)$vec -  eigen(A)$vec %*% diag(eigen(A)$val)
+## with(list(j=4), t(U) %*% (D - eigen(A)$val[j]*solve(D)) %*% eigen(A)$vec[,j])
+## eigen(sapply(1:5, function(j)  (D - eigen(A)$val[j]*solve(D)) %*% eigen(A)$vec[,j]))$val
+
+
+
+## ## 9 approx cdf by chi squares
+## n <- 30
+## tau <- 3
+## mu <- 2
+## sigma <- rchisq(n,df=5)
+## X <- cbind(1,1/sigma); proj <- X%*%solve(t(X)%*%X)%*%t(X)
+## proj0 <- solve(t(X)%*%X)%*%t(X)
+## numers <- replicate(4e3, {
+##     theta <- rnorm(n,mean=mu,sd=tau)
+##     y <- rnorm(n,mean=theta,sd=sigma)
+##     (proj0 %*% (y/sigma))[1]  / sqrt(mean(1/sigma^2) / ((n-1)*var(1/sigma)))
+## })    
+## hist(numers,breaks=50,prob=TRUE)
+## curve(dnorm(x,sd=sqrt( n*(n-2)/(n-1)^2 / var(1/sigma) * (tau^2*(mean(1/sigma^2)^2 + mean(1/sigma)^2*mean(1/sigma^4)/mean(1/sigma^2) - 2*mean(1/sigma)*mean(1/sigma^3)) + mean(1/sigma^2) - mean(1/sigma)^2))), add=TRUE, col='red')
+
+## n <- 30
+## tau <- 5
+## mu <- matrix(2,nrow=n,ncol=1)
+## sigma <- rchisq(n,df=5)
+## X <- cbind(1,1/sigma); proj <- X%*%solve(t(X)%*%X)%*%t(X)
+## Delta <- diag(sqrt(1+tau^2/sigma^2))
+## A <- Delta %*% (diag(n) - proj) %*% Delta
+## Lambda <- diag(eigen(A)$values); P <- eigen(A)$vectors
+## nu <- t(P)%*%mu
+## proj0 <- solve(t(X)%*%X)%*%t(X)
+## aa <- replicate(1e3, sum( ((diag(n) - proj)%*%Delta%*%matrix(rnorm(n,mean=solve(Delta)%*%mu/sigma),ncol=1))^2 ))
+## bb <- replicate(1e3, sum(  diag(Lambda)*rchisq(n,df=1,ncp=nu^2)  ) )
+## qqplot(aa,bb); abline(a=0,b=1)
+
+## n <- 30
+## tau <- 3
+## mu <- matrix(3,nrow=n,ncol=1)
+## sigma <- rchisq(n,df=5)
+## X <- cbind(1,1/sigma); proj <- X%*%solve(t(X)%*%X)%*%t(X)
+## Delta <- diag(sqrt(1+tau^2/sigma^2))
+## A <- Delta %*% (diag(n) - proj) %*% Delta
+## Lambda <- diag(eigen(A)$values); P <- eigen(A)$vectors
+## nu <- t(P)%*% solve(Delta)%*%mu/sigma
+## proj0 <- solve(t(X)%*%X)%*%t(X)
+## u <- sqrt( n*(n-2)/(n-1) / var(1/sigma) * (tau^2*(mean(1/sigma^2)^2 + mean(1/sigma)^2*mean(1/sigma^4)/mean(1/sigma^2) - 2*mean(1/sigma)*mean(1/sigma^3)) + mean(1/sigma^2) - mean(1/sigma)^2))
+## c <- 2
+## ## mean(replicate(1e4, u^2 * rchisq(1,df=1) - c^2 * sum(  diag(Lambda)*rchisq(n,df=1,ncp=nu^2)  ) > 0))
+## fits <- replicate(1e3, {
+## ##     ## y <- rnorm(n,mean=theta,sd=sqrt(tau^2+sigma^2))
+## ##     ## egger.lm <- lm(I(y/sigma) ~ 1 + I(1/sigma))
+## ##     ## coef(summary(egger.lm))['(Intercept)','t value'] > c
+##     numer <- (proj0%*%  (Delta%*%rnorm(n,mean=solve(Delta)%*%mu/sigma))     )[1] / sqrt(mean(1/sigma^2)/((n-1)*var(1/sigma))) * sqrt(n-2)
+##     RSS <- sum(((diag(n) - proj)%*% (Delta%*%rnorm(n,mean=solve(Delta)%*%mu/sigma))  )^2) / (n-2)
+##     denom <- sqrt((n-2)*RSS)
+##     c(
+##         abs(numer/denom)>c,
+##         ## numer - denom*c > 0,
+##         ## numer - c*sqrt(sum(  diag(Lambda)*rchisq(n,df=1,ncp=nu^2))) > 0
+##         ## u*rnorm(1) - denom*c > 0
+##         ## u*rnorm(1) - c*sqrt(sum(  diag(Lambda)*rchisq(n,df=1,ncp=nu^2))) > 0,
+##         u^2*rchisq(1,df=1) - c^2*sum(  diag(Lambda)*rchisq(n,df=1,ncp=nu^2)) > 0
+##     )
+##     ## c(
+##     ##     sum(((diag(n) - proj)%*% (Delta%*%rnorm(n,mean=solve(Delta)%*%mu/sigma))  )^2) ,
+##     ##     sum(  diag(Lambda)*rchisq(n,df=1,ncp=nu^2)  )
+##     ##     )
+##     ## y <- rnorm(n,mean=mu,sd=sqrt(tau^2+sigma^2))
+##     ## egger.lm <- lm(I(y/sigma) ~ 1 + I(1/sigma))
+##     ## c(
+##     ##     coef(egger.lm)[1] / sqrt(mean(1/sigma^2)/((n-1)*var(1/sigma)))*sqrt(n-2),
+##     ##     u*rnorm(1)
+##     ##   )
+## })
+## rowMeans(fits)
+## ## qqplot(fits[1,],fits[2,]); abline(a=0,b=1)
+
+## ## 9a using all central chi squares
+## n <- 30
+## tau <- 3
+## mu <- matrix(3,nrow=n,ncol=1)
+## sigma <- rchisq(n,df=5)
+## X <- cbind(1,1/sigma); proj <- X%*%solve(t(X)%*%X)%*%t(X)
+## Delta <- diag(sqrt(1+tau^2/sigma^2))
+## A <- Delta %*% (diag(n) - proj) %*% Delta
+## Lambda <- diag(eigen(A)$values); P <- eigen(A)$vectors
+## nu <- t(P)%*% solve(Delta)%*%mu/sigma
+## proj0 <- solve(t(X)%*%X)%*%t(X)
+## u <- sqrt( n*(n-2)/(n-1) / var(1/sigma) * (tau^2*(mean(1/sigma^2)^2 + mean(1/sigma)^2*mean(1/sigma^4)/mean(1/sigma^2) - 2*mean(1/sigma)*mean(1/sigma^3)) + mean(1/sigma^2) - mean(1/sigma)^2))
+## c <- 2
+## ## mean(replicate(1e4, u^2 * rchisq(1,df=1) - c^2 * sum(  diag(Lambda)*rchisq(n,df=1,ncp=nu^2)  ) > 0))
+## fits <- replicate(1e3, {
+## ##     ## y <- rnorm(n,mean=theta,sd=sqrt(tau^2+sigma^2))
+## ##     ## egger.lm <- lm(I(y/sigma) ~ 1 + I(1/sigma))
+## ##     ## coef(summary(egger.lm))['(Intercept)','t value'] > c
+##     numer <- (proj0%*%  (Delta%*%rnorm(n,mean=solve(Delta)%*%mu/sigma))     )[1] / sqrt(mean(1/sigma^2)/((n-1)*var(1/sigma))) * sqrt(n-2)
+##     RSS <- sum(((diag(n) - proj)%*% (Delta%*%rnorm(n,mean=solve(Delta)%*%mu/sigma))  )^2) / (n-2)
+##     denom <- sqrt((n-2)*RSS)
+##     c(
+##         abs(numer/denom)>c,
+##         ## numer - denom*c > 0,
+##         ## numer - c*sqrt(sum(  diag(Lambda)*rchisq(n,df=1,ncp=nu^2))) > 0
+##         ## u*rnorm(1) - denom*c > 0
+##         ## u*rnorm(1) - c*sqrt(sum(  diag(Lambda)*rchisq(n,df=1,ncp=nu^2))) > 0,
+##         u^2*rchisq(1,df=1) - c^2*sum(  diag(Lambda)*rchisq(n,df=1,ncp=0*nu^2)) > 0,
+##         u^2*rchisq(1,df=1) - c^2*sum(  diag(Lambda)*rchisq(n,df=1,ncp=nu^2)) > 0
+##     )
+##     ## c(
+##     ##     sum(((diag(n) - proj)%*% (Delta%*%rnorm(n,mean=solve(Delta)%*%mu/sigma))  )^2) ,
+##     ##     sum(  diag(Lambda)*rchisq(n,df=1,ncp=nu^2)  )
+##     ##     )
+##     ## y <- rnorm(n,mean=mu,sd=sqrt(tau^2+sigma^2))
+##     ## egger.lm <- lm(I(y/sigma) ~ 1 + I(1/sigma))
+##     ## c(
+##     ##     coef(egger.lm)[1] / sqrt(mean(1/sigma^2)/((n-1)*var(1/sigma)))*sqrt(n-2),
+##     ##     u*rnorm(1)
+##     ##   )
+## })
+## rowMeans(fits)
+## ## qqplot(fits[1,],fits[2,]); abline(a=0,b=1)
+
+
+
+
+## ## check eigen values of (I-P_X)*\Delta
+## n <- 30
+## tau <- 3
+## mu <- matrix(0,nrow=n,ncol=1)
+
+
+## ## check bound on eigenvalues of (I-P_X)*\Delta
+
+## offsets <- replicate(1e3,{
+## n <- 30
+## tau <- 3
+## mu <- matrix(0,nrow=n,ncol=1)
+## sigma <- rchisq(n,df=5)
+## X <- cbind(1,1/sigma); proj <- X%*%solve(t(X)%*%X)%*%t(X)
+## Delta <- diag(sqrt(1+tau^2/sigma^2))
+## A <- Delta %*% (diag(n) - proj) %*% Delta
+## max(diag(Delta)^2) - eigen(A)$val
+## })
+## hist(log(offsets+1)); abline(v=0,col='red')
+
+
+## offsets <- replicate(1e3,{
+## n <- 30
+## tau <- 3
+## mu <- matrix(0,nrow=n,ncol=1)
+## sigma <- rchisq(n,df=5)
+## X <- cbind(1,1/sigma); proj <- X%*%solve(t(X)%*%X)%*%t(X)
+## Delta <- diag(sqrt(1+tau^2/sigma^2))
+## A <- Delta %*% (diag(n) - proj) %*% Delta
+## eigen(A)$val[1:(n-2)] - min(diag(Delta)^2)
+## })
+## min(offsets)
+## hist(log(offsets+1)); abline(v=0,col='red')
+
+
+
+## ## 10. behavior of test statistic via weighted sum
+## n <- 20
+## tau <- .3
+## mu <- matrix(3,nrow=n,ncol=1)
+## levels <- replicate(1e3, {
+##     ## sigma <- rchisq(n,df=5)
+##     sigma <- runif(n,2,10)
+##     X <- cbind(1,1/sigma); proj <- X%*%solve(t(X)%*%X)%*%t(X)
+##     Delta <- diag(sqrt(1+tau^2/sigma^2))
+##     A <- Delta %*% (diag(n) - proj) %*% Delta
+##     Lambda <- diag(eigen(A)$values); P <- eigen(A)$vectors
+##     nu <- t(P)%*% solve(Delta)%*%mu/sigma
+##     proj0 <- solve(t(X)%*%X)%*%t(X)
+##     u <- sqrt( n*(n-2)/(n-1) / var(1/sigma) * (tau^2*(mean(1/sigma^2)^2 + mean(1/sigma)^2*mean(1/sigma^4)/mean(1/sigma^2) - 2*mean(1/sigma)*mean(1/sigma^3)) + mean(1/sigma^2) - mean(1/sigma)^2))
+##     c <- 1
+##     u^2*rchisq(1,df=1) - c^2*sum(  diag(Lambda)*rchisq(n,df=1,ncp=nu^2)) > 0
+## })
+## mean(levels)
+
+
+## ## 10a formula for variance of weighted sum
+## n <- 30
+## tau <- 3
+## mu <- matrix(3,nrow=n,ncol=1)
+## sigma <- rchisq(n,df=5)
+## X <- cbind(1,1/sigma); proj <- X%*%solve(t(X)%*%X)%*%t(X)
+## Delta <- diag(sqrt(1+tau^2/sigma^2))
+## A <- Delta %*% (diag(n) - proj) %*% Delta
+## Lambda <- diag(eigen(A)$values); P <- eigen(A)$vectors
+## sum(diag(Lambda^2))
+## ## j <- runif(1,1,n); k <- runif(1,1,n)
+## ## (diag(n) - proj)[j,k]
+## ## (j==k) - (1/n + 1/(n-1)/var(1/sigma)*(1/sigma[j]-mean(1/sigma))*(1/sigma[k]-mean(1/sigma)))
+## (sum(diag(Delta^2)))^2/n^2 + 2/n/(n-1)/var(1/sigma)*sum(diag(Delta^2)*(1/sigma-mean(1/sigma)))^2 + (1/(n-1)/var(1/sigma))^2*sum(diag(Delta^2)*(1/sigma-mean(1/sigma))^2)^2 + sum(diag(Delta^4)*(1 - 2*(1/n + 1/(n-1)/var(1/sigma)*(1/sigma-mean(1/sigma))^2)))
+## ## expectation
+## sum(diag(Delta^2%*%(diag(n)-proj)))
+## sum(diag(Delta^2%*%proj))
+## 1/n*sum(diag(Delta^2)) + sum(diag(Delta^2)*(1/sigma-mean(1/sigma))^2) / ((n-1)*var(1/sigma))
+## sum(diag(Lambda))
+## sum(diag(Delta^2)) - sum(diag(Delta^2%*%proj))
+## (1-1/n)*sum(1+tau^2/sigma^2) - 1/(n-1)/var(1/sigma)*sum(diag(Delta)^2*(1/sigma-mean(1/sigma))^2)
+## n-1 + tau^2*mean(1/sigma^2)*(n-1) - 1 - 1/var(1/sigma)/(n-1)*tau^2*n*(mean(1/sigma^4) - 2*mean(1/sigma)*mean(1/sigma^3) + mean(1/sigma)^2*mean(1/sigma^2))
+
+
+## sum(diag(Delta^2)*(1/sigma-mean(1/sigma)))
+## tau^2*(sum(1/sigma^3) - mean(1/sigma)*sum(1/sigma^2))
+## sum(diag(Delta^2)*(1/sigma-mean(1/sigma))^2)
+## (n-1)*var(1/sigma) + tau^2*n*(mean(1/sigma^4) - 2*mean(1/sigma)*mean(1/sigma^3) + mean(1/sigma)^2*mean(1/sigma^2))
+
+
+
+## ## 11 formulas for mean and variance of S_n
+## n <- 5
+## tau <- 3
+## mu <- matrix(3,nrow=n,ncol=1)
+## sigma <- rchisq(n,df=5)
+## X <- cbind(1,1/sigma); proj <- X%*%solve(t(X)%*%X)%*%t(X)
+## Delta <- diag(sqrt(1+tau^2/sigma^2))
+## A <- Delta %*% (diag(n) - proj) %*% Delta
+## Lambda <- diag(eigen(A)$values); P <- eigen(A)$vectors
+## sum(diag(Lambda))
+## E.hat <- n-1 + tau^2*mean(1/sigma^2)*(n-1) - 1 - tau^2*n/(n-1)/var(1/sigma)*(mean(1/sigma^4) - 2*mean(1/sigma)*mean(1/sigma^3) + mean(1/sigma)^2*mean(1/sigma^2))
+## S <- replicate(1e3, mean(diag(Lambda)*rchisq(n,df=1))/tau^2)
+## hist(S)
+## abline(v=c(mean(S),1/n/tau^2*E.hat),col=c('blue','red'))
+## c(var(S),
+##   2/n^2/tau^4*sum(diag(Lambda^2)),
+##   2/n^2/tau^4*(  (sum(diag(Delta^2)))^2/n^2 + 2/n/(n-1)/var(1/sigma)*sum(diag(Delta^2)*(1/sigma-mean(1/sigma)))^2 + (1/(n-1)/var(1/sigma))^2*sum(diag(Delta^2)*(1/sigma-mean(1/sigma))^2)^2 + sum(diag(Delta^4)*(1 - 2*(1/n + 1/(n-1)/var(1/sigma)*(1/sigma-mean(1/sigma))^2))))
+##   )
+## ## formulas for terms in tr\Lambda^2
+## sum(diag(Delta^4))
+## n*(1+2*tau^2*mean(1/sigma^2)+tau^4*mean(1/sigma^4))
+## sum(diag(Delta^4)*(1/sigma-mean(1/sigma))^2)
+## (n-1)*var(1/sigma) + tau^2*n*(2*mean(1/sigma^4)-4*mean(1/sigma)*mean(1/sigma^3)+2*mean(1/sigma)^2*mean(1/sigma^2)+tau^2*(mean(1/sigma)^2*mean(1/sigma^4)-2*mean(1/sigma)*mean(1/sigma^5)+mean(1/sigma^6)))
+
+## (1+2*tau^2*mean(1/sigma^2)+tau^4*mean(1/sigma^2)^2) + 2/n/(n-1)/var(1/sigma)*(n^2*tau^4*(mean(1/sigma^3)^2-2*mean(1/sigma)*mean(1/sigma^2)*mean(1/sigma^3)+(mean(1/sigma)*mean(1/sigma^2))^2)) +
+##     (1/(n-1)/var(1/sigma))^2*sum(diag(Delta^2)*(1/sigma-mean(1/sigma))^2)^2 +
+##         sum(diag(Delta^4)*(1 - 2*(1/n + 1/(n-1)/var(1/sigma)*(1/sigma-mean(1/sigma))^2)))
+
+## sum(diag(Delta^2)*(1/sigma-mean(1/sigma)))^2
+## n^2*tau^4*(mean(1/sigma^3)^2-2*mean(1/sigma)*mean(1/sigma^2)*mean(1/sigma^3)+(mean(1/sigma)*mean(1/sigma^2))^2)
+## dd
+
+## ## 11a asy variance of S_n is 0 when 1/sigma^m has moments
+## ns <- round(seq(50,70,length.out=5))
+## by.n <- sapply(ns, function(n) {
+##     mean(replicate(1e3, {
+##         tau <- 3
+##         mu <- matrix(3,nrow=n,ncol=1)
+##         sigma <- rchisq(n,df=4)
+##         ## sigma <- runif(n,3,10)
+##         X <- cbind(1,1/sigma); proj <- X%*%solve(t(X)%*%X)%*%t(X)
+##         Delta <- diag(sqrt(1+tau^2/sigma^2))
+##         A <- Delta %*% (diag(n) - proj) %*% Delta
+##         ## Lambda <- diag(eigen(A)$values); P <- eigen(A)$vectors
+##         ## mean(diag(Lambda)*rchisq(n,df=1))/tau^2
+##         ## sum(diag(Lambda^2))/n^2                                               
+##         sum( 1/n^2*c(  (sum(diag(Delta^2)))^2/n^2,
+##                       2/n/(n-1)/var(1/sigma)*sum(diag(Delta^2)*(1/sigma-mean(1/sigma)))^2,
+##                       (1/(n-1)/var(1/sigma))^2*sum(diag(Delta^2)*(1/sigma-mean(1/sigma))^2)^2,
+##                       sum(diag(Delta^4)*(1 - 2*(1/n + 1/(n-1)/var(1/sigma)*(1/sigma-mean(1/sigma))^2)))
+##                      ))                          
+##     }))
+## })
+## plot(ns,by.n)
+
+## ## inverse chi square has no higher moments?
+## plot(log(sapply(round(seq(10,200,length.out=15)), function(n)var(replicate(1e2,mean(rcauchy(n)))))))
+
+
+## e <- 1
+## plot(log(sapply(round(seq(10,300,length.out=15)), function(n)var(replicate(3e2,mean(1/rchisq(n,df=1)^e)))/n^8)))
+
+
+
+
+## ## 11b checking formulas
+## n <- 5
+## tau <- 3
+## mu <- matrix(3,nrow=n,ncol=1)
+## sigma <- rchisq(n,df=5)
+## X <- cbind(1,1/sigma); proj <- X%*%solve(t(X)%*%X)%*%t(X)
+## Delta <- diag(sqrt(1+tau^2/sigma^2))
+## s <- function(k)mean(1/sigma^k)
+## y <- rnorm(n,mu,sqrt(sigma^2+tau^2))
+## egger.lm <- lm(I(y/sigma) ~ I(1/sigma))
+## 1/sqrt(s(1)^2+s(2)^2) * sum((s(2)-s(1)/sigma)*y/sigma)
+## cbind(1,0)%*%solve(t(X)%*%X)%*%t(X)%*%(y/sigma)
+## 1/sqrt(s(2)*n*(s(2)-s(1)^2)) * cbind(s(2),-s(1))%*%t(X)%*%(y/sigma)
+## coef(summary(egger.lm))['(Intercept)','t value'] * summary(egger.lm)$sigma
+
+
+## ## 12 begg test
+
+## x <- rnorm(n)
+## y <- rnorm(n)
+## cor.test(x,y,alternative='two.sided',method='kendall',exact=FALSE)
+## ## tau <- 0
+## ## for(j in 1:(n-1))
+## ##     for(k in j:n)
+## ##         tau <- tau + sign(x[j]-x[k])*sign(y[j]-y[k])
+## ## ((tau <- tau / choose(n,2)))
+## tau <- sum(sign(outer(x,x,`-`))*sign(outer(y,y,`-`)))/(n*(n-1))
+## 2*pnorm(-abs(tau), sd=sqrt(2*(2*n+5)/(9*n*(n-1))))
+
+
+## require(metafor)
+## egger.test <- function(x,sei) coef(summary(lm(I(x/sei) ~ I(1/sei))))['(Intercept)',]
+## tau <- 0
+## mu <- .3
+## cutoff <- .2
+## n <- 100
+## keep.probs <- seq(0,1,length.out=10)
+## keep.prob <- 0#keep.probs[4]
+## sigma <- rchisq(n,df=10)
+## ## sigma <- 1/runif(n,5,25)
+## y <- rnorm(n,mean=mu,sd=sqrt(sigma^2+tau^2))
+## mu.fe <- sum(1/sigma^2 * y) / sum(1/sigma^2)
+## study.p <- pnorm(y/sigma,lower.tail=FALSE)
+## keep.idx <- study.p < cutoff
+## op <- par(mfrow=c(1,4))
+## plot( y/sigma,1/sigma);abline(v=mu.fe);points((y/sigma)[keep.idx], 1/sigma[keep.idx], col='green')
+## plot((y/sigma)[keep.idx] ~ 1/sigma[keep.idx],col='green')
+## plot(((y-mu.fe)/sqrt(sigma^2-1/sum(1/sigma^2)))[keep.idx] ~ 1/sigma[keep.idx],col='green')
+## plot(y[keep.idx] ~ 1/sigma[keep.idx],col='green')
+## par(op)
+## ranktest(x=y[keep.idx],sei=sigma[keep.idx],exact=FALSE)
+## print(egger.test(x=y[keep.idx],sei=sigma[keep.idx]))
+## abs(cor(y[keep.idx],1/sigma[keep.idx]))
+## abs(cor((y/sigma)[keep.idx],(1/sigma)[keep.idx]))
+## abs(cor(((y-mu.fe)/sqrt(sigma^2-1/sum(1/sigma^2)))[keep.idx],(1/sigma)[keep.idx]))
+
+## with(list(y=y[keep.idx],sigma=sigma[keep.idx]), {
+##     print(mu.fe)
+##     print(abs(cor(((y-mu.fe)/sqrt(sigma^2-1/sum(1/sigma^2))),(1/sigma))))
+##     mu.fe <- sum(1/sigma^2 * y) / sum(1/sigma^2)
+##     print(abs(cor(((y-mu.fe)/sqrt(sigma^2-1/sum(1/sigma^2))),(1/sigma))))
+##     print(mu.fe)
+##     cor.test(((y-mu.fe)/sqrt(sigma^2-1/sum(1/sigma^2))),1/sigma,method='kendall')
+##   })
+
+## ## 12a attempting to break begg test
+## require(metafor)
+## egger.test <- function(x,sei) coef(summary(lm(I(x/sei) ~ I(1/sei))))['(Intercept)',]
+## tau <- 0
+## mu <- -.3
+## cutoff <- .8
+## n <- 100
+## keep.probs <- seq(0,1,length.out=10)
+## keep.prob <- 0#keep.probs[4]
+## sigma <- rchisq(n,df=10)
+## ## sigma <- 1/runif(n,5,25)
+## y <- rnorm(n,mean=mu,sd=sqrt(sigma^2+tau^2))
+## mu.fe <- sum(1/sigma^2 * y) / sum(1/sigma^2)
+## study.p <- pnorm(y/sigma,lower.tail=FALSE)
+## keep.idx <- study.p < cutoff
+## ## op <- par(mfrow=c(1,4))
+## plot( y/sigma,1/sigma);abline(v=mu.fe);points((y/sigma)[keep.idx], 1/sigma[keep.idx], col='green');abline(v=0,col='red')
+## with(list(y=y[keep.idx],sigma=sigma[keep.idx]), {
+##     mu.fe <- sum(1/sigma^2 * y) / sum(1/sigma^2)
+##     print(mu.fe)
+##     print(abs(cor(((y-mu.fe)/sqrt(sigma^2-1/sum(1/sigma^2))),(1/sigma))))
+##     ## print(mu.fe)
+##     c(kendall=cor.test(((y-mu.fe)/sqrt(sigma^2-1/sum(1/sigma^2))),1/sigma,method='kendall')$p.value,
+##     egger=egger.test(x=y,sei=sigma)['Pr(>|t|)'])
+##   })
+
+
+
+## source('misc.R')
+## require(metafor)
+## n <- 2e4
+## mu <- 0
+## a <- uniroot(function(a)mu+dnorm(a)/(1-pnorm(a)), c(-1,1),extendInt='yes')$root
+## sigma <- rchisq(n,df=10)
+## sigma <- runif(n,1,5)
+## y <- rnorm(n,mu,sigma)
+## ## plot(1/sigma,y/sigma)
+## ## a <- -sigma^2
+## ## y <- rnorm.trunc(n,mu,1,a=a)
+## keep.idx <- (y) > 0
+## with(list(y=y[keep.idx],sigma=sigma[keep.idx],n=sum(keep.idx)), {
+##     plot(1/sigma,(y-mean(y))/sigma)
+##     plot(1/sigma,y)
+##     summary(lm(I((y-mean(y))/sigma) ~ I(1/sigma)))
+##     ## print(cor.test((y-mean(y))/sigma,1/sigma,method='kendall'))
+##     ## ranktest(x=y,sei=sigma,exact=FALSE)
+## })
+
+## ## 12b breaking begg by removing at moderate sigma
+
+## n <- 500
+## alpha <- .1
+## mu <- 0
+## delta <- .5
+## cutoffs <- seq(0,1,length.out=20)
+## by.cutoff <- sapply(cutoffs, function(cutoff) {
+##     begg.z.stats <- replicate(2e2, {
+##         sigma <- 1/runif(n,1,4)
+##         y <- rnorm(n,mu,sigma)
+##         keep.idx <- (1/sigma < 2.5-delta) | (1/sigma > 2.5+delta) | ((1/sigma > 2.5-delta) & (1/sigma < 2.5+delta) & (y/sigma > qnorm(cutoff)))
+
+##         with(list(y=y[keep.idx],sigma=sigma[keep.idx],n=sum(keep.idx)), {
+##             mu.fe <- sum(y/sigma^2) / sum(1/sigma^2)
+##             ## plot(1/sigma,y/sigma)
+##             cor.test((y-mu.fe)/sqrt(sigma^2-1/sum(1/sigma^2)),1/sigma,method='kendall',exact=FALSE)$statistic
+##         } )
+##     })
+##     mean(abs(begg.z.stats) > qnorm(1-alpha/2))
+## })
+## plot(cutoffs,by.cutoff)
+
+
+## 12c
+## require(parallel)
+## n <- 500
+## ns <- round(seq(10,1e4,length.out=10))
+## alpha <- .1
+## mu <- 0
+## delta <- .5
+## cutoffs <- seq(0,1,length.out=20)
+## cutoff <-       .95
+## ## cutoff <- 1 ## breaks egger test, begg test
+## by.n <- mclapply(ns,mc.cores=detectCores()-3, FUN=function(n) {
+##     p.vals <- replicate(2e2, {
+##         sigma <- 1/runif(n,1,4)
+##         y <- rnorm(n,mu,sigma)
+##         keep.idx <- (1/sigma < 2.5-delta) | (1/sigma > 2.5+delta) | ((1/sigma > 2.5-delta) & (1/sigma < 2.5+delta) & (y/sigma > qnorm(cutoff)))
+
+##         with(list(y=y[keep.idx],sigma=sigma[keep.idx],n=sum(keep.idx)), {
+##             mu.fe <- sum(y/sigma^2) / sum(1/sigma^2)
+##             ## plot(1/sigma,y/sigma)
+##             ## cor.test((y-mu.fe)/sqrt(sigma^2-1/sum(1/sigma^2)),1/sigma,method='kendall',exact=FALSE)$p.value
+##             coef(summary(lm(I(y/sigma) ~ I(1/sigma))))['(Intercept)','Pr(>|t|)']
+##         } )
+        
+##     })
+##     ## mean(abs(begg.z.stats) > qnorm(1-alpha/2))
+##     mean(p.vals < alpha)
+## })
+## by.n <- simplify2array(by.n)
+## plot(ns,by.n)
+
+## ## 13 formula for level wo normality assumption
+## require(parallel)
+## mc.cores <- detectCores() - 3
+## s <- function(k)mean(1/sigma^k)
+## n <- 30
+## tau <- 3
+## mu <- matrix(3,nrow=n,ncol=1)
+## c <- runif(1,0,1)
+## sigma <- rchisq(n,df=5)
+## X <- cbind(1,1/sigma); proj <- X%*%solve(t(X)%*%X)%*%t(X)
+## Delta <- diag(sqrt(1+tau^2/sigma^2))
+## A <- Delta %*% (diag(n) - proj) %*% Delta
+## Lambda <- diag(eigen(A)$values); P <- eigen(A)$vectors
+
+## ## 13a
+## levels <- replicate(1e2,{
+##     y <- rnorm(n,mu,sd=sqrt(sigma^2+tau^2))
+##     y <- runif(n)
+##     egger.lm <- lm(I(y/sigma) ~ 1 + I(1/sigma))
+##     t.stat <- coef(summary(egger.lm))['(Intercept)','t value']
+##     RSS <- summary(egger.lm)$sigma^2
+##     c(gold=abs(t.stat) > c,
+##       try=(1/sqrt(n)*sum(y/sigma*(s(2)-s(1)/sigma)))^2 > RSS*(s(2)*(s(2)-s(1)^2))*c^2
+##       )
+## })
+## rowMeans(levels)
+
+## ## 13b
+## tau <- 3
+## mu <- matrix(3,nrow=n,ncol=1)
+## c <- runif(1,0,1)
+## sigma <- rchisq(n,df=5)
+## X <- cbind(1,1/sigma); proj <- X%*%solve(t(X)%*%X)%*%t(X)
+## Delta <- diag(sqrt(1+tau^2/sigma^2))
+## A <- Delta %*% (diag(n) - proj) %*% Delta
+## Lambda <- diag(eigen(A)$values); P <- eigen(A)$vectors
+## var.hats <- replicate(1e2, {
+##     numers <- replicate(1e2, {
+##         ## y <- rnorm(n,mu,sd=sqrt(sigma^2+tau^2))
+##         y <- rgamma(n,shape=mu^2/(tau^2+sigma^2), rate=mu/(tau^2+sigma^2))
+##         egger.lm <- lm(I(y/sigma) ~ 1 + I(1/sigma))
+##         t.stat <- coef(summary(egger.lm))['(Intercept)','t value']
+##         RSS <- summary(egger.lm)$sigma^2
+##         1/sqrt(n)*sum(y/sigma*(s(2)-s(1)/sigma))
+##     })
+##     var(numers)
+## })
+## hist(var.hats)
+## abline(v=c(mean(var.hats),s(2)^2-s(1)^2*s(2) + tau^2*(s(2)^3-2*s(1)*s(2)*s(3)+s(1)^2*s(4))), col=c('black','red'))
+## c(mean(var.hats),s(2)^2-s(1)^2*s(2) + tau^2*(s(2)^3-2*s(1)*s(2)*s(3)+s(1)^2*s(4)))
+
+
+## sum(diag(Lambda))
+## n-2 + tau^2*(n-1)*s(2) - tau^2/(s(2)-s(1)^2)*(s(4)-2*s(1)*s(3)+s(1)^2*s(2))
+## n*(n-1)*(n-2)*(n-3) + n + 6*n*(n-1)^2
+## n+choose(n,2)*6+ 4*2*choose(n,2) + choose(n,3)*36 + choose(n,4)*factorial(4) 
+
+## ss <- 0
+## for(j in 1:n)
+##     for(k in 1:n)
+##         for(l in 1:n)
+##             for(m in 1:n)
+##                 if ((length(unique(c(j,k,l,m)))==2) && (sum(c(j,k,l,m)==j)!=2)) ss <- ss+1
+
+
+## 14. mle to estimate cutoff and tau simultaneously
+
+## ## 14a sample from truncated normal
+## a <- .5; sigma <- 3; mu <- 2
+## u <- runif(1e4)
+## y <- mu+sigma*qnorm(u+pnorm(a)*(1-u))
+## plot(ecdf(y))
+## curve((pnorm((y-mu)/sigma)-pnorm(a))/(1-pnorm(a)),xname='y',add=TRUE,col='red')
+## rnorm.trunc <- function(n,mean,sd,a) {u <- runif(n); mean+sd*qnorm(u+pnorm(a)*(1-u))}
+## y <- rnorm.trunc(1000,mean=mu,sd=sigma,a=a)
+## plot(ecdf(y))
+## curve((pnorm((y-mu)/sigma)-pnorm(a))/(1-pnorm(a)),xname='y',add=TRUE,col='red')
+
+## checking lin interpretation of beta_0. it is only valid under the null.
+## summary(lm(I(y/sigma) ~ I(1/sigma)-1))
+## summary(lm(I(y/sigma) ~ I(1/sigma)))
+## mean(1/sigma)/(n-1)/var(1/sigma)*sum(1/sigma*(y/sigma - sum(y/sigma)*sum(1/sigma^2)/sum(1/sigma)^2))
+## mean(y/sigma) - mean(1/sigma)*sum((y/sigma-mean(y/sigma))*(1/sigma-mean(1/sigma)))/sum((1/sigma-mean(1/sigma))^2)
+## mu.fe <- sum(y/sigma^2) / sum(1/sigma^2)
+## mean((y- mu.fe)/sigma)
+
+## ## 14b estimating usual tau by mle
+## ns <- round(seq(10,300,length.out=10))
+## tau <- 5
+## mu <- .3
+## n <- 20
+## by.n <- sapply(ns, function(n) {
+##     sigma <- rchisq(n,df=10)
+##     tau.hats <- replicate(1e3, {
+##         y <- rnorm(n,mean=mu,sd=sqrt(sigma^2+tau^2))
+##         loglik <- function(tau) -1/2*sum(log(sigma^2+tau^2)) - 1/2*sum(((y-mu)/sqrt(sigma^2+tau^2))^2)
+##         optimize(f=loglik,interval=c(0,50),maximum=TRUE)$max
+##     })
+##     ## hist(tau.hats); abline(v=c(mean(tau.hats),tau),col=c('black','red'))
+## })
+## matplot(t(by.n)-tau,col='black',pch='.'); abline(h=0,col='red')
+## plot(ns,apply(by.n,2,var))
+## apply(by.n,2,var)
+
+
+## rnorm.trunc <- function(n,mean,sd,a) {u <- runif(n); mean+sd*qnorm(u+pnorm(a)*(1-u))}
+## tau <- 10
+## mu <- .3
+## a <- .5
+## n <- 100
+## sigma <- rchisq(n,df=10)
+## y <- rnorm.trunc(n,mean=mu,sd=sqrt(sigma^2+tau^2),a=a)
+## loglik <- function(par) {tau <- par[1]; a <- par[2]; -1/2*sum(log(sigma+tau^2)) + sum(-1/2*(y-mu)^2/(sigma^2+tau^2)) - 1/2*sum(log(sigma^2+tau^2)) - sum(log(1-pnorm((a-mu)/sqrt(sigma^2+tau^2))))}
+## loglik <- function(par) {tau <- par[1]; a <- par[2]; -1/2*sum(log(sigma^2+tau^2)) + sum(log(dnorm((y-mu)/sqrt(sigma^2+tau^2)))) - sum(log(1-pnorm((a-mu)/sqrt(sigma^2+tau^2))))}
+## ## loglik <- function(par){tau <- par[1]; a <- par[2]; prod(1/sqrt(sigma^2+tau^2)*dnorm((y-mu)/sqrt(sigma^2+tau^2))/pnorm((a-mu)/sqrt(sigma^2+tau^2),lower.tail=FALSE))}
+## ## optim(par=c(1,8),fn=loglik,control=list(fnscale=-1))
+## a.hat <- min(y/sigma)
+## loglik <- function(tau) -1/2*sum(log(sigma^2+tau^2)) + sum(log(dnorm((y-mu)/sqrt(sigma^2+tau^2)))) - sum(log(1-pnorm((a-mu)/sqrt(sigma^2+tau^2))))
+## optimize(f=loglik,interval=c(-50,50),maximum=TRUE)
+
+## with(list(f=Vectorize(loglik)),  curve(f,-60,60)); abline(v=tau)
+
+
+
+## ## 14b estimating usual tau by mle under truncated normal model
+
+## rnorm.trunc <- function(n,mean,sd,a) {u <- runif(n); mean+sd*qnorm(u+pnorm((a-mean)/sd)*(1-u))}
+## dnorm.trunc <- function(x,mean,sd,a) (x>a) * 1/sd * dnorm((x-mean)/sd) / (1-pnorm((a-mean)/sd))
+## pnorm.trunc <- function(q,mean,sd,a) (q>a)*(pnorm((q-mean)/sd) - pnorm((a-mean)/sd)) / (1-pnorm((a-mean)/sd))
+## ns <- round(seq(10,1e2,length.out=10))
+## n <- 100
+## tau <- 5
+## mu <- 5
+## a <- 0
+## by.n <- sapply(ns, function(n) {
+##     sigma <- rchisq(n,df=1)
+##     tau.hats <- replicate(1e3, {
+##         y <- rnorm.trunc(n,mean=mu,sd=sqrt(sigma^2+tau^2),a=a)
+##         ## loglik <- function(tau) sum(-1/2*log(sigma^2+tau^2) - 1/2*(((y-mu)/sqrt(sigma^2+tau^2))^2) - log(1-pnorm((a-mu)/sqrt(sigma^2+tau^2))))
+##         loglik <- function(tau) sum(log(dnorm.trunc(y,mean=mu,sd=sqrt(sigma^2+tau^2),a=a)))
+##         ## with(list(f=Vectorize(loglik)),  curve(f,0,60)); abline(v=tau)
+##         optimize(f=loglik,interval=c(0,50),maximum=TRUE)$max
+##     })
+##     ## hist(tau.hats); abline(v=c(mean(tau.hats),tau),col=c('black','red'))
+## })
+## matplot(t(by.n)-tau,col='black',pch='.'); abline(h=0,col='red')
+## ## plot(ns,apply(by.n,2,var))
+## apply(by.n,2,var)
+## apply(by.n,2,mean) - tau
+
+
+
+## ## 14c now both cut off and tau
+
+
+## rnorm.trunc <- function(n,mean,sd,a) {u <- runif(n); mean+sd*qnorm(u+pnorm((a-mean)/sd)*(1-u))}
+## dnorm.trunc <- function(x,mean,sd,a) (x>=a) * 1/sd * dnorm((x-mean)/sd) / (1-pnorm((a-mean)/sd))
+## pnorm.trunc <- function(q,mean,sd,a) (q>=a)*(pnorm((q-mean)/sd) - pnorm((a-mean)/sd)) / (1-pnorm((a-mean)/sd))
+## ns <- round(seq(10,1e2,length.out=10))
+## n <- 10
+## tau <- 5
+## mu <- 5
+## a <- 0
+## by.n <- sapply(ns, function(n) {
+##     sigma <- rchisq(n,df=1)
+##     tau.hats <- replicate(1e3, {
+##         y <- rnorm.trunc(n,mean=mu,sd=sqrt(sigma^2+tau^2),a=a)
+##         ## loglik <- function(tau) sum(-1/2*log(sigma^2+tau^2) - 1/2*(((y-mu)/sqrt(sigma^2+tau^2))^2) - log(1-pnorm((a-mu)/sqrt(sigma^2+tau^2))))
+##         a.mle <- min(y)
+##         loglik <- function(tau) sum(log(dnorm.trunc(y,mean=mu,sd=sqrt(sigma^2+tau^2),a=a.mle)))
+##         ## with(list(f=Vectorize(loglik)),  curve(f,0,60)); abline(v=tau)
+##         optimize(f=loglik,interval=c(0,50),maximum=TRUE)$max
+##     })
+##     ## hist(tau.hats); abline(v=c(mean(tau.hats),tau),col=c('black','red'))
+## })
+## matplot(t(by.n)-tau,col='black',pch='.'); abline(h=0,col='red')
+## ## plot(ns,apply(by.n,2,var))
+## apply(by.n,2,var)
+## apply(by.n,2,mean) - tau
+ 
+
+
+## ## 15 skew test
+
+## n <- 2000
+## mu <- 0
+## cutoff <- 0
+## skew.hats <- replicate(1e3, {
+##     sigma <- rchisq(n,df=10)
+##     y <- rnorm(n,mean=mu,sd=sigma)
+##     keep.idx <- which(y>0)
+##     ## plot(y,-sigma)
+##     y <- y[keep.idx]; sigma <- sigma[keep.idx]
+##     ## plot(y,-sigma)
+##     mu.fe <- sum(y/sigma^2)/sum(1/sigma^2)
+##     d.hat <- (y-mu.fe)/sigma
+##     T.I <- mean(d.hat)
+##     eps.hat <- d.hat - T.I
+##     skew.hat <- mean((eps.hat - mean(eps.hat))^3) / sd(eps.hat)
+##     skew.hat
+## })
+## mean(skew.hats)
+
+
+## 16 signed rank statistic
+
+## ## 16a asy normality of skew statistic, wilcoxon statistic
+## n <- 500
+## b <- 1
+## stats <- replicate(1e3, {
+##     x <- sample(c(-1,b),size=n, replace=TRUE)
+##     skew.stat <- mean((x-mean(x))^3) / sd(x)^3
+##     rank.stat <- sum(rank(abs(x))*sign(x))
+##     c(skew=skew.stat,rank=rank.stat)
+## })
+## op <- par(mfrow=c(1,2))
+## qqnorm(stats['rank',]*sqrt(3) / n^(3/2),main='rank'); abline(a=0,b=1)
+## qqnorm(stats['skew',]*sqrt(n/6),main='skew'); abline(a=0,b=1)
+## par(op)
+
+
+## ## 16b power function for signed rank vs lin statistic
+
+## source('misc.R')
+## n <- 2e2
+## alpha <- .05
+## as <- seq(-4,1,length.out=20)
+## as <- qnorm(seq(.95,.02,length.out=20),lower.tail=FALSE)
+## by.a <- sapply(as, function(a) {
+##     stats <- replicate(1e3, {
+##         x <- rnorm.trunc(n,mean=0,sd=1,a=a)
+##         skew.stat <- mean((x-mean(x))^3) / sd(x)^3
+##         rank.stat <- sum(rank(abs(x))*sign(x))
+##         c(skew=skew.stat*sqrt(n/6), rank=rank.stat*sqrt(3)/n^(3/2))
+##     })
+##     apply(stats, 1, function(x)mean(abs(x)>qnorm(1-alpha/2)))
+## })
+## plot(as,by.a['skew',],type='l',ylim=range(by.a))
+## lines(as,by.a['rank',],lty=2)
+## legend(legend=c('skew','rank'),'bottomright', lty=1:2)
+## abline(h=alpha)
+
+
+## ## 16c using synthetic data
+## source('misc.R')
+## n <- 5e2
+## mu <- 0
+## alpha <- .05
+## cutoffs <- seq(.95,.02,length.out=10)
+## by.cutoff <- sapply(cutoffs, function(cutoff) {
+##     stats <- replicate(1e3, {
+##         sigma <- rchisq(n,df=1)
+##         y <- rnorm(n,mu,sigma)
+##         keep.idx <- (y-mu)/sigma > qnorm(cutoff)
+##         with(list(y=y[keep.idx],sigma=sigma[keep.idx],n=sum(keep.idx)), {
+##             mu.fe <- sum(y/sigma^2)/sum(1/sigma^2)
+##             d.hat <- (y-mu.fe)/sigma
+##             T.I <- mean(d.hat)
+##             eps.hat <- d.hat - T.I
+##             ## eps.hat2 <- resid(lm(I(y/sigma) ~ I(1/sigma)))
+##             ## if(sum(abs(eps.hat-eps.hat2))>.01) {
+##             ##     browser()
+##             ##     cat('.')
+##             ##     }
+##             skew.stat <- mean((eps.hat - mean(eps.hat))^3) / sd(eps.hat)^3
+##             ## skew.stat <- mean((y-mean(y))^3) / sd(y)
+##             rank.stat <- sum(rank(abs(y))*sign(y))
+##             c(skew=skew.stat*sqrt(n/6), rank=rank.stat*sqrt(3)/n^(3/2))
+##         })
+##     })
+##     apply(stats, 1, function(x)mean(abs(x)>qnorm(1-alpha/2)))
+## })
+## plot(cutoffs,by.cutoff['skew',],type='l',ylim=range(by.cutoff))
+## lines(cutoffs,by.cutoff['rank',],lty=2)
+## legend(legend=c('skew','rank'),'topright', lty=1:2)
+## abline(h=alpha)
+
+
+## ## 16d using altmeta routine to compute power
+## require(altmeta)
+## n <- 2000
+## mu <- 0
+## cutoffs <- seq(.95,.05,length.out=20)
+## by.cutoff <- sapply(cutoffs, function(cutoff) {
+##     significant <- replicate(1e3, {
+##         sigma <- rchisq(n,df=1)
+##         y <- rnorm(n,mu,sigma)
+##         keep.idx <- (y-mu)/sigma > qnorm(cutoff,lower.tail=FALSE)
+##         with(list(y=y[keep.idx],sigma=sigma[keep.idx]),
+##              metapb(y,sigma^2,mode='FE')$skewness.pval < .05
+##              )
+##     })
+##     mean(significant)
+## })
+## plot(cutoffs,by.cutoff)
+
+
+
+## ## 16d skewness test under heterogeneity
+
+## source('misc.R')
+## n <- 5e2
+## mu <- 0
+## tau <- 0
+## alpha <- .05
+## cutoffs <- seq(.95,.02,length.out=20)
+## by.cutoff <- sapply(cutoffs, function(cutoff) {
+##     stats <- replicate(1e3, {
+##         sigma <- rchisq(n,df=1)
+##         y <- rnorm(n,mu,sqrt(sigma^2+tau^2))
+##         keep.idx <- (y-mu)/sigma > qnorm(cutoff)
+##         with(list(y=y[keep.idx],sigma=sigma[keep.idx],n=sum(keep.idx)), {
+##             mu.fe <- sum(y/sigma^2)/sum(1/sigma^2)
+##             d.hat <- (y-mu.fe)/sigma
+##             T.I <- mean(d.hat)
+##             eps.hat <- d.hat - T.I
+##             ## eps.hat2 <- resid(lm(I(y/sigma) ~ I(1/sigma)))
+##             ## if(sum(abs(eps.hat-eps.hat2))>.01) {
+##             ##     browser()
+##             ##     cat('.')
+##             ##     }
+##             skew.stat <- mean((eps.hat - mean(eps.hat))^3) / sd(eps.hat)^3
+##             ## skew.stat <- mean((y-mean(y))^3) / sd(y)
+##             rank.stat <- sum(rank(abs(y))*sign(y))
+##             c(skew=skew.stat*sqrt(n/6), rank=rank.stat*sqrt(3)/n^(3/2))
+##         })
+##     })
+##     c(apply(stats, 1, function(x)mean(abs(x)>qnorm(1-alpha/2)))
+##     ## apply(stats, 1, function(x)mean(abs(x)>qnorm(1-alpha/2)))
+## })
+## plot(cutoffs,by.cutoff['skew',],type='l',ylim=range(by.cutoff))
+## lines(cutoffs,by.cutoff['rank',],lty=2)
+## legend(legend=c('skew','rank'),'topright', lty=1:2)
+## abline(h=alpha)
+
+
+
+
+## source('misc.R')
+## n <- 5e2
+## mu <- 0
+## tau <- 0
+## alpha <- .05
+## cutoffs <- seq(.95,0,length.out=20)
+## by.cutoff <- sapply(cutoffs, function(cutoff) {
+##     pvals <- replicate(5e2, {
+##         sigma <- rchisq(n,df=1)
+##         y <- rnorm(n,mu,sqrt(sigma^2+tau^2))
+##         keep.idx <- (y-mu)/sigma > qnorm(cutoff)
+##         with(list(y=y[keep.idx],sigma=sigma[keep.idx],n=sum(keep.idx)), {
+##             mu.fe <- sum(y/sigma^2)/sum(1/sigma^2)
+##             d.hat <- (y-mu.fe)/sigma
+##             T.I <- mean(d.hat)
+##             eps.hat <- d.hat - T.I
+##             ## eps.hat <- resid(lm(I(y/sigma) ~ I(1/sigma)))
+##             skew.stat <- mean((eps.hat - mean(eps.hat))^3) / sd(eps.hat)^3
+##             rank.stat <- sum(rank(abs(y))*sign(y))
+##             c(skew.pval=2*(1-pnorm(abs(skew.stat)*sqrt(n/6))),
+##               rank.pval=2*(1-pnorm(abs(rank.stat)*sqrt(3)/n^(3/2))),
+##               metapb.pval=metapb(y,sigma^2)$combined.pval)
+##         })
+##     })
+##     rowMeans(pvals<alpha)
+##     ## c(apply(stats, 1, function(x)mean(abs(x)>qnorm(1-alpha/2)))
+##     ## apply(stats, 1, function(x)mean(abs(x)>qnorm(1-alpha/2)))
+## })
+## plot(cutoffs,by.cutoff['metapb.pval',],type='l',ylim=range(by.cutoff))
+## lines(cutoffs,by.cutoff['rank.pval',],lty=2)
+## lines(cutoffs,by.cutoff['skew.pval',],lty=3)
+## legend(legend=c('metapb','rank','skew'),'bottom', lty=1:3)
+## abline(h=alpha)
+## by.cutoff
+
+
+
+
+## n <- 40
+## x <- rchisq(n,df=2)
+## pairs <- replicate(1e3, {
+## y <- x + rnorm(n)*.5
+## lm0 <- lm(y~x)
+## eps <- resid(lm0)
+## c(mean((eps-mean(eps))^3)/sd(eps)^3,coef(lm0)[1])
+## })
+## cor(t(pairs))
+
+
+
+## n <- 400
+## mu <- 3
+## sigma <- rchisq(n,df=10)
+## y <- rnorm(n,mu,sigma)
+## summary(lm(I(y/sigma) ~ I(1/sigma)))
+
+
+
+
+## require(metafor)
+
+## ## tau <- 0
+## mu <- 10
+## cutoff <- .1
+## n <- 1e4
+## keep.probs <- seq(0,1,length.out=10)
+## keep.prob <- 0#keep.probs[4]
+## sigma <- rchisq(n,df=10)
+## ## sigma <- 1/runif(n,5,25)
+## y <- rnorm(n,mean=mu,sd=sigma)
+## plot(I(sigma) ~ y)
+## abline(a=0,b=1/qnorm(1-cutoff),col='red')
+## plot(I(1/sigma) ~ y)
+## curve(qnorm(1-cutoff)/x,from=.0001,add=TRUE,col='red')
+## mu.fe <- sum(1/sigma^2 * y) / sum(1/sigma^2)
+## ## study.p <- pnorm(y/sigma,lower.tail=FALSE)
+## keep.idx <- y/sigma > qnorm(1-cutoff)
+## y.obs <- y[keep.idx]; sigma.obs <- sigma[keep.idx]; n.obs <- sum(keep.idx)
+## mu.fe.obs <- sum(1/sigma.obs^2 * y.obs) / sum(1/sigma.obs^2)
+## abline(v=mu.fe.obs,col='green')
+## plot(I(1/sigma.obs) ~ I((y.obs-mu.fe.obs)/sqrt(sigma.obs^2-1/sum(1/sigma.obs^2))))
+
+## cor.test(((y.obs-mu.fe.obs)/sqrt(sigma.obs^2-1/sum(1/sigma.obs^2))),1/sigma.obs,method='kendall')$p.value
+
+
+## with(list(y=y[keep.idx],sigma=sigma[keep.idx]), {
+##     mu.fe <- sum(1/sigma^2 * y) / sum(1/sigma^2)
+##     print(mu.fe)
+##     print(abs(cor(((y-mu.fe)/sqrt(sigma^2-1/sum(1/sigma^2))),(1/sigma))))
+##     ## print(mu.fe)
+##     c(kendall=cor.test(((y-mu.fe)/sqrt(sigma^2-1/sum(1/sigma^2))),1/sigma,method='kendall')$p.value,
+##     egger=egger.test(x=y,sei=sigma)['Pr(>|t|)'])
+##   })
+
+
+
+## ## 17 egger test breaking for    "large sample effect"
+
+## ## 17a using truncated normals
+## source('misc.R')
+## n <- 2e3
+## mu <- 0
+## sigma <- rchisq(n,df=10)
+## sigma <- runif(n,1,5)
+## ## y <- rnorm(n,mu,sigma)
+## ## plot(1/sigma,y/sigma)
+## a <- -sigma^2
+## y <- rnorm.trunc(n,mu,1,a=a)
+## plot(1/sigma,y)
+## points(1/sigma,dnorm(a)/(1-pnorm(a)),col='red',cex=.1)
+## egger.lm <- lm(y ~ I(1/sigma))
+## coef(summary(egger.lm))['(Intercept)',]
+## abline(egger.lm,col='green')
+
+
+
+## ## 17b generating studies then clipping
+## source('misc.R')
+## n <- 2e4
+## mu <- 0
+## sigma <- rchisq(n,df=10)
+## sigma <- runif(n,1,5)
+## y <- rnorm(n,mu,sigma)
+## ## plot(1/sigma,y/sigma)
+## a <- -sigma^2
+## ## y <- rnorm.trunc(n,mu,1,a=a)
+## keep.idx <- (y/sigma) > a
+## with(list(y=y[keep.idx],sigma=sigma[keep.idx],n=sum(keep.idx)), {
+##     plot(1/sigma,y)
+## })
+
+## points(1/sigma,dnorm(a)/(1-pnorm(a)),col='red',cex=.1)
+## egger.lm <- lm(y ~ I(1/sigma))
+## coef(summary(egger.lm))['(Intercept)',]
+## abline(egger.lm,col='green')
+
+
+
+
+## ## 18. dependence of begg and egger stats
+
+
+## mu <- 0
+## n <- 1000
+## ## sigma <- rchisq(n,df=10)
+## sigma <- 1/runif(n,5,25)
+## y <- rnorm(n,mean=mu,sd=sigma)
+## mu.fe <- sum(1/sigma^2 * y) / sum(1/sigma^2)
+## beta1.hat <- cov(y/sigma,1/sigma)/var(1/sigma)
+## beta0.hat <- mean(y/sigma) - mean(1/sigma)*beta1.hat
+## resid <- y/sigma - beta0.hat - beta1.hat/sigma
+## op <- par(mfrow=c(1,2))
+## plot(resid,(y-mu.fe)/sqrt(sigma^2-1/sum(1/sigma^2))); abline(a=0,b=1,col='red')
+## plot(resid,resid - (y-mu.fe)/sqrt(sigma^2-1/sum(1/sigma^2)))
+## par(op)
+## summary(lm(resid ~ I((y-mu.fe)/sqrt(sigma^2-1/sum(1/sigma^2)))))
+
+## require(metafor)
+## egger.test <- function(x,sei) coef(summary(lm(I(x/sei) ~ I(1/sei))))['(Intercept)',]
+## mu <- 0
+## n <- 1e2
+## ## sigma <- rchisq(n,df=10)
+## sigma <- 1/runif(n,5,25)
+## stats <- replicate(1e3, {
+##     y <- rnorm(n,mean=mu,sd=sigma)
+##     mu.fe <- sum(1/sigma^2 * y) / sum(1/sigma^2)
+##     beta1.hat <- cov(y/sigma,1/sigma)/var(1/sigma)
+##     beta0.hat <- mean(y/sigma) - mean(1/sigma)*beta1.hat
+##     resid <- y/sigma - beta0.hat - beta1.hat/sigma
+##     ## c(begg.stat=cor.test((y-mu.fe)/sqrt(sigma^2-1/sum(1/sigma^2)),1/sigma,method='kendall')$statistic,
+##     ## egger.stat=mean(y/sigma) - mean(1/sigma)*beta1.hat)
+##     c(resid.stat=cor.test(resid,1/sigma,method='kendall')$statistic,
+##     ##   begg.stat=cor.test((y-mu.fe)/sqrt(sigma^2-1/sum(1/sigma^2)),1/sigma,method='kendall')$statistic
+##     egger.stat=mean(y/sigma) - mean(1/sigma)*beta1.hat
+##       )
+##     ## plot(resid,(y-mu.fe)/sqrt(sigma^2-1/sum(1/sigma^2)))
+##     ## plot(resid,resid - (y-mu.fe)/sqrt(sigma^2-1/sum(1/sigma^2)))
+## })
+## plot(t(stats))
+## cor(t(stats))
+
+
+
+
+
+## source('misc.R')
+## n <- 10000
+## mu <- 0
+## sigma <- 1/runif(n,1,4)
+## ## y <- rnorm.trunc(n,mu,1,lower=.4)
+## y <- rnorm(n,mu,sigma)
+## keep.idx <- y/sigma > qnorm(.6)
+## plot(1/sigma,y/sigma)
+
+## with(list(y=y[keep.idx],sigma=sigma[keep.idx],n=sum(keep.idx)), {
+##     plot(1/sigma,y/sigma)
+##     abline(h=mean(y),col='red')
+##     plot(1/sigma,(y/sigma-mean(y)/sigma),col='green')
+## })
+
+## trying to break egger
+
+## n <- 1e2
+## nonmono <- replicate(1e3, {
+##     x <- runif(n,1,5)
+##     x <- abs(rnorm(n))
+##     x <- rchisq(n,df=40)
+##     x <- with(list(l=runif(1,0,1),size=runif(1,0,.1)), runif(n,l,l+size))
+##     mu <- rnorm(n-1)
+##     mu <- with(list(l=runif(1,-30,30),size=runif(1,0,30)), runif(n-1,l,l+size))/50
+##     x <- sort(x); mu <- rev(sort(mu))
+##     mu.n <- -sum(mu[-n]*(x[-n]*mean(x)-mean(x^2))) / (x[n]*mean(x)-mean(x^2))
+##     ## with(list(mu=c(mu,mu.n)), sum(mu*(x*mean(x)-mean(x^2))))
+##     ## op <- par(mfrow=c(1,2)); hist(mu,xlim=range(c(mu,mu.n)));abline(v=mu.n,col='red'); plot(mu,x[x!=max(x)]); par(op)
+##     sum(mu<mu.n)
+##     if(sum(mu<mu.n)>0 && sum(mu<mu.n)<99) browser()
+##     cat('.')
+## })
+## sum(nonmono)
+
+
+
+
+## ## 19 replicating lin2018 sims
+
+
+## ## n.try <- round(6e3^2)
+## ## mu <- 0
+## ## tau <- 1
+## ## keep.prob <- .3
+## ## my.sigma <- runif(n.try,1,4)
+## ## my.y <- rnorm(n.try,mean=mu,sd=my.sigma)
+## ## cutoff <- my.sigma*qnorm(.95)
+## ## keep.idx <- (my.y/my.sigma > cutoff) | (runif(n.try) < keep.prob)
+## ## stopifnot(sum(keep.idx)>=n)
+## ## last.idx <- which.max(cumsum(keep.idx)>=n)
+## ## my.y <- y[1:last.idx][keep.idx[1:last.idx]]
+## ## my.sigma <- my.sigma[1:last.idx][keep.idx[1:last.idx]]
+## ## op <- par(mfrow=c(1,2))
+## ## qqplot(y,my.y); abline(a=0,b=1,col='red')
+## ## qqplot(sigma,my.sigma); abline(a=0,b=1,col='red')
+## ## par(op)
+
+## ## n <- 6e3
+## ## alpha <- .1
+## rlin <- function(n,mean=0,keep.prob=.3,dbg=FALSE) {
+##     y  <- sigma <- numeric()
+##     tries <- 0
+##     while(length(y)<n) {
+##         tries <- tries+1
+##         ## sigma.try <- runif(1,1,4)
+##         ## sigma.try <- rchisq(1,df=1)
+##         sigma.try <- rbeta(1,1/2,1/2)
+##         y.try <- rnorm(1,mean,sigma.try)
+##         cutoff <- sigma.try*qnorm(.95)
+##         ## stopifnot((pnorm(y.try/sigma.try,lower.tail=FALSE) <= .05) == (y.try > cutoff))
+##         if((y.try>cutoff) || (rbinom(1,1,keep.prob))) {
+##             y <- c(y,y.try); sigma <- c(sigma,sigma.try)
+##         }
+##     }
+##     ## print(tries)
+##     return(list(y=y,sigma=sigma))
+## }
+
+## source('misc.R')
+## require(parallel)
+## n <- 100
+## alpha <- .1
+## mu <- 0
+## tau <- 1
+## keep.probs <- seq(0,1,length.out=10)
+## keep.prob <- .3
+## ## by.keep.prob <- sapply(keep.probs, function(keep.prob) {
+## by.keep.prob <- mclapply(keep.probs, mc.cores=detectCores()-3, FUN=function(keep.prob) {
+##     pvals <- replicate(5e2, {
+
+##         data <- rlin(n,keep.prob=keep.prob)
+##         y <- data$y; sigma <- data$sigma
+        
+##         mu.fe <- sum(1/sigma^2 * y) / sum(1/sigma^2)
+##         ## beta1.hat <- cov(y/sigma,1/sigma)/var(1/sigma)
+##         ## beta0.hat <- mean(y/sigma) - mean(1/sigma)*beta1.hat
+##         ## fits <- beta0.hat + beta.hat*x
+##         ## resid <- y/sigma - beta0.hat - beta1.hat/sigma
+##         ## resid <- y/sigma  - beta1.hat/sigma
+##         ## plot((y-mu.fe)/sqrt(sigma^2-1/sum(1/sigma^2)), resid);abline(a=0,b=1,col='red')
+##         ## cor((y-mu.fe)/sqrt(sigma^2-1/sum(1/sigma^2)),resid)
+##         begg.pval <- cor.test((y-mu.fe)/sqrt(sigma^2-1/sum(1/sigma^2)),1/sigma,method='kendall',exact=FALSE)$p.value
+##         ## begg.z.stat <- cor.test((y/sigma-mu.fe/sigma),1/sigma,method='kendall',exact=FALSE)$statistic
+##         ## resid.z.stat <- cor.test(resid,1/sigma,method='kendall',exact=FALSE)$statistic
+##         egger.pval <- coef(summary(lm(I(y/sigma) ~ I(1/sigma)+1)))['(Intercept)','Pr(>|t|)']
+##         c(begg=begg.pval,egger=egger.pval)
+##     })
+##     rowMeans(pvals < alpha)
+## })
+## by.keep.prob <- simplify2array(by.keep.prob)
+## plot(keep.probs,by.keep.prob['begg',],type='l',ylim=range(by.keep.prob))
+## lines(keep.probs,by.keep.prob['egger',],lty=2)
+## legend('topright',lty=1:2,legend=c('begg','egger'))
+
+
+## ## 20 distribution of sigma after selecting on y or y/sigma
+
+## ## 20a
+## source('misc.R')
+## n <- 1e4
+## mu <- 0
+## a <- 3
+## df <- 1
+## sigma <- rchisq(n,df=df)
+## y <- rnorm.trunc(n,mean=mu,sd=sigma,lower=a)
+## plot(1/sigma,y/sigma)
+## sigma.trunc <- with(list(alpha=(a-mu)/sigma), sqrt(  sigma^2*(1+alpha*dnorm(alpha)/(1-pnorm(alpha)) - (dnorm(alpha)/(1-pnorm(alpha)))^2 )) )
+## hist(sigma.trunc,prob=TRUE)
+## curve(dchisq(x,df=df),add=TRUE)
+## qqplot(sigma.trunc,sigma); abline(a=0,b=1,col='red')
+## ## hist(sigma)
+## curve(1 + a*dnorm(a)/(1-pnorm(a)) - (dnorm(a)/(1-pnorm(a)))^2, xname='a',-7,7)
+
+## ## 20b
+## n <- 1e5
+## mu <- 0
+## a <- 3
+## df <- 1
+## sigma <- rchisq(n,df=df)
+## y <- rnorm(n,mean=mu,sd=sigma)
+## op <- par(mfrow=c(2,2))
+## hist(y[y>a]);abline(v=c(mu,mean(y[y>a])),col=c('red','blue'))
+## hist(y[y/sigma>a]);abline(v=c(mu,mean(y[y/sigma>a])),col=c('red','blue'))
+## qqplot(sigma,sigma[y/sigma>a]); abline(a=0,b=1,col='red')
+## qqplot(sigma,sigma[y>a]); abline(a=0,b=1,col='red')
+## par(op)
+## ## post selection cdf stochastically larger if selecting on y, not y/sigma
+
+## ## 20c
+
+## n <- 30
+## mu <- 0
+## a <- 2
+## df <- 1
+## z.stats <- replicate(1e3, {
+## sigma <- rchisq(n,df=df)
+## y <- rnorm(n,mean=mu,sd=sigma)
+## keep.idx <- y>a
+## keep.idx <- y/sigma>a
+## with(list(y=y[keep.idx],sigma=sigma[keep.idx]), y/sigma)
+## })
+## z.stats <- unlist(z.stats)
+## hist(z.stats)
+## qqnorm(z.stats);abline(a=0,b=1)
+## var(z.stats)
+## mean(z.stats)
+
+
+## x <- 0:100+1
+## mu <- 1/x
+## mid.idx <- (50-10):(50+10)+1
+## mu[mid.idx] <- 5/(x[mid.idx])
+## x <- x/100
+## plot(x,mu*x)
+## summary(lm(I((mu-mean(mu))*x) ~ x))
+
+## ## checking formulas
+## n <- 1e2
+## x <- rchisq(n,df=4)
+## y <- rnorm(n)
+## egger.stat <- mean(y*x) - cov(y*x,x)/var(x)*mean(x)
+## begg.stat <- cov((y-mean(y))*x,x)/sqrt(var(x)*var((y-mean(y))*x))
+## ## require(metafor)
+## ## str(ranktest(x=y,sei=1/x,exact=FALSE))
+## begg.stat - sqrt(var(x)/var((y-mean(y))*x))*(-egger.stat/mean(x)+mean(y*x)/mean(x)-mean(y))
+## begg.stat - sqrt(var(x)/var((y-mean(y))*x))/mean(x) * (-egger.stat+cov(x,y)*(n-1)/n)
+
+
+## n <- 1e3
+## mu <- 0
+## sigma <- runif(n,1,4)
+## y <- rnorm(n,mean=mu,sd=sigma)
+## keep.idx <- sigma < quantile(sigma,.7) | y/sigma > quantile(y/sigma,.5)
+## plot(1/sigma,y/sigma)
+## y <- y[keep.idx]; sigma <- sigma[keep.idx]; n <- sum(keep.idx)
+## points(1/sigma,y/sigma,col='red')
+## egger.stat <- coef(summary(lm(I(y/sigma) ~ I(1/sigma))))['(Intercept)','Estimate']
+## begg.stat <- cov((y-mean(y))/sigma,1/sigma)/sqrt(var(1/sigma)*var((y-mean(y))/sigma))#cor((y-mean(y))/sigma,1/sigma)
+## begg.stat - sqrt(var(1/sigma)/var((y-mean(y))*1/sigma))/mean(1/sigma) * (-egger.stat+cov(1/sigma,y)*(n-1)/n)
+
+
+## n <- 3
+## x <- runif(n,1,40)#abs(rnorm(n))
+## y <- rnorm(n)
+## y <- y[order(x)]; x <- sort(x)
+## X <- cbind(1,x)
+## proj <- X%*%solve(t(X)%*%X)%*%t(X)
+## mu.try <- rep(1,n) + diag(1/x)%*%(diag(1,n) - proj)%*%rnorm(n)
+## coef(lm(I(mu.try*x) ~ x))[1]
+
+## ## 21 rank distribution of blind spots in egger test
+
+## require(combinat)
+## require(permutations)
+## n <- 5
+## counts <- numeric(factorial(n))
+## names(counts) <- sapply(permn(1:n),paste,collapse='')
+## ## out <- replicate(5e4 , {
+##     x <- runif(n,30,400)
+##     ## x <- abs(rnorm(n))
+##     ## x <- rexp(n)
+##     x <- sort(x)
+##     X <- cbind(1,x)
+##     proj <- X%*%solve(t(X)%*%X)%*%t(X)
+## out <- replicate(1e5, {
+##     ## mu.try <- rep(1,n) + diag(1/x)%*%(diag(1,n) - proj)%*%rnorm(n)
+##     mu.try <- rep(1,n) + diag(1/x)%*%(diag(1,n) - proj)%*%runif(n,1,50)
+##     ## mu.try <- (diag(1,n) - proj)%*%rnorm(n)
+    
+##     ## mu.try <- rep(1,n) + diag(1/x)%*%(proj)%*%rnorm(n)
+##     ## mu.try <- (proj)%*%runif(n,1,40)
+##     counts[paste(order(mu.try),collapse='')] <<- counts[paste(order(mu.try),collapse='')] + 1
+## })
+## sort(counts)
+## ## names(counts)[counts==0]
+## ## apply(sapply(strsplit(names(sort(counts)),split=''), as.integer), 2, function(p)permorder(as.word(p)))
+## matrix(names(sort(counts)),nrow=2)
+## tau <- function(x,y) sum(sign(outer(x,x,`-`))*sign(outer(y,y,`-`)))/(length(x)*(length(x)-1))
+## matrix(apply(sapply(strsplit(names(sort(counts)),split=''), as.integer), 2, function(perm)tau(1:n,perm)),nrow=2)
+
+
+## n <- 3
+## hits <- replicate(1e4,{
+##     x <- sort(abs(rnorm(n)))
+##     v <- sort(rnorm(n-1))
+##     ## v <- sort(-abs(rnorm(n-1))
+##     v[n] <- -1/x[n]*sum(v*(x[1:(n-1)]))
+##     ## v <- v-sum(v)
+##     sum(rank(v)!=1:n)==0
+## })
+## sum(hits)
+
+
+## n <- 10
+## x <- sort(abs(rnorm(n)))
+## v <- sort(-abs(rnorm(n-1)))
+## v[n] <- -1/x[n]*sum(v*(x[1:(n-1)]))
+## v <- v-sum(v)
+## sum(rank(v)!=1:n)==0
+
+
+## ## 21a chcking formulas, egger #7
+## require(combinat)
+## require(permutations)
+## n <- 4
+## counts <- numeric(factorial(n))
+## names(counts) <- sapply(permn(1:n),paste,collapse='')
+## out <- replicate(1e5 , {
+##     ## x <- runif(n,30,400)
+    
+##     x <- abs(rnorm(n))
+##     x <- sort(x)
+##     X <- cbind(1,x)
+##     proj <- X%*%solve(t(X)%*%X)%*%t(X)
+##     ones <- matrix(1,nrow=n,ncol=1); x <- matrix(x,ncol=1); w <- 1/x
+## ## out <- replicate(3e4, {
+##     ## mu.try <- rep(1,n) + diag(1/x)%*%(diag(1,n) - proj)%*%rnorm(n)
+##     ## mu.try <- (diag(1,n) - proj)%*%rnorm(n)
+   
+##     v <- rnorm(n)    
+##     ## mu.try <- diag(as.numeric(w))%*%(diag(1,n) - proj)%*%v
+##     ## mu.try <- w*((sum(x^2)-n*mean(x)^2)*v - mean(v)*mean(x^2)*n + sum(x*v)*mean(x))
+##     ## stopifnot(sum(rank(mu.try)!=rank(mu.try2))==0)
+##     counts[paste(order(mu.try),collapse='')] <<- counts[paste(order(mu.try),collapse='')] + 1
+
+##     (mean(v)*mean(x^2) - mean(x*v)*mean(x)) / (mean(x^2)-mean(x)^2)
+##     mean(v) - mean(x)*((n-1)/n)*cov(x,v) / ((n-1)/n*var(x))
+ 
+##     ## (diag(1,n) - proj)%*%v    
+##     ## (mean(x^2) - mean(x)*rep(1,n)%*%rbind(x) + x%*%rbind(rep(1,n))*(rep(1,n)%*%rbind(x)  - mean(x))) /(sum(x^2)-n*mean(x)^2)
+##     ## proj
+##     ## (   ones%*%t(ones)*mean(x^2) - ones%*%t(x)*mean(x) - x%*%t(ones)*mean(x) + x%*%t(x)  ) / (sum(x^2)-n*mean(x)^2)
+
+##     ## diag(1/as.numeric(x))%*%proj
+##     ## (   (1/x)%*%t(ones)*mean(x^2) - (1/x)%*%t(x)*mean(x) - ones%*%t(ones)*mean(x) + ones%*%t(x)  ) / (sum(x^2)-n*mean(x)^2)
+##     ## (sum(x^2)-n*mean(x)^2) * diag(1/as.numeric(x))%*%proj %*% v
+##     ## (   (1/x)%*%t(ones)*mean(x^2) - (1/x)%*%t(x)*mean(x) - ones%*%t(ones)*mean(x) + ones%*%t(x)  ) %*%v
+##     ##    (1/x)*mean(v)*mean(x^2)*n  - (1/x)%*%sum(x*v)*mean(x)+ ( - ones%*%t(ones)*mean(x) + ones%*%t(x)  ) %*%v
+
+##     ##     (sum(x^2)-n*mean(x)^2) * diag(1/as.numeric(x))%*%proj %*% v  - ((1/x)*mean(v)*mean(x^2)*n  - (1/x)%*%sum(x*v)*mean(x))   
+
+##     ## diag(1/x) - diag(1/x)%*%(mean(x^2) - mean(x)*rep(1,n)%*%rbind(x) + x%*%rbind(rep(1,n))*(rep(1,n)%*%rbind(x)  - mean(x))) /(sum(x^2)-n*mean(x)^2)
+##     ## diag(1/x)%*%(diag(1,n) -proj)
+
+##     ## X.r <- (1/x)%*%rbind(rep(1,n))
+##     ## X.c <- rep(1,n)%*%rbind(x)
+##     ## X.r - x%*%rbind(mean(x^2)+mean(x)*x) - (X.c-mean(x))
+##     ## diag(1/x) %*% (diag(1,n)-proj) *(sum(x^2)-n*mean(x)^2)
+
+##     ## solve(t(X)%*%X)
+##     ## 1/(sum(x^2)-n*mean(x)^2)
+
+##     ## rbind(mean(x^2)-mean(x)*x,-mean(x)+x)/(sum(x^2)-n*mean(x)^2)
+##     ## solve(t(X)%*%X)%*%t(X)
+
+
+##     ## (sum(x^2)-n*mean(x)^2) * diag(1/as.numeric(x))%*%(diag(1,n) - proj) %*% v  - ( w*((sum(x^2)-n*mean(x)^2)*v - mean(v)*mean(x^2)*n + sum(x*v)*mean(x))  )
+    
+##    ## mu.try <- rep(1,n) + diag(1/x)%*%(proj)%*%rnorm(n)
+##     ## mu.try <- (proj)%*%runif(n,1,40)
+## })
+## sort(counts)
+## ## names(counts)[counts==0]
+## ## apply(sapply(strsplit(names(sort(counts)),split=''), as.integer), 2, function(p)permorder(as.word(p)))
+## matrix(names(sort(counts)),nrow=2)
+## tau <- function(x,y) sum(sign(outer(x,x,`-`))*sign(outer(y,y,`-`)))/(length(x)*(length(x)-1))
+## matrix(apply(sapply(strsplit(names(sort(counts)),split=''), as.integer), 2, function(perm)tau(1:n,perm)),nrow=2)
+
+
+
+
+
+## 21b eigenvectors of ortho proj
+
+## require(combinat)
+## require(permutations)
+## n <- 4
+## counts <- numeric(factorial(n))
+## names(counts) <- sapply(permn(1:n),paste,collapse='')
+## ## out <- replicate(1e5 , {
+
+##     x <- runif(n,1,2)
+##     ## x <- abs(rnorm(n))
+##     ## x <- rexp(n)
+##     x <- sort(x)
+##     X <- cbind(1,x)
+##     proj <- X%*%solve(t(X)%*%X)%*%t(X)
+## out <- replicate(2e4, {
+##     ## mu.try <- rep(1,n) + diag(1/x)%*%(diag(1,n) - proj)%*%rnorm(n)
+##     ## mu.try <- rep(1,n) + diag(1/x)%*%(diag(1,n) - proj)%*%runif(n,1,50)
+##     v <- runif(n,-2,2)#rnorm(n)
+##     mu.try <- (diag(1,n) - proj)%*%v
+##     ## eig <- eigen(diag(1,n) - proj)
+##     ## apply(eig$vec,2,rank)
+    
+    ## counts[paste(order(mu.try),collapse='')] <<- counts[paste(order(mu.try),collapse='')] + 1
+##     counts[paste(rank(mu.try),collapse='')] <<- counts[paste(rank(mu.try),collapse='')] + 1
+## })
+## sort(counts)
+## names(counts)[counts==0]
+## apply(sapply(strsplit(names(sort(counts)),split=''), as.integer), 2, function(p)permorder(as.word(p)))
+## matrix(names(sort(counts)),nrow=2)
+
+## if(exists(deparse(substitute(nonzero)))) {   
+##     newnonzero <- sort(names(counts[counts>0]))    
+##     if(sum(newnonzero != nonzero)!=0) {
+##         browser()
+##         print('mismatch')
+##         print(nonzero)
+##         print(newnonzero)
+##     }
+## }
+## nonzero <- sort(names(counts[counts>0]))
+
+
+## ## >  1234  1324  4321  4231  4312  2134  3421  1243  2143  3412  1423  4132  2314 
+## ##     0     0     0     0   413   442   454   467  1501  1545  4361  4405  4441 
+## ##  3241  4213  1342  2431  3124  2341  1432  3214  4123  3142  2413 
+## ##  4451  5105  5123  5189  5217  8229  8292  8315  8360 11784 11906 
+## ##      [,1]   [,2]   [,3]   [,4]   [,5]   [,6]   [,7]   [,8]   [,9]   [,10] 
+## ## [1,] "1234" "4321" "4312" "3421" "2143" "1423" "2314" "4213" "2431" "2341"
+## ## [2,] "1324" "4231" "2134" "1243" "3412" "4132" "3241" "1342" "3124" "1432"
+## ##      [,11]  [,12] 
+## ## [1,] "3214" "3142"
+## ## [2,] "4123" "2413"
+
+
+## ## 21c distribution of partition differences
+
+## n <- 4
+## x <- sort(abs(rnorm(n))*n)
+## x <- 1:4
+## ranks <- c(1,2,4,3)
+## means <- replicate(1e4, {
+##     w <- runif(n); w <- w/sum(w)
+##     w <- sort(w)[ranks]
+##     sum(w*x)
+## })
+## ## print(x)
+## ## summary(x)
+## summary(means)
+
+
+
+## require(combinat)
+## require(permutations)
+## n <- 4
+## counts <- numeric(factorial(n))
+## names(counts) <- sapply(permn(1:n),paste,collapse='')
+## x <- runif(n,1,2)
+## ## x <- abs(rnorm(n))
+## ## x <- rexp(n)
+## x <- sort(x)
+## ## x <- c(1,2,19,20)
+## x <- 1:4
+## X <- cbind(1,x)
+## proj <- X%*%solve(t(X)%*%X)%*%t(X)
+## out <- replicate(1e5, {
+##     ## mu.try <- rep(1,n) + diag(1/x)%*%(diag(1,n) - proj)%*%rnorm(n)
+##     ## mu.try <- rep(1,n) + diag(1/x)%*%(diag(1,n) - proj)%*%runif(n,1,50)
+##     v <- runif(n,-2,2)#rnorm(n)
+##     mu.try <- (diag(1,n) - proj)%*%v
+##     counts[paste(rank(mu.try),collapse='')] <<- counts[paste(rank(mu.try),collapse='')] + 1
+
+## })
+## ## names(counts)[counts==0]
+## eig <- eigen(diag(1,n) - proj)
+## eig.ranks <- apply(cbind(eig$vec[,abs(eig$values)>1e-8]),2,rank)
+## eig.ranks
+## ## eig.ranks <- apply(eig.ranks,2,paste,collapse='')
+## ## eig.ranks <- c(eig.ranks,sapply(strsplit(eig.ranks,split=''),function(s)paste(rev(s),collapse='')))
+## sort(counts)
+## matrix(names(sort(counts)),nrow=2)
+## ## sum(matrix(names(sort(counts)),nrow=2)[1,] %in% eig.ranks)
+## ceiling(which(matrix(names(sort(counts)),nrow=2) %in% apply(eig.ranks,2,paste,collapse=''))/2)
+## ceiling(which(matrix(names(sort(counts)),nrow=2) %in% apply(eig.ranks,2,paste,collapse=''))/2) / factorial(n)*2
+
+## checkin gformulas
+## n <- 10
+## x <- sort(abs(rnorm(n)))
+## y <- abs(rnorm(n))
+## x <- sort((rnorm(n)))
+## y <- (rnorm(n))
+## mm <- sum(x*rev(sort(y)))
+## uu <- replicate(1e3, {
+##     if(sum(x*sample(y)) < mm) cat('!!!')
+## })
+
+
+## n <- 5
+## cc <- 4
+## ## w <- rep(1,n)
+## w <- c(rep(0,n-2),1,1)
+## w <- w/sum(w)
+## ranks <- replicate(2e3,{
+##     ## v <- sort(rnorm(n,mean=1e6,sd=20000))
+##     v <- sort(runif(n,0,1e6))
+##     rank(c(cc*sum(w*v),v))[1]
+
+## })
+## summary(ranks)
+
+
+## c <- -.1
+## curve( dnorm(c/sigma)/(1-pnorm(c/sigma))*sigma, xname='sigma',0,100)
+
+## curve( 1/(1-pnorm(c/sigma))*dnorm(c/sigma)*sigma, xname='sigma',0,1)
+
+## curve((1-pnorm(x))*(1+x^2) - x*dnorm(x),0,10)
+
+## curve((1-pnorm(x)),0,10)
+
+## c <- -1
+## curve( dnorm(c/sigma)/(1-pnorm(c/sigma))*sigma, xname='sigma',0,1)
+
+## c <- 3
+## mu <- function(sigma)integrate(function(x)x*dnorm(x,sd=sigma),lower=c,upper=Inf)$val / (1-pnorm(c,sd=sigma))
+## mu <- function(sigma)integrate(function(x)x*dt(x,df=1/sigma),lower=c,upper=Inf)$val / (1-pt(c,df=1/sigma))
+## mu <- Vectorize(mu)
+## curve(mu,0,.99)
+
+
+## n <- 5
+## p <- 2
+## X <- matrix(rnorm(n*p),nrow=n)
+## gamma <- 3.5
+
+## P <- X%*%solve(t(X)%*%X)%*%t(X)
+## AA <- cbind(1,0)%*%solve(t(X)%*%X)%*%t(X)  
+## t(AA)%*%AA + gamma^2*(diag(1,n) - P)
+
+## with(eigen(t(X)%*%X), { V <<- vectors; S <<- rbind(diag(sqrt(values)),matrix(0,nrow=n-p,ncol=p)) })
+## S.inv <- rbind(diag(1/diag(S)),matrix(0,nrow=n-p,ncol=p))
+## U <- (X%*%V)%*%(diag(1/diag(S)))
+## U <- cbind(U,Null(X))
+## ## S.inv <- diag(c(1/diag(S)[1:p],rep(0,n-p)))
+## vv <- matrix(c(V[1,]),nrow=1)
+## cbind(1,0)%*%solve(t(X)%*%X)%*%t(X) - vv%*%t(S.inv)%*%t(U)
+## U%*%S.inv%*%t(vv)%*%vv%*%t(S.inv)%*%t(U) + gamma^2*diag(1,n) - gamma^2*U%*%diag(c(rep(1,p),rep(0,n-p)))%*%t(U)
+## U%*%(S.inv%*%t(vv)%*%vv%*%t(S.inv) + diag(c(rep(0,p),rep(gamma^2,n-p))))%*%t(U)
+## U%*%(S.inv%*%t(vv)%*%vv%*%t(S.inv) + diag(c(rep(0,p),rep(gamma^2,n-p))))%*%t(U)
+
+## eigen(S.inv%*%t(vv)%*%vv%*%t(S.inv))
+## sum(V[1,]^2/diag(S)^2)
+## (V[1,]/diag(S))/sqrt(sum((V[1,]/diag(S))^2))
+
+## sigma.c <- 2
+## mu.c <- 4
+## ones <- matrix(1,nrow=n)
+## A <- S.inv%*%t(vv)%*%vv%*%t(S.inv) + diag(c(rep(0,p),rep(gamma^2,n-p)))
+## Sigma <- diag(1,n)*sigma.c^2
+## sum(diag(A%*%Sigma)) - sigma.c^2*(sum((V[1,]/diag(S))^2) + (n-2)*gamma^2)
+## mu.c^2*t(ones)%*%U%*%A%*%t(U)%*%ones  - mu.c^2*(  sum(colSums(U[,1:2])*(V[1,]/diag(S)))^2 + gamma^2*sum(colSums(U[,3:n])^2) )
+
+## require(MASS)
+## n <- 5
+## p <- 2
+## range <- 3
+## mu.c <- range/2
+## sigma.c <- sqrt( range^2/12 )
+## ## sds <- replicate(1e3, {
+## ## y <- runif(n,0,range)
+## ## sd(y)
+## ## })
+## ## hist(sds); abline(v=sigma.c,col='red')
+## diffs <- replicate(1e3, {
+##     gamma <- runif(1,0,3)
+##     X <- cbind(1,runif(n,0,5))
+##     with(eigen(t(X)%*%X), { V <<- vectors; S <<- rbind(diag(sqrt(values)),matrix(0,nrow=n-p,ncol=p)) })
+##     S.inv <- rbind(diag(1/diag(S)),matrix(0,nrow=n-p,ncol=p))
+##     U <- (X%*%V)%*%(diag(1/diag(S)))
+##     U <- cbind(U,Null(X))
+##     ## S.inv <- diag(c(1/diag(S)[1:p],rep(0,n-p)))
+##     vv <- matrix(c(V[1,]),nrow=1)
+##     y <- matrix(runif(n,0,range),ncol=1)
+##     P <- X%*%solve(t(X)%*%X)%*%t(X)
+##     lm0 <- lm(y~X)
+##     t.stat <- coef(summary(lm0))['(Intercept)','t value']
+##     beta0 <- coef(summary(lm0))['(Intercept)','Estimate']
+##     sd.beta0 <- coef(summary(lm0))['(Intercept)','Std. Error']
+##     ## c(abs(t.stat) > gamma, beta0^2 - gamma^2*sd.beta0^2 > 0)
+##     ## c(beta0^2 - gamma^2*sd.beta0^2 > 0,
+##     ##   t(y)%*%X%*%solve(t(X)%*%X)%*%matrix(c(1,0,0,0),nrow=2)%*%solve(t(X)%*%X)%*%t(X)%*%y  -    gamma^2*(t(y)%*%(diag(1,n) - P)%*%y/(n-2) * solve(t(X)%*%X)[1,1]) > 0
+##     ##   )
+##     ## c(beta0^2 - gamma^2*sd.beta0^2,
+##     ##   t(y)%*%(X%*%solve(t(X)%*%X)%*%matrix(c(1,0,0,0),nrow=2)%*%solve(t(X)%*%X)%*%t(X)  -    gamma^2*(diag(1,n) - P)/(n-2) * solve(t(X)%*%X)[1,1])%*%y
+##     ##   )
+##     ## c(t(y)%*%(X%*%solve(t(X)%*%X)%*%matrix(c(1,0,0,0),nrow=2)%*%solve(t(X)%*%X)%*%t(X)  -    gamma^2*(diag(1,n) - P)/(n-2) * solve(t(X)%*%X)[1,1])%*%y ,
+##     ##   t(y)%*%U%*%(S.inv%*%t(vv)%*%vv%*%t(S.inv) + diag(c(rep(0,p),rep(-solve(t(X)%*%X)[1,1]*gamma^2/(n-2),n-p))))%*%t(U)%*%y
+##     ##   )
+##     c(abs(t.stat) > gamma,t(y)%*%U%*%(  S.inv%*%t(vv)%*%vv%*%t(S.inv) + diag(c(rep(0,p),rep(-solve(t(X)%*%X)[1,1]*gamma^2/(n-2),n-p)))   )%*%t(U)%*%y > 0)
+## })
+## sum(apply(diffs,2,diff))
+
+
+
+
+
+## ## require(MASS)
+## ## n <- 5
+## ## p <- 2
+## ## range <- 3
+## ## mu.c <- range/2
+## ## sigma.c <- sqrt( range^2/12 )
+## ## gamma <- runif(1,0,3)
+## ## X <- cbind(1,runif(n,0,5))
+## ## P <- X%*%solve(t(X)%*%X)%*%t(X)
+## ## test.res <- replicate(1e3, {
+## ##     y <- matrix(runif(n,0,range),ncol=1)
+## ##     lm0 <- lm(y~X)
+## ##     t.stat <- coef(summary(lm0))['(Intercept)','t value']
+## ##     ## beta0 <- coef(summary(lm0))['(Intercept)','Estimate']
+## ##     ## sd.beta0 <- coef(summary(lm0))['(Intercept)','Std. Error']
+## ##     ## c(abs(t.stat) > gamma,t(y)%*%U%*%(  S.inv%*%t(vv)%*%vv%*%t(S.inv) + diag(c(rep(0,p),rep(-solve(t(X)%*%X)[1,1]*gamma^2/(n-2),n-p)))   )%*%t(U)%*%y > 0)
+## ##     abs(t.stat) > gamma
+## ## })
+## ## mean(test.res)
+
+## ## 22a expectation of test statistic--thresholding on p-val
+
+## require(MASS)
+## n <- 5;p <- 2
+## range <- 3
+## mu.c <- range/2
+## sigma.c <- sqrt( range^2/12 )
+## gamma <- runif(1,0,3)
+## X <- cbind(1,runif(n,0,5))
+## test.stats <- replicate(1e3, {
+##     y <- runif(n,0,range)
+##     lm0 <- lm(y~X)
+##     t.stat <- coef(summary(lm0))['(Intercept)','t value']
+##     beta0 <- coef(summary(lm0))['(Intercept)','Estimate']
+##     sd.beta0 <- coef(summary(lm0))['(Intercept)','Std. Error']
+##     beta0^2 - gamma^2*sd.beta0^2
+## })
+## mean.y <- mu.c*matrix(rep(1,n),ncol=1)
+## with(eigen(t(X)%*%X), { V <<- vectors; S <<- rbind(diag(sqrt(values)),matrix(0,nrow=n-p,ncol=p)) })
+## S.inv <- rbind(diag(1/diag(S)),matrix(0,nrow=n-p,ncol=p))
+## U <- (X%*%V)%*%(diag(1/diag(S)))
+## U <- cbind(U,Null(X))
+## ## S.inv <- diag(c(1/diag(S)[1:p],rep(0,n-p)))
+## vv <- matrix(c(V[1,]),nrow=1)
+## hist(test.stats)
+## ## abline(col=c('red','blue'),v=c(mean(test.stats),mu.c^2 + sigma.c^2*sum((V[1,]/diag(S))^2)*(1-gamma^2)))
+## ## c(mean(test.stats),mu.c^2 + sigma.c^2*sum((V[1,]/diag(S))^2)*(1-gamma^2))                               
+## abline(col=c('red','blue'),v=c(mean(test.stats),mu.c^2 + sigma.c^2*sum(X[,2]^2)/(n*sum(X[,2]^2)-sum(X[,2])^2)   *(1-gamma^2)))
+## c(mean(test.stats),mu.c^2 + sigma.c^2*sum(X[,2]^2)/(n*sum(X[,2]^2)-sum(X[,2])^2)   *(1-gamma^2))
+
+
+
+## ## 22b variance
+
+
+## ## simulation for variance formula
+## require(MASS)
+## n <- 20;p <- 2
+## range <- 3
+## mu.c <- range/2
+## sigma.c <- sqrt( range^2/12 )
+## mu3 <- 0
+## mu4 <- sigma.c^4*(-6/5+3)
+## gamma <- runif(1,0,3)
+## X <- cbind(1,runif(n,0,5))
+## test.stats <- replicate(1e3, {
+##     y <- runif(n,0,range)
+##     lm0 <- lm(y~X)
+##     t.stat <- coef(summary(lm0))['(Intercept)','t value']
+##     beta0 <- coef(summary(lm0))['(Intercept)','Estimate']
+##     sd.beta0 <- coef(summary(lm0))['(Intercept)','Std. Error']
+##     beta0^2 - gamma^2*sd.beta0^2
+## })
+## with(eigen(t(X)%*%X), { V <<- vectors; S <<- rbind(diag(sqrt(values)),matrix(0,nrow=n-p,ncol=p)) })
+## S.inv <- rbind(diag(1/diag(S)),matrix(0,nrow=n-p,ncol=p))
+## U <- (X%*%V)%*%(diag(1/diag(S)))
+## U <- cbind(U,Null(X))
+## ## S.inv <- diag(c(1/diag(S)[1:p],rep(0,n-p)))
+## vv <- matrix(c(V[1,]),nrow=1)
+## u <- -gamma^2*solve(t(X)%*%X)[1,1]/(n-2)
+## A <- S.inv%*%t(vv)%*%vv%*%t(S.inv) + diag(c(rep(0,p),rep(u,n-p)))
+## a <- c((V[1,]/diag(S))^2,rep(u,n-p))
+## theta <- mu.c*matrix(colSums(U),ncol=1)
+## var(test.stats)
+## (mu4-3*sigma.c^4)*sum(a^2) + 2*sigma.c^4*sum(diag(A%*%A)) + 4*sigma.c^2*t(theta)%*%A%*%A%*%theta + 4*mu3*t(theta)%*%A%*%a
+## R <- function(j)sum((V[1,]/diag(S))^j)
+## (mu4-sigma.c^4)*(R(4)+(n-2)*u^2) + 4*sigma.c^4*prod(V[1,]^2)/prod(diag(S)^2) + 4*sigma.c^2*mu.c^2*R(2)+4*mu3*mu.c*R(3) ##22b3
+
+## ## simplify variance formula
+## require(MASS)
+## n <- 5;p <- 2
+## range <- 3
+## mu.c <- range/2
+## sigma.c <- sqrt( range^2/12 )
+## gamma <- 2#runif(1,0,3)
+## X <- cbind(1,runif(n,0,5))
+## ## test.stats <- replicate(1e3, {
+## ##     y <- runif(n,0,range)
+## ##     lm0 <- lm(y~X)
+## ##     t.stat <- coef(summary(lm0))['(Intercept)','t value']
+## ##     beta0 <- coef(summary(lm0))['(Intercept)','Estimate']
+## ##     sd.beta0 <- coef(summary(lm0))['(Intercept)','Std. Error']
+## ##     beta0^2 - gamma^2*sd.beta0^2
+## ## })
+## mean.y <- mu.c*matrix(rep(1,n),ncol=1)
+## with(eigen(t(X)%*%X), { V <<- vectors; S <<- rbind(diag(sqrt(values)),matrix(0,nrow=n-p,ncol=p)) })
+## S.inv <- rbind(diag(1/diag(S)),matrix(0,nrow=n-p,ncol=p))
+## U <- (X%*%V)%*%(diag(1/diag(S)))
+## U <- cbind(U,Null(X))
+## ## S.inv <- diag(c(1/diag(S)[1:p],rep(0,n-p)))
+## vv <- matrix(c(V[1,]),nrow=1)
+## u <- -gamma^2*solve(t(X)%*%X)[1,1]/(n-2)
+## A <- S.inv%*%t(vv)%*%vv%*%t(S.inv) + diag(c(rep(0,p),rep(u,n-p)))
+## a <- c((V[1,]/diag(S))^2,rep(u,n-p))
+## theta <- mu.c*matrix(colSums(U),ncol=1)
+## sum(a*a) - (sum((V[1,]/diag(S))^4) + (n-2)*u^2)
+## t(theta)%*%A%*%A%*%theta
+## mu.c^2*  sum((colSums(U)[1:2]^2)*(V[1,]/diag(S))^4)
+## t(theta)%*%A%*%a
+## mu.c*(   sum((colSums(U)[1:2])*(V[1,]/diag(S))^4) + prod(V[1,])/prod(diag(S))*( sum((colSums(U)[2:1])*(V[1,]/diag(S))^2) )  )
+## mu.c*(  sum((V[1,]/diag(S))^3) * sum(colSums(U)[1:2]*V[1,]/diag(S)) )
+## mu.c*(  sum((V[1,]/diag(S))^3) )#22b1
+## sum(a*a) + 2*(prod(V[,1])/prod(diag(S)))^2 - sum(diag(A%*%A)) 
+## (t(theta)%*%A%*%A%*%theta)/mu.c^2
+## sum(colSums(U)[1:2]^2*((V[1,]/diag(S))^4+(prod(V[1,])/prod(diag(S)))^2)) + 2*prod(colSums(U)[1:2])*prod(V[1,])/prod(diag(S))*sum((V[1,]/diag(S))^2)
+## sum(colSums(U)[1:2]^2*((V[1,]/diag(S))^4)) + 2*prod(colSums(U)[1:2])*prod(V[1,])/prod(diag(S))*sum((V[1,]/diag(S))^2) +n*(prod(V[1,])/prod(diag(S)))^2
+## (t(theta)%*%A%*%A%*%theta)/mu.c^2 - sum((V[1,]/diag(S))^2)##22b2
+## R <- function(j)sum((V[1,]/diag(S))^j)
+## (mu4-sigma.c^4)*(R(4)+(n-2)*u^2) + 4*sigma.c^4*prod(V[1,]^2)/prod(diag(S)^2) + 4*sigma.c^2*mu.c^2*R(2)+4*mu3*mu.c*R(3) ##22b3
+## c((mu4-sigma.c^4)*(R(4)+(n-2)*u^2), + 4*sigma.c^4*prod(V[1,]^2)/prod(diag(S)^2), + 4*sigma.c^2*mu.c^2*R(2),+4*mu3*mu.c*R(3))
+## (mu4-sigma.c^4)*(R(2)^2+(n-2)*u^2)+(6*sigma.c^4-2*mu4)*prod(V[1,]^2)/prod(diag(S)^2) +4*sigma.c^2*mu.c^2*R(2)+4*mu3*mu.c*R(3)
+
+
+
+
+
+## ## chebychev bound
+## require(MASS)
+## n <- 10;p <- 2
+## range <- 5
+## mu.c <- range/2
+## sigma.c <- sqrt( range^2/12 )
+## mu3 <- integrate(function(x)(x-mu.c)^3*1/range,0,range)$val
+## ## mu4 <- sigma.c^4*(-6/5+3)
+## mu4 <- integrate(function(x)(x-mu.c)^4*1/range,0,range)$val
+## gamma <- .2#runif(1,0,3)
+## X <- cbind(1,runif(n,0,1))
+## test.stats <- replicate(1e3, {
+##     y <- runif(n,0,range)
+##     lm0 <- lm(y~X)
+##     t.stat <- coef(summary(lm0))['(Intercept)','t value']
+##     beta0 <- coef(summary(lm0))['(Intercept)','Estimate']
+##     sd.beta0 <- coef(summary(lm0))['(Intercept)','Std. Error']
+##     beta0^2 - gamma^2*sd.beta0^2 
+## })
+## hist(test.stats)
+## mean(test.stats)
+## with(eigen(t(X)%*%X), { V <<- vectors; S <<- rbind(diag(sqrt(values)),matrix(0,nrow=n-p,ncol=p)) })
+## S.inv <- rbind(diag(1/diag(S)),matrix(0,nrow=n-p,ncol=p))
+## U <- (X%*%V)%*%(diag(1/diag(S)))
+## U <- cbind(U,Null(X))
+## ## S.inv <- diag(c(1/diag(S)[1:p],rep(0,n-p)))
+## vv <- matrix(c(V[1,]),nrow=1)
+## u <- -gamma^2*solve(t(X)%*%X)[1,1]/(n-2)
+## A <- S.inv%*%t(vv)%*%vv%*%t(S.inv) + diag(c(rep(0,p),rep(u,n-p)))
+## a <- c((V[1,]/diag(S))^2,rep(u,n-p))
+## theta <- mu.c*matrix(colSums(U),ncol=1)
+## ## (mu4-3*sigma.c^4)*sum(a^2) + 2*sigma.c^4*sum(diag(A%*%A)) + 4*sigma.c^2*t(theta)%*%A%*%A%*%theta + 4*mu3*t(theta)%*%A%*%a
+## R <- function(j)sum((V[1,]/diag(S))^j)
+## true.var <- (mu4-sigma.c^4)*(R(4)+(n-2)*u^2) + 4*sigma.c^4*prod(V[1,]^2)/prod(diag(S)^2) + 4*sigma.c^2*mu.c^2*R(2)+4*mu3*mu.c*R(3) ##22b3
+## true.mean <- mu.c^2 + sigma.c^2*sum(X[,2]^2)/(n*sum(X[,2]^2)-sum(X[,2])^2)   *(1-gamma^2)
+## stopifnot(true.mean>0)
+## c(skew.hat=mean((test.stats-mean(test.stats))^3))
+## c(var.hat=var(test.stats),var=true.var)
+## c(mean.hat=mean(test.stats),mean=true.mean)
+## c(p=mean(test.stats<0),bound=true.var/true.mean^2)
+
+
+
+## ## chebychev bound using truncated data 
+## require(MASS)
+## n <- 5;p <- 2
+## c <- 0
+## gamma <- qt(.95,df=n-p)
+## f <- function(x)dt(x,df=4.5)
+## f <- function(x)dexp(-x+1)
+## f <- function(x)dunif(x,-10,10)
+## tail.mass <- integrate(f,c,Inf)$val
+## stopifnot(tail.mass>0)
+## f.c <- function(x)f(x)*(x>c)/tail.mass
+## F.c <- Vectorize(function(x)integrate(f.c,c,x)$val)
+## rf.c <- function(n)sapply(runif(n),function(u)uniroot(function(x)u-F.c(x),c(c,30))$root)
+## mu.c <- integrate(function(x)x*f.c(x),-Inf,Inf)$val
+## sigma.c <- sqrt(integrate(function(x)(x-mu.c)^2*f.c(x),-Inf,Inf)$val)
+## mu3 <- integrate(function(x)(x-mu.c)^3*f.c(x),-Inf,Inf)$val
+## mu4 <- integrate(function(x)(x-mu.c)^4*f.c(x),-Inf,Inf)$val
+## X <- cbind(1,runif(n,0,50))
+## ## X <- cbind(1,rchisq(n,df=10))
+## y <- rf.c(1e3)
+## curve(F.c,-5,5)
+## hist(y);abline(v=c(mean(y),mu.c),col=c('red','blue'))
+## c(mean((y-mu.c)^2),sigma.c^2)
+## c(mean((y-mean(y))^3),mu3)
+## c(mean((y-mean(y))^4),mu4)
+## test.stats <- replicate(1e2, {
+##     z <- rf.c(n)
+##     lm0 <- lm(z~X)
+##     t.stat <- coef(summary(lm0))['(Intercept)','t value']
+##     beta0 <- coef(summary(lm0))['(Intercept)','Estimate']
+##     sd.beta0 <- coef(summary(lm0))['(Intercept)','Std. Error']
+##     beta0^2 - gamma^2*sd.beta0^2 
+## })
+## hist(test.stats)
+## mean(test.stats)
+## with(eigen(t(X)%*%X), { V <<- vectors; S <<- rbind(diag(sqrt(values)),matrix(0,nrow=n-p,ncol=p)) })
+## S.inv <- rbind(diag(1/diag(S)),matrix(0,nrow=n-p,ncol=p))
+## U <- (X%*%V)%*%(diag(1/diag(S)))
+## U <- cbind(U,Null(X))
+## ## S.inv <- diag(c(1/diag(S)[1:p],rep(0,n-p)))
+## vv <- matrix(c(V[1,]),nrow=1)
+## u <- -gamma^2*solve(t(X)%*%X)[1,1]/(n-2)
+## A <- S.inv%*%t(vv)%*%vv%*%t(S.inv) + diag(c(rep(0,p),rep(u,n-p)))
+## a <- c((V[1,]/diag(S))^2,rep(u,n-p))
+## theta <- mu.c*matrix(colSums(U),ncol=1)
+## ## (mu4-3*sigma.c^4)*sum(a^2) + 2*sigma.c^4*sum(diag(A%*%A)) + 4*sigma.c^2*t(theta)%*%A%*%A%*%theta + 4*mu3*t(theta)%*%A%*%a
+## R <- function(j)sum((V[1,]/diag(S))^j)
+## true.var <- (mu4-sigma.c^4)*(R(4)+(n-2)*u^2) + 4*sigma.c^4*prod(V[1,]^2)/prod(diag(S)^2) + 4*sigma.c^2*mu.c^2*R(2)+4*mu3*mu.c*R(3) ##22b3
+## true.mean <- mu.c^2 + sigma.c^2*sum(X[,2]^2)/(n*sum(X[,2]^2)-sum(X[,2])^2)   *(1-gamma^2)
+## stopifnot(true.mean>0)
+## c(skew.hat=mean((test.stats-mean(test.stats))^3))
+## c(var.hat=var(test.stats),var=true.var)
+## c(mean.hat=mean(test.stats),mean=true.mean)
+## c(p=mean(test.stats<0),bound=true.var/true.mean^2,bound.hat=var(test.stats)/mean(test.stats)^2)
+
+
+
+
+
+
+## ## ## power for gaussian error regressing on 1 vector vs both covariates
+## ## n <- 10
+## ## alpha <- 1.5
+## ## X <- cbind(1,runif(n,0,3))
+## ## mu.c <- 1
+## ## mu.cs <- seq(0,4,length.out=20)
+## ## by.mu.c <- sapply(mu.cs, function(mu.c) {
+## ##     test.stats <- replicate(1e3, {
+## ##     y <- rnorm(n,mean=mu.c)
+## ##     sapply(list(apprx=X[,1],full=X), function(X) {
+## ##         lm0 <- lm(y~X)
+## ##         t.stat <- coef(summary(lm0))['(Intercept)','t value']
+## ##         beta0 <- coef(summary(lm0))['(Intercept)','Estimate']
+## ##         sd.beta0 <- coef(summary(lm0))['(Intercept)','Std. Error']
+## ##         beta0^2 - alpha^2*sd.beta0^2
+## ##     })
+## ##     })
+## ## ## apply(test.stats,1,summary)
+## ## rowMeans(test.stats<0)
+## ## ## hist(test.stats)
+## ## })
+## ## plot(mu.cs,1-by.mu.c['full',],type='l')
+## ## lines(mu.cs,1-by.mu.c['apprx',],lty=2)
+
+
+## source('misc.R')
+## svd.fat <- function(X) {
+##     n <- nrow(X); p <- ncol(X)
+##     with(eigen(t(X)%*%X), { V <<- vectors; S <<- rbind(diag(sqrt(values)),matrix(0,nrow=n-p,ncol=p)) })
+##     S.inv <- rbind(diag(1/diag(S)),matrix(0,nrow=n-p,ncol=p))
+##     U <- (X%*%V)%*%(diag(1/diag(S)))
+##     U <- cbind(U,MASS::Null(X))
+##     return(list(U=U,S=S,V=V,S.inv=S.inv))
+## }
+
+## c <- .5
+## n <- 2
+## B <- 1e4
+## X <- cbind(1,runif(n))
+## with(svd.fat(X), {U <<- U; S <<- S; V <<- V} )
+## y <- matrix(rnorm.trunc(B,1,1.2,lower=c),nrow=2)
+
+## op <- par(mfrow=c(3,2))
+## plot(y[1,],y[2,],xlim=c(-6,6),ylim=c(-6,6),asp=1,pch='.')
+## with(list(y=t(U)%*%y),plot(y[1,],y[2,],xlim=c(-6,6),ylim=c(-6,6),asp=1,pch='.'))
+## ## par(op)
+## ## diag(S) <- c(2,.2)
+## ## op <- par(mfrow=c(1,2))
+## with(list(y=S%*%y),plot(y[1,],y[2,],xlim=c(-6,6),ylim=c(-6,6),asp=1,pch='.'))
+## with(list(y=S%*%t(U)%*%y),plot(y[1,],y[2,],xlim=c(-6,6),ylim=c(-6,6),asp=1,pch='.'))
+## ## par(op)
+## with(list(y=S%*%y),plot(y[1,],y[2,],xlim=c(-6,6),ylim=c(-6,6),asp=1,pch='.'))
+## with(list(y=U%*%S%*%t(U)%*%y),plot(y[1,],y[2,],xlim=c(-6,6),ylim=c(-6,6),asp=1,pch='.'))
+## par(op)
+
+## pairs <- replicate(1e3, {
+## y <- rnorm.trunc(n,1,1.2,lower=c)
+## c(y[1],t(U)[,1]%*%y)
+## })
+## op <- par(mfrow=c(1,2))
+## hist(pairs[1,])
+## hist(pairs[2,])
+## par(op)
+## qqplot(pairs[1,],pairs[2,])
+
+
+
+
+
+##     ## X <- cbind(1,runif(n,0,5))
+##     ## with(eigen(t(X)%*%X), { V <<- vectors; S <<- rbind(diag(sqrt(values)),matrix(0,nrow=n-p,ncol=p)) })
+##     ## S.inv <- rbind(diag(1/diag(S)),matrix(0,nrow=n-p,ncol=p))
+##     ## U <- (X%*%V)%*%(diag(1/diag(S)))
+##     ## U <- cbind(U,Null(X))
+
+
+
+## source('misc.R')
+## theta <- -pi/10
+## M <- matrix(c(cos(theta),sin(theta),-sin(theta),cos(theta)),nrow=2)
+## n <- 1e4
+## x <- matrix(rnorm.trunc(n,0,1,0),nrow=2)
+## plot(x[1,],x[2,],xlim=c(-6,6),ylim=c(-6,6),asp=1,pch='.')
+## y <- t(M)%*%x
+## plot(y[1,],y[2,],xlim=c(-6,6),ylim=c(-6,6),asp=1,pch='.')
+## cor(y[1,],y[2,])
+
+
+
+
+## require(mvtnorm)
+## require(cubature)
+## require(pracma)
+## n <- 2
+## mean <- rep(0,n)
+## theta <- pi/4
+## sigma <- matrix(c(cos(pi/4),sin(pi/4),-sin(pi/4),cos(pi/4)),nrow=2)
+## sigma <- matrix(c(-1,-1,1,-1),nrow=2); sigma <- sigma%*%diag(c(.1,2))%*%t(sigma)
+## plot(rmvnorm(1e3,mean=mean,sigma=sigma),asp=1)
+## pmvnorm(c(0,0),c(Inf,Inf),mean,sigma=sigma)
+## adaptIntegrate(function(y)dmvnorm(y,mean=mean,sigma=sigma),c(0,0),c(Inf,Inf))$integral
+
+
+
+## n <- 1
+## c <- 1.2
+## t <- .3
+## A <- matrix(.5,nrow=n)
+## A <- as.vector(A)
+## integrate(function(y)exp(y*A*t*y)*dnorm(y),c,10)$val
+## (1-2*t*A)^(-1/2) * pnorm(c,sd=(1-2*t*A)^(-1/2),lower.tail=FALSE)
+
+## n <- 2
+## c <- c(1,1)
+## t <- .1
+## A <- matrix(runif(4),nrow=n); A <- A+t(A); A <- A%*%t(A)
+## A <- diag(2)
+## ## adaptIntegrate(function(y)exp(t*(A[1,1]*y[1]^2+A[2,2]*y[2]^2))*dmvnorm(y),c(0,0),7*c(1,1))$integral
+## Sigma <- solve(diag(n) - 2*t*A)
+## ## integral2(function(y1,y2)exp(t*(A[1,1]*y1^2+A[2,2]*y2^2))*dmvnorm(c(y1,y2)),0,5,0,5)
+## Sigma.root <- with(eigen(Sigma), vectors%*%diag(sqrt(values))%*%t(vectors))
+## with(eigen(Sigma), { P <<- vectors; Lambda <<- diag(values) })
+## sigma.c <- P%*%diag(1/sqrt(diag(Lambda)))%*%t(P)%*%c
+## ##with(eigen(Sigma), vectors%*%diag(1/sqrt(values))%*%t(vectors)%*%c)
+## as.numeric(pcubature(function(y)exp(t*matrix(y,nrow=1)%*%A%*%matrix(y,nrow=n))*dmvnorm(y),c,10*c(1,1)))
+## as.numeric(pcubature(function(y)exp(-1/2*matrix(y,nrow=1)%*%(diag(2)-2*t*A)%*%matrix(y,nrow=n)),c,10*c(1,1)))/(2*pi)^(n/2)
+## as.numeric(det(Sigma)^(1/2)*pmvnorm(lower=c,upper=c(Inf,Inf),sigma=Sigma))
+## as.numeric(det(Sigma)^(1/2)*pmvnorm(lower=c(sigma.c[1],sigma.c[2]),upper=c(Inf,Inf)))
+## sigma.c <- P%*%diag(1/sqrt(diag(Lambda)))%*%t(P)%*%c
+## as.numeric(det(Sigma)^(1/2)*pmvnorm(lower=c(sigma.c[1],sigma.c[2]),upper=c(Inf,Inf)))
+
+## sigma.c <- diag(1/sqrt(diag(Lambda)))%*%t(P)%*%c
+## as.numeric(pmvnorm(lower=as.numeric(P%*%c),upper=c(Inf,Inf)))
+
+
+## as.numeric(pcubature(function(y)dmvnorm(c(Lambda%*%y)),c,10*c(1,1)))
+## as.numeric(pcubature(function(y)dmvnorm(c(P%*%y)),as.numeric(diag(1/diag(Lambda))%*%c),10*c(1,1)))
+## as.numeric(pcubature(function(y)dmvnorm(y),as.numeric(Lambda%*%c),10*c(1,1)))
+
+## integrate(function(y)dnorm(1.4*y),1,Inf)$val
+## integrate(function(y)dnorm(y),1.4,Inf)$val
+
+
+
+## require(mvtnorm)
+## require(cubature)
+## n <- 2
+## mean <- rep(0,n)
+## theta <- pi/4
+## sigma <- matrix(c(cos(pi/4),sin(pi/4),-sin(pi/4),cos(pi/4)),nrow=2)
+## sigma <- matrix(c(-1,-1,1,-1),nrow=2); sigma <- sigma%*%diag(c(.1,2))%*%t(sigma)
+## plot(rmvnorm(1e3,mean=mean,sigma=sigma),asp=1)
+## pmvnorm(c(0,0),c(Inf,Inf),mean,sigma=sigma)
+## adaptIntegrate(function(y)dmvnorm(y,mean=mean,sigma=sigma),c(0,0),c(Inf,Inf))$integral
+
+## ## standard multivariate gaussian cdf
+## n <- 2
+## c <- 2
+## cs <- seq(0,2,length.out=10)
+## tails <- sapply(cs,function(c)adaptIntegrate(function(y)dmvnorm(y,mean=rep(0,n),sigma=diag(n)),lower=rep(c,n),upper=rep(Inf,n))$integral)
+## plot(cs,tails,type='l')
+
+
+## n <- 3
+## c <- 1
+## t <- .4
+## adaptIntegrate(function(y)exp(t*sum(y^2))*dmvnorm(y,mean=rep(0,n),sigma=diag(n)),lower=rep(c,n),upper=rep(20,n))$integral #/ (1-pnorm(c))^n
+## adaptIntegrate(function(y)exp( -1/2*sum(y^2)*(1-2*t)   ),lower=rep(c,n),upper=rep(10,n))$integral /(2*pi)^(n/2)
+## (1-2*t)^(-n/2)*(1-pnorm(c*sqrt(1-2*t)))^n
+
+
+## double.fac <- function(n) {
+##     if(n<=0)return(1)
+##     if(n%%2==0) factorial(floor(n/2))*2^(floor(n/2)) else factorial(n)/2^(floor(n/2))/factorial(floor(n/2))
+## }
+## double.fac <- Vectorize(double.fac)
+## ## double.fac(6)
+## ## double.fac(5)
+## ## double.fac(2)
+## ## double.fac(3)
+## a <- 1
+## b <- 3
+## n <- sample(1:20,1)
+## ## dnorm(a)*a-dnorm(b)*b+pnorm(b)-pnorm(a)
+## ## a^2*dnorm(a)-b^2*dnorm(b)+2*(dnorm(a)-dnorm(b))
+## integrate(function(x)dnorm(x)*x^(n-1),a,b)$val
+## ## double.fac(n-2)*( sum((dnorm(a)*a^(n-2*(1:floor(n/2))) - dnorm(b)*b^(n-2*(1:floor(n/2))))/double.fac(n-2-2*(1:floor(n/2)-1))) + (pnorm(b)-pnorm(a))*(n%%2==1))
+## I <- function(n)double.fac(n-2)*( sum((dnorm(a)*a^(n-2*(1:floor(n/2))) - dnorm(b)*b^(n-2*(1:floor(n/2))))/double.fac(n-2-2*(1:floor(n/2)-1))) + (pnorm(b)-pnorm(a))*(n%%2==1))
+## I(n)
+## sector.vol <- function(I0,n) I0 * 2*pi^(n/2)/gamma(n/2)/2^n
+## ## R <- 3
+## ## sector.vol(R^2/2,2)
+## ## pi*R^2/4
+
+
+## double.fac <- function(n) {
+##     if(n<=0)return(1)
+##     if(n%%2==0) factorial(floor(n/2))*2^(floor(n/2)) else factorial(n)/2^(floor(n/2))/factorial(floor(n/2))
+## }
+## double.fac <- Vectorize(double.fac)
+## I <- function(n,a,b)double.fac(n-2)*( sum((dnorm(a)*a^(n-2*(1:floor(n/2))) - dnorm(b)*b^(n-2*(1:floor(n/2))))/double.fac(n-2-2*(1:floor(n/2)-1))) + (pnorm(b)-pnorm(a))*(n%%2==1))
+## S <- function(n)2*pi^((n+1)/2)/gamma((n+1)/2)
+## n <- 2
+## c <- .4
+## R <- 1.3
+## curve((R*cos(theta)-c)^2+(R*sin(theta)-c)^2,atan(c/sqrt(R^2-c^2)),atan(sqrt(R^2-c^2)/c),xname='theta')
+## integrate(function(x)(pnorm(sqrt(R^2-x^2))-pnorm(c))*dnorm(x),c,R)$val
+## 1/4*S(n-1)*I(2,sqrt(2)*c,R)
+## 1/4*S(n-1)*I(2,c,R)
+## I(2,c,R)
+## integrate(function(x)x*dnorm(x),c,R)$val
+
+
+
+## n <- 2
+## c <- .4
+## R <- 1.3
+## mgf <- function(t)(1-2*t)^(-n/2)/(1-pnorm(c))^n*(1-pnorm(c*sqrt(1-2*t)))^n 
+## 1-integrate(function(x)(pnorm(sqrt(R^2-x^2))-pnorm(c))*dnorm(x),c,R)$val/(1-pnorm(c))^2
+## t <- -4
+## mgf(t)/exp(R*t)
+## curve((1-2*t)^(-n/2)/(1-pnorm(c))^n*(1-pnorm(c*sqrt(1-2*t)))^n / exp(R*t),0,1/3,xname='t')
+
+
+## q <- 5
+## k <- 3
+## curve(pchisq(q,k,lower.tail=FALSE),.2,10,xname='q')
+## xs <- seq(.2,20,length.out=30)
+## ys <- sapply(xs,function(q)min((curve((1-2*t)^(-k/2)/exp(t*q),0,1/5,xname='t')$y)))
+## plot(xs,pchisq(xs,k,lower.tail=FALSE),type='l')
+## lines(xs,ys,col='red')
+
+## with(list(t=-.4),(1-2*t)^(-k/2)/exp(t*q))
+
+## source('misc.R')
+## n <- 10
+## pairs <- replicate(1e3, {
+##     x <- rchisq(n,df=10)
+##     y <- rnorm(n)#rnorm.trunc(n,0,1,1)
+## lm0 <- lm(y ~ x)
+## c(coef(lm0)[1],summary(lm0)$sigma)
+## })
+## plot(pairs[1,],pairs[2,])
+
+
+## integrate(function(x)sin(3*x)/x,.0001,100)
+
+
+
+## require(mvtnorm)
+## require(cubature)
+## require(pracma)
+## n <- 2
+## A <- matrix(rnorm(n^2),nrow=2); A <- A%*%t(A)
+## t <- .2
+## c <- .1
+
+## adaptIntegrate(function(y)exp(t*t(y)%*%A%*%y)*prod(dnorm(y)),c(c,c),c(5,5))$integral/ (1-pnorm(c))^n
+## adaptIntegrate(function(y)exp(-1/2*t(y)%*%(diag(n) - 2*t*A)%*%y),c(c,c),c(5,5))$integral / (1-pnorm(c))^n / (2*pi)^(n/2)
+
+## x0 <- 3
+## df <- 3
+## 1/2 - 1/pi*integrate(function(t)sin(-t*x0 + df/2*atan(2*t)) / t / (1+4*t^2)^(df/4),0,Inf)$val
+## pchisq(x0,df=df)
+
+
+
+## n <- 1e1
+## sigma <- rchisq(n,df=10)
+## y <- rnorm(n)
+## coef(lm((y/sigma) ~ I(1/sigma)))[1]
+## s <- function(j)sum(1/sigma^j)
+## 1/(n^2*(n-1)/n*var(1/sigma)) * sum((s(2) - s(1)/sigma)*y/sigma)
+## mu.c <- 2
+## mu.c + 1/n*sum((s(2)/n-s(1)/n/sigma)*(y/sigma-mu.c))/((n-1)/n*var(1/sigma))
+## X <- cbind(1,1/sigma)
+## P.X <- X%*%solve(t(X)%*%X)%*%t(X)
+## sum(P.X - 1/((n-1)*var(1/sigma))*cbind(1,1/sigma)%*%rbind(s(2)/n-s(1)/n*1/sigma,-s(1)/n+1/sigma))
+
+
+
+## ## ## 23
+## ## ## n <- 1e4
+## ## ## c <- 1
+## ## ## sigma <- sort(1/runif(n,1,5))
+## ## ## df <- log(n:1); df <- df+(2-min(df))
+## ## ## y <- sigma*sqrt((df-2)/df)*rt(n,df=df)
+## ## ## plot((y/sigma) ~ I(1/sigma))
+## ## ## kept <- y/sigma>c
+## ## ## plot((y/sigma)[kept] ~ I(1/sigma[kept]),xlim=c(0,5),ylim=c(0,4))
+
+## ## n <- 1e2
+## ## offset <- 65
+## ## sigma.inv <- 1:10+offset
+## ## dfs <- (rev(sigma.inv-offset)); dfs <- dfs+(2-min(dfs))
+## ## tails <- sapply(dfs, function(df) {
+## ##     y <- sqrt((df-2)/df)*rt(5e3,df=df)
+## ##     mean(y[y>c])
+## ## })
+## ## plot(sigma.inv,tails,xlim=c(0,n),ylim=c(0,2))
+## ## abline(lm(tails ~ sigma.inv))
+
+
+
+## ## 24
+
+## n <- 1e4
+## c <- 1.4
+## y <- rnorm(n)
+## x <- runif(n,0,5)
+## x <- sample(1:5,n,replace=TRUE)
+## keep <- y*x > c
+## j <- sample(unique(x),1)
+## mean(y[keep & x==j])
+## dnorm(c/j)/(1-pnorm(c/j))
+
+## source('misc.R')
+## n <- 1e3
+## a <- c(0,3)
+## c <- 1.4
+## x <- runif(n,a[1],a[2])
+## z <- rnorm.trunc(n,0,1,c*x)
+## mean(z)/mean(x)
+## 1/mean(a)*1/c*1/diff(a)*log((1-pnorm(c*a[1]))/(1-pnorm(c*a[2])))
+## ## integrate(function(x)dnorm(c*x)/(1-pnorm(c*x))*1/diff(a),a[1],a[2])$val
+## mean(z*x)/mean(x^2)
+## integrate(function(x)x*dnorm(c*x)/(1-pnorm(c*x)),a[1],a[2])$val*1/diff(a)*1/(diff(a)^2/12+mean(a)^2)
+
+## # E(z)/E(x) and E(xz)/E(x^2) for x ~ Unif
+## source('misc.R')
+## n <- 1e3
+## as <- seq(1.2,5,length.out=20)
+## c <- -5.4
+## pairs <- sapply(as, function(a2) {
+##     a <- c(1,a2)
+##     x <- runif(n,a[1],a[2])
+##     z <- rnorm.trunc(n,0,1,c*x)
+##     c(
+##         lhs=1/mean(a)*1/c*1/diff(a)*log((1-pnorm(c*a[1]))/(1-pnorm(c*a[2]))),
+##         rhs=integrate(function(x)x*dnorm(c*x)/(1-pnorm(c*x)),a[1],a[2])$val*1/diff(a)*1/(diff(a)^2/12+mean(a)^2)
+##     )
+## })
+## plot(as,pairs['lhs',],type='l',ylim=range(pairs))
+## lines(as,pairs['rhs',])
+
+
+## # E(z)/E(x) and E(xz)/E(x^2) for x ~ f.x
+## source('misc.R')
+## n <- 1e3
+## as <- seq(2,5,length.out=20)
+## c <- -2
+## pairs <- sapply(as, function(a2) {
+##     f.x <- function(x)dunif(x,a[1],a[2])#function(x)1/diff(a)*(x>=a[1])*(x<=a[2])
+##     ## f.x <- function(x)dchisq(x,df=a2*10)
+##     ## f.x <- function(x)dexp(x,rate=a2)
+##     a <- c(1,a2)
+##     x <- runif(n,a[1],a[2])
+##     z <- rnorm.trunc(n,0,1,c*x)
+##     c(
+##         lhs = 1/integrate(function(x)x*f.x(x),-5,5)$val*integrate(function(x)dnorm(c*x)/(1-pnorm(c*x))*f.x(x),-5,5)$val, # E(z)/E(x)
+##         rhs = 1/integrate(function(x)x^2*f.x(x),-5,5)$val*integrate(function(x)x*dnorm(c*x)/(1-pnorm(c*x))*f.x(x),-5,5)$val # E(xz)/E(x^2)
+##     )
+## })
+## plot(as,pairs['lhs',],type='l',ylim=range(pairs))
+## lines(as,pairs['rhs',],lty=2)
+
+
+
+
+## # E(z)/E(x) and E(xz)/E(x^2), choosing selection to enforce equality
+## source('misc.R')
+## n <- 1e3
+## as <- seq(1.2,5,length.out=20)
+## c <- -5.4
+## mu <- function(x)dnorm(x)/(1-pnorm(x))
+
+## pairs <- sapply(as, function(a2) {
+##     a <- c(1,a2)
+##     x <- runif(n,a[1],a[2])
+##     cutoffs <- sapply(x, function(x1)uniroot(function(u)mu(u)-x1,c(0,5))$root)
+##     z <- rnorm.trunc(n,0,1,cutoffs)
+##     c(
+##         lhs=1/mean(a)*1/c*1/diff(a)*log((1-pnorm(c*a[1]))/(1-pnorm(c*a[2]))),
+##         rhs=integrate(function(x)x*dnorm(c*x)/(1-pnorm(c*x)),a[1],a[2])$val*1/diff(a)*1/(diff(a)^2/12+mean(a)^2)
+##     )
+## })
+## plot(as,pairs['lhs',],type='l',ylim=range(pairs))
+## lines(as,pairs['rhs',])
+## apply(pairs,2,diff)
+
+## ## 24a simulation for inconsistent egger test
+## n <- 1e3
+## mu <- function(x)dnorm(x)/(1-pnorm(x))
+## a <- c(1,5)
+## x <- runif(n,a[1],a[2])
+## cutoffs <- sapply(x, function(x1)uniroot(function(u)mu(u)-x1,c(0,5))$root)
+## y <- rnorm(n,sd=1/x)
+## keep <- y*x > cutoffs
+## with(list(y=y[keep],x=x[keep]), summary(lm(I(y*x) ~ x)))
+
+## ## switch to sigma (=1/x) notation
+## n <- 1e3
+## mu <- function(x)exp(log(dnorm(x))-log(1-pnorm(x)))
+## a <- c(1,5)
+## sigma <- 1/runif(n,a[1],a[2])
+## cutoffs <- sapply(1/sigma, function(x1)uniroot(function(u)mu(u)-x1,c(0,5))$root)
+## y <- rnorm(n,sd=sigma)
+## keep <- y/sigma > cutoffs
+## with(list(y=y[keep],sigma=sigma[keep]), summary(lm(I(y/sigma) ~ I(1/sigma))))
+
+## ## plot inverse guassian ie the cutoff function
+## op <- par(mfrow=c(1,3))
+## with(list(points=curve(dnorm(x)/(1-pnorm(x)),-3,5,xlim=c(-5,5))),lines(points$y,points$x,type='l',xlab=expression(paste(1/sigma)),ylab='cutoff'))
+## n <- 1e4
+## mu <- function(x)dnorm(x)/(1-pnorm(x))
+## mu <- function(x)exp(log(dnorm(x))-log(1-pnorm(x)))
+## a <- c(.4,5)
+## ## a <- c(5,8)
+## sigma <- 1/runif(n,a[1],a[2])
+## cutoffs <- sapply(1/sigma, function(x1)uniroot(function(u)mu(u)-x1,c(a[1]-2,a[2]+2))$root)
+## y <- rnorm(n,sd=sigma)
+## keep <- y/sigma > cutoffs
+## plot(1/sigma,y,cex=.5)
+## with(list(y=y[keep],sigma=sigma[keep]), points(1/sigma,y,col='blue',cex=.5))
+## plot(1/sigma,y/sigma,cex=.5)
+## with(list(y=y[keep],sigma=sigma[keep]), points(1/sigma,y/sigma,col='blue',cex=.5))
+## par(op)
+
+## ## 25
+## n <- 1e3
+## c <- .5
+## sigma <- 1/runif(n,2,5)
+## y <- rnorm(n,sd=sigma)
+## keep <- y>c
+## cor((y/sigma)[keep],1/sigma[keep])
+## mean((y/sigma)[keep]) / mean(1/sigma[keep])
+## plot(1/sigma,y/sigma)
+## points(1/sigma[keep],(y/sigma)[keep],col='red')
+## with(list(y=y[keep],sigma=sigma[keep]),summary(lm(I(y/sigma)~I(1/sigma))))
+
+
+## n <- 1e3
+## s <- runif(n, 0,5)
+## c <- 1
+## mu <- function(x)exp(log(dnorm(x))-log(1-pnorm(x)))
+## cs <- seq(-20,2,length.out=300)
+## by.c <- sapply(cs, function(c) {
+##     mu.c <- mu(s*c)
+##     cov(mu.c,s) / mean(mu.c)
+## })
+## plot(cs,by.c,type='l')
+
+
+
+
+## n <- 2e4
+## c <- 1
+## cs <- seq(-1,.0,length.out=20)
+## by.c <- sapply(cs, function(c) {
+##     s <- runif(n, 5,6)
+##     ## s <- rexp(n,1/10)
+##     ## s <- rchisq(n,3)
+##     ## z <- runif(n,-1/2,1/2)
+##     z <- rnorm(n)
+##     keep <- z>s*c
+##     with(list(s=s[keep],z=z[keep]),c(mean.s=mean(s),mean.s2=mean(s^2),mean.z=mean(z),mean.zs=mean(z*s),sd.s=sd(s),sd.z=sd(z),cov=cov(s,z)))
+## })
+## plot(cs,by.c['sd.s',],type='l',ylim=range(by.c[c('sd.s','sd.z'),]))
+## lines(cs,by.c['sd.z',],lty=2)
+## plot(cs,by.c['mean.s',],type='l',ylim=range(by.c[c('mean.s','mean.z'),]))
+## lines(cs,by.c['mean.z',],lty=2)
+## plot(cs,by.c['cov',]/by.c['sd.s',]^2,type='l')
+## lines(cs,by.c['mean.z',]/by.c['mean.s',],lty=2)
+## lines(cs,by.c['sd.z',]/by.c['sd.s',],col='blue')
+## abline(v=0)
+## plot(cs,by.c['mean.zs',]/by.c['mean.z',],ylim=range(c(by.c['mean.s2',]/by.c['mean.s',],by.c['mean.zs',]/by.c['mean.z',])))
+## lines(cs,by.c['mean.s2',]/by.c['mean.s',])
+## plot(cs,by.c['mean.zs',],ylim=range(by.c[c('mean.zs','mean.z'),]));lines(cs,by.c['mean.z',])
+
+## n <- 2e4
+## c <- 1
+## mu <- function(x)dnorm(x)/(1-pnorm(x))
+## s <- runif(n, 0,3)
+## z <- rnorm(n)
+## keep <- z>s*c
+## with(list(s=s[keep],z=z[keep]),{
+##     plot(z~s,cex=.2)
+##     lines(s,mu(s),col='red')
+##     abline(lm(z~s),col='blue')
+##     })
+
+
+
+## n <- 2e4
+## c <- 1.
+## mu <- function(x)exp(log(dnorm(x))-log(1-pnorm(x)))
+## s <- runif(n, 0,1)
+## ## s <- rexp(n,1)
+## ## s <- rchisq(n,10)
+## s <- rbeta(n,5,1)*8
+## mu.s <- mu(s)
+## plot(s, s/mean(s) - mu.s/mean(mu.s))
+## plot(s,mu.s/mean(mu.s),asp=1);abline(a=0,b=1/mean(s),col='red')
+
+## abline(lm(curve(mu,0,8)$y ~ curve(mu,0,8)$x),col='red')
+
+## curve(c*mu(c*x)*(mu(c*x)-c*x),0,5,ylim=c(0,5))
+## curve(mu(c*x),add=TRUE,col='red')
+
+## curve(mu(x)*(mu(x)-x),0,5)
+
+
+## curve(pnorm(x)/(x^2*(1-pnorm(x))),3,5)
+
+## ## 26
+## require(EnvStats)
+## c <- 3
+## F <- function(x)ppareto(x,location=1,shape=2)
+## f <- function(x)dpareto(x,location=1,shape=2)
+## F <- pnorm
+## f <- dnorm
+## F <- plnorm
+## f <- dlnorm
+## ## curve((x-c)/(1-F(x)),0,3)
+## ## curve(1/f(x),add=TRUE,col='red')
+## mu <- Vectorize(function(x)integrate(function(y)y*f(y),x,Inf)$val / (1-F(x)))
+## ## curve(mu,1,2)
+## curve(mu(x),1,5); abline(a=0,b=1,col='red')
+## curve(f(x)*(mu(x)-x),1,5)
+## curve(1-F(x),add=TRUE,col='red')
+## ## curve(1-F(x) - f(x)*(mu(x)-x),1,5)
+## curve(1- f(x)*(mu(x)-x)/(1-F(x)),1,5)
+
+
+## ## 26a checking u(s) is monotonic
+## c <- 2
+## F <- function(x)ppareto(x,location=1,shape=2)
+## f <- function(x)dpareto(x,location=1,shape=2)
+## F <- pnorm
+## f <- dnorm
+## F <- plnorm
+## f <- dlnorm
+## mu <- Vectorize(function(x)integrate(function(y)y*f(y),x,Inf)$val / (1-F(x)))
+## ## mu <- function(x)exp(log(dnorm(x))-log(1-pnorm(x)))
+## f.S <- function(s)dchisq(s,df=4) ## cant get accurate E(mu(cs)) with this dist
+## f.S <- function(s)dunif(s,1,2)
+## mean.S <- integrate(function(s)s*f.S(s),0,Inf)$val
+## mean.mu <- integrate(function(s)mu(c*s)*f.S(s),1,2)$val
+## curve(s/mean.S - mu(c*s)/mean.mu,0,7,xname='s')
+
+
+## ## 26b lognormal, varying c
+## F <- function(x)ppareto(x,location=1,shape=2)
+## f <- function(x)dpareto(x,location=1,shape=2)
+## F <- pnorm
+## f <- dnorm
+## F <- plnorm
+## f <- dlnorm
+## mu <- Vectorize(function(x)integrate(function(y)y*f(y),x,Inf)$val / (1-F(x)))
+## ## mu <- function(x)exp(log(dnorm(x))-log(1-pnorm(x)))
+## f.S <- function(s)dchisq(s,df=4) ## cant get accurate E(mu(cs)) with this dist
+## f.S <- function(s)dunif(s,0,2)
+## c <- 2
+## cs <- seq(0,3,length.out=10)
+## xlim <- c(0,1)
+## by.c <- lapply(cs,function(c) {
+##     mean.S <- integrate(function(s)s*f.S(s),0,Inf)$val
+##     mean.mu <- integrate(function(s)mu(c*s)*f.S(s),0,2)$val
+##     with(curve(s/mean.S - mu(c*s)/mean.mu,xname='s',xlim[1],xlim[2]),cbind(x,y))
+##     ## with(curve(s/mean.S - mu(c*s)/mean.mu,xname='s',xlim[1],xlim[2]),cbind(x,y))
+## })
+## plot(0,type='n',xlim=xlim,ylim=range(sapply(by.c,function(m)m[,'y'])))
+## invisible(sapply(by.c,function(m)lines(m[,'x'],m[,'y'])))
+
+
+## ## 26b trying power laws (unnormalized)
+## m <- 4
+## c <- 1.4
+## f <- function(x)1/x^m*(x>1)*(m-1)
+## F <- function(x)1-x^(1-m)
+## mu <- function(x)(1-m)/(2-m)*x
+## f.S <- function(s)dchisq(s,df=4) ## cant get accurate E(mu(cs)) with this dist
+## f.S <- function(s)dunif(s,0,2)
+## mean.S <- integrate(function(s)s*f.S(s),0,Inf)$val
+## mean.mu <- integrate(function(s)mu(c*s)*f.S(s),0,2)$val ## ==(1-m)/(2-m)*c
+## curve(s/mean.S - mu(c*s)/mean.mu,xname='s',0,3)
+## 1/mean.S - c/mean.mu*(1-m)/(2-m)
+
+## ## 26b trying power laws (normalized)
+## m <- 5
+## c <- 1.4
+## f <- function(x)1/x^m*(m-1)
+## F <- function(x)1-x^(1-m)
+## mu <- function(x)(1-m)/(2-m)*x
+## f.S <- function(s)dchisq(s,df=4) ## cant get accurate E(mu(cs)) with this dist
+## f.S <- function(s)dunif(s,0,2)
+## mean.S <- integrate(function(s)s*f.S(s),0,Inf)$val
+## mean.mu <- integrate(function(s)mu(c*s)*f.S(s),0,2)$val ## ==(1-m)/(2-m)*c
+## F.inv <- function(u)(1-u)^(1/(1-m))
+## ##mean(F.inv(runif(1e4))) - (m-1)/(m-2)
+## ## var(F.inv(runif(1e5))) - (m-1)/((m-2)^2*(m-3))
+## theta <- (m-1)/(m-2)
+## sigma <- (m-1)/((m-2)^2*(m-3))
+## f.Z <- function(z)sigma*f(z*sigma+theta)
+## F.Z <- function(z)1-(z*sigma+theta)^(1-m)
+## ## integrate(f.Z,(1-mu)/sigma,Inf)$val
+## ## integrate(function(z)f.Z(z)*z,(1-mu)/sigma,Inf)$val
+## mu <- function(x)(m-1)/(m-2)*x + (m-1)/(m-2)^2/sigma
+## x <- 1; mu(x) - integrate(function(z)z*f.Z(z),x,Inf)$val / (1-F.Z(x))
+
+## y <- F.inv(runif(1e5))
+## x <- seq(.4,4,length.out=100)
+## mu.hat <- sapply(x, function(cutoff)mean(y[y>cutoff]))
+## plot(x,mu.hat)
+## abline(a=0,b=(m-1)/(m-2),col='red');abline(a=0,b=1)
+
+
+## ## 27 begg with power law
+
+## m <- 5
+## n <- 1e5
+## c <- 1
+## f <- function(x)1/x^m*(m-1)
+## F <- function(x)1-x^(1-m)
+## mu <- function(x)(1-m)/(2-m)*x
+## f.S <- function(s)dchisq(s,df=4) ## cant get accurate E(mu(cs)) with this dist
+## f.S <- function(s)dunif(s,0,2)
+## mean.S <- integrate(function(s)s*f.S(s),0,Inf)$val
+## mean.mu <- integrate(function(s)mu(c*s)*f.S(s),0,2)$val ## ==(1-m)/(2-m)*c
+## F.inv <- function(u)(1-u)^(1/(1-m))
+## ##mean(F.inv(runif(1e4))) - (m-1)/(m-2)
+## ## var(F.inv(runif(1e5))) - (m-1)/((m-2)^2*(m-3))
+## y <- F.inv(runif(n))
+## with(list(f=Vectorize(function(s)s*mean(y[y>c/s]))), curve(f,0,2))
+## curve(s*mu(c/s),xname='s',add=TRUE,col='red')
+
+## f <- Vectorize(function(s)mean(y[y>c/s]))
+## curve(f,0,2)
+## curve(mu(c/s),xname='s',add=TRUE,col='red')
+## abline(h=f(1.5),lty=2)
+## abline(h=mu(c/1.5),col='red',lty=2)
+
+
+
+
+
+## ## 28 local power
+## curve(x*(dnorm(c(x))-dnorm(x)),5,5000)
+## mu <- function(x)exp(log(dnorm(x))-log(1-pnorm(x)))
+## curve(mu,-10,10,asp=1)
+## uniroot(function(x)mu(x)-3,c(-1,1),extendInt='yes')
+## with(curve(dnorm(x)/(1-pnorm(x)),-20,20),plot(y,x,type='l'))
+
+## ## t-test
+## n <- 10
+## q <- qt(1-.05/2,df=n)
+## mu <- .2
+## mus <- seq(0,1,length.out=100)
+## ## by.mu <- sapply(mus, function(mu) mean(replicate(1e3, mean( with(list(y=rnorm(n,mu)),mean(mean(y)/(sd(y)/sqrt(n)) > q)) ) )))
+## by.mu <- sapply(mus, function(mu) mean(replicate(5e2, mean( with(list(y=mu+runif(n,-1/2,1/2)*sqrt(12)),mean(mean(y)/(sd(y)/sqrt(n)) > q)) ) )))
+## plot(mus,by.mu,type='l')
+## h <- sqrt(n)*mus
+## points(mus,1-pnorm(q-h),col='red')
+
+## ## egger test
+## source('misc.R')
+## n <- 50
+## q <- qt(1-.05/2,df=n)
+## cutoffs <- seq(-5,5,length.out=100)
+## by.cutoff <- sapply(cutoffs, function(cutoff) {
+##     mean(replicate(3e2, {
+##         sigma <- runif(n)+1
+##         y <- rnorm.trunc(n,0,sigma,cutoff)#rnorm(n,mu,sigma)
+##         s <- 1/sigma
+##         z <- y*s
+##         beta0 <- mean(z) - mean(s)*cov(z,s)/var(s)
+##         RSS <- mean(z^2) - 1/((n-1)/n*var(s)) * (mean(s^2)*mean(z)^2 + mean(z*s)^2-2*mean(z*s)*mean(z)*mean(s))  
+##         sd.beta0 <- sqrt(mean(s^2)/(n-1)/var(s)) * sqrt(RSS*n/(n-2))
+##         t <- beta0 / sd.beta0
+##         t > q
+##     }))
+## })
+## plot(cutoffs,by.cutoff)
+
+## ## X <- cbind(1,s)
+##     ## P <- X%*%solve(t(X)%*%X)%*%t(X)
+##     ## t(z)%*%(diag(n)-P)%*%z 
+##     ##     cbind(mean(z),mean(z*s))%*%rbind(mean(s^2)-mean(s)*s, -mean(s)+s)%*%z / (n*(n-1)/n*var(s))
+##     ##     cbind(mean(z),mean(z*s))%*%rbind(mean(s^2)*mean(z)-mean(s)*mean(s*z), -mean(s)*mean(z)+mean(s*z)) / var(s)
+## ##     (  mean(z)*(mean(s^2)*mean(z)-mean(s)*mean(s*z)) + mean(z*s)*(-mean(s)*mean(z)+mean(s*z))  ) / var(s)
+## ## (    mean(z)^2*mean(s^2) - 2*mean(s)*mean(z)*mean(s*z)+mean(s*z)^2)  / var(s)
+## ##     (   1/(n/(n-1)*var(s)) * (mean(s^2)*mean(z)^2 + mean(z*s)^2-2*mean(z*s)*mean(z)*mean(s))   ) *(n/(n-2))
+## ##     t(z)%*%P%*%z
+## ##     cbind(mean(z),mean(z*s))%*%rbind(mean(s^2)-mean(s)*s, -mean(s)+s)%*%z / ((n-1)/n*var(s))
+## ##     (mean(z)^2*mean(s^2) - 2*mean(s)*mean(z)*mean(s*z)+mean(s*z)^2)  / ((n-1)/n*var(s))
+
+
+## ## selection model from lin paper
+
+## n <- 1e6
+## ## x <- rnorm(n)
+## x <- runif(n,-1/2,1/2)
+## idx <- x<0
+## x.tilde <- c(x[idx][as.logical(rbinom(sum(idx),1,.1))],x[!idx])
+## hist(x.tilde)
+
+
+## n <- 1e4
+## z <- rnorm(n)
+## cc <- runif(n,-1/2,1/2)
+## hist(z[z>cc])
+
+
+
+
+## ## 29 egger test asy power
+
+## ## 29a egger test asy normality
+## source('misc.R')
+## ## n <- 5000
+## ## q <- qt(1-.05/2,df=n)
+## q <- qnorm(1-.05)
+## h <- 1/2
+## rS <- function(n)runif(n,1,2)
+## E.s2 <- 1/12 + (3/2)^2
+## var.S <- 1/12
+## pZ <- function(q)punif(q,-1/2,1/2)
+## qZ <- function(u) qunif(u,-1/2,1/2)#(u-1/2)*(u>0)*(u<1)
+## rZ.c <- function(n,c) qZ(runif(n)*(1-pZ(c))+pZ(c))
+## theta.to.cutoff <- function(theta)2*theta-1/2
+## ns <- seq(10,500,length.out=100)
+## by.n <- sapply(ns, function(n) {
+##     theta <- h/sqrt(n)
+##     cutoff <- theta.to.cutoff(theta)
+##     stats <- replicate(1e2, {
+##         z <- rZ.c(n,cutoff)#runif(n,cutoff,1/2)
+##         s <- rS(n)
+##         ## 1/sqrt(n) * sum( ((E.s2-3/2*s)*z - 1/12*1/12)  /  sqrt(E.s2*1/12*1/12) )
+##         mean.RSS <- mean(z^2) - 1/((n-1)/n*var(s)) * (mean(s^2)*mean(z)^2 + mean(z*s)^2-2*mean(z*s)*mean(z)*mean(s))  
+##         beta0.hat <- mean(z) - mean(s)*cov(z,s)/var(s)
+##         sd.beta0.hat <- sqrt(mean(s^2)/(n-1)/var(s)) * sqrt(mean.RSS*n/(n-2))
+##         ## numer <- sum( ((E.s2-3/2*s)*z - 1/12*theta))
+##         ## numer <- sum( ((mean(s^2)-mean(s)*s)*z - 1/12*theta))
+##         numer <- sqrt(n) * (beta0.hat - theta)
+##         ## sd.numer <- sqrt(n)*sqrt(E.s2*1/12*1/12) 
+##         sd.numer <- sqrt(mean(s^2)*mean.RSS/var.S) 
+##         numer / sd.numer
+##         ## numer
+##     })
+## })
+## plot(apply(by.n,2,sd)); abline(h=1)
+## plot(apply(by.n,2,mean)); abline(h=0)
+## op <- par(mfrow=c(3,3))
+## for(j in round(seq(1,100,length.out=9))) {qqnorm(by.n[,j],main=paste0('n=',j));abline(a=0,b=1)}
+## par(op)
+
+
+
+## ## 29aa egger test asy normality -- normal response
+## source('misc.R')
+## ## n <- 2000
+## ## q <- qt(1-.05/2,df=n)
+## q <- qnorm(1-.05)
+## h <- 1/2
+## rS <- function(n)runif(n,1,2)
+## E.s2 <- 1/12 + (3/2)^2
+## var.S <- 1/12
+## pZ <- pnorm #function(q)punif(q,-1/2,1/2)
+## qZ <- qnorm
+## rZ.c <- function(n,c) rnorm.trunc(n,0,1,c) #qZ(runif(n)*(1-pZ(c))+pZ(c))
+## mu <- function(x)exp(log(dnorm(x))-log(1-pnorm(x)))
+## theta.to.cutoff <- function(theta)uniroot(function(x)mu(x)-theta,c(-1,1),extendInt='yes')$root  #function(theta)2*theta-1/2
+## ns <- round(seq(10,500,length.out=100))
+## by.n <- sapply(ns, function(n) {
+##     theta <- h/sqrt(n)
+##     cutoff <- theta.to.cutoff(theta)
+##     stats <- replicate(1e2, {
+##         z <- rZ.c(n,cutoff)#runif(n,cutoff,1/2)
+##         s <- rS(n)
+##         ## 1/sqrt(n) * sum( ((E.s2-3/2*s)*z - 1/12*1/12)  /  sqrt(E.s2*1/12*1/12) )
+##         mean.RSS <- mean(z^2) - 1/((n-1)/n*var(s)) * (mean(s^2)*mean(z)^2 + mean(z*s)^2-2*mean(z*s)*mean(z)*mean(s))  
+##         beta0.hat <- mean(z) - mean(s)*cov(z,s)/var(s)
+##         sd.beta0.hat <- sqrt(mean(s^2)/(n-1)/var(s)) * sqrt(mean.RSS*n/(n-2))
+##         ## numer <- sum( ((E.s2-3/2*s)*z - 1/12*theta))
+##         ## numer <- sum( ((mean(s^2)-mean(s)*s)*z - 1/12*theta))
+##         numer <- sqrt(n) * (beta0.hat - theta)
+##         ## sd.numer <- sqrt(n)*sqrt(E.s2*1/12*1/12) 
+##         sd.numer <- sqrt(mean(s^2)*mean.RSS/var.S) 
+##         numer / sd.numer
+##         ## numer
+##     })
+## })
+## plot(apply(by.n,2,sd)); abline(h=1)
+## plot(apply(by.n,2,mean)); abline(h=0)
+## op <- par(mfrow=c(3,3))
+## for(j in round(seq(1,ncol(by.n),length.out=9))) {qqnorm(by.n[,j],main=paste0('n=',ns[j]));abline(a=0,b=1)}
+## par(op)
+
+
+
+
+## ## 29b egger test local power approximation -- uniform response
+## n <- 1000
+## q <- qnorm(1-.05)
+## rS <- function(n)runif(n,1,2)
+## mean.S2 <- 1/12 + (3/2)^2
+## var.S <- 1/12
+## pZ <- function(q)punif(q,-1/2,1/2)
+## qZ <- function(u) (u-1/2)*(u>0)*(u<1)
+## rZ.c <- function(n,c) qZ(runif(n)*(1-pZ(c))+pZ(c))
+## theta.to.cutoff <- function(theta)2*theta-1/2
+## ## rZ.c <- function(n,c) runif(n,c,1/2)
+## var.Z <- 1/12
+## ## hist(rZ.c(1e3,-1/8),prob=TRUE)
+## ## ns <- seq(10,500,length.out=100)
+## ## n <- 1e2
+## thetas <- seq(0,.2,length.out=50)
+## by.theta <- sapply(thetas, function(theta) {
+##     cutoff <- theta.to.cutoff(theta)#2*theta-1/2
+##     mean(replicate(3e2, {
+##         z <- rZ.c(n,cutoff)
+##         s <- rS(n)
+##         beta0 <- mean(z) - mean(s)*cov(z,s)/var(s)
+##         RSS <- mean(z^2) - 1/((n-1)/n*var(s)) * (mean(s^2)*mean(z)^2 + mean(z*s)^2-2*mean(z*s)*mean(z)*mean(s))
+##         sd.beta0 <- sqrt(mean(s^2)/(n-1)/var(s)) * sqrt(RSS*n/(n-2))
+##         t <- beta0 / sd.beta0
+##         t > q
+##     }))
+## })
+## plot(thetas,by.theta)
+## sigma0 <- sqrt(mean.S2*var.Z/var.S)
+## points(thetas, 1 - pnorm(q - sqrt(n)*thetas/sigma0 ), col='red')
+
+
+## ## 29bb egger test local power approximation -- normal response
+## source('misc.R')
+## n <- 1000
+## q <- qnorm(1-.05)
+## rS <- function(n)runif(n,1,2)
+## mean.S2 <- 1/12 + (3/2)^2
+## var.S <- 1/12
+## pZ <- pnorm #function(q)punif(q,-1/2,1/2)
+## qZ <- qnorm
+## rZ.c <- function(n,c) rnorm.trunc(n,0,1,c) #qZ(runif(n)*(1-pZ(c))+pZ(c))
+## mu <- function(x)exp(log(dnorm(x))-log(1-pnorm(x)))
+## theta.to.cutoff <- function(theta)uniroot(function(x)mu(x)-theta,c(-1,1),extendInt='yes')$root  #function(theta)2*theta-1/2
+## var.Z <- 1 # 1/12
+## ## hist(rZ.c(1e3,-1/8),prob=TRUE)
+## ## ns <- seq(10,500,length.out=100)
+## ## n <- 1e2
+## thetas <- seq(0,1,length.out=50)
+## by.theta <- sapply(thetas, function(theta) {
+##     cutoff <- theta.to.cutoff(theta)#2*theta-1/2
+##     ## print(cutoff)
+##     mean(replicate(3e2, {
+##         z <- rZ.c(n,cutoff)
+##         s <- rS(n)
+##         beta0 <- mean(z) - mean(s)*cov(z,s)/var(s)
+##         RSS <- mean(z^2) - 1/((n-1)/n*var(s)) * (mean(s^2)*mean(z)^2 + mean(z*s)^2-2*mean(z*s)*mean(z)*mean(s))
+##         sd.beta0 <- sqrt(mean(s^2)/(n-1)/var(s)) * sqrt(RSS*n/(n-2))
+##         t <- beta0 / sd.beta0
+##         t > q
+##     }))
+## })
+## plot(thetas,by.theta)
+## sigma0 <- sqrt(mean.S2*var.Z/var.S)
+## points(thetas, 1 - pnorm(q - sqrt(n)*thetas/sigma0 ), col='red')
+
+
+
+## ## 29c egger test local power approximation, fixed theta varying n -- unif z
+## n <- 3000
+## q <- qnorm(1-.05/2)
+## rS <- function(n)runif(n,1,2)
+## mean.S2 <- 1/12 + (3/2)^2
+## var.S <- 1/12
+## pZ <- function(q)punif(q,-1/2,1/2)
+## qZ <- function(u) (u-1/2)*(u>0)*(u<1)
+## rZ.c <- function(n,c) qZ(runif(n)*(1-pZ(c))+pZ(c))
+## ## rZ.c <- function(n,c) runif(n,c,1/2)
+## var.Z <- 1/12
+## ## hist(rZ.c(1e3,-1/8),prob=TRUE)
+## ns <- seq(10,4000,length.out=50)
+## ## n <- 1e2
+## ## thetas <- seq(0,.2,length.out=50)
+## theta <- .1
+## by.n <- sapply(ns, function(n) {
+##     cutoff <- 2*theta-1/2
+##     mean(replicate(3e2, {
+##         z <- rZ.c(n,cutoff)
+##         s <- rS(n)
+##         beta0 <- mean(z) - mean(s)*cov(z,s)/var(s)
+##         RSS <- mean(z^2) - 1/((n-1)/n*var(s)) * (mean(s^2)*mean(z)^2 + mean(z*s)^2-2*mean(z*s)*mean(z)*mean(s))
+##         sd.beta0 <- sqrt(mean(s^2)/(n-1)/var(s)) * sqrt(RSS*n/(n-2))
+##         t <- beta0 / sd.beta0
+##         t > q
+##     }))
+## })
+## plot(ns,by.n)
+## sigma0 <- sqrt(mean.S2*var.Z/var.S)
+## points(ns, 1 - pnorm(q - sqrt(ns)*theta/sigma0 ), col='red')
+
+## ## 29cc egger test local power approximation, fixed theta varying n -- normal z
+## source('misc.R')
+## n <- 3000
+## q <- qnorm(1-.05/2)
+## rS <- function(n)runif(n,1,2)
+## mean.S2 <- 1/12 + (3/2)^2
+## var.S <- 1/12
+## pZ <- pnorm
+## qZ <- qnorm
+## rZ.c <- function(n,c) rnorm.trunc(n,0,1,c) #qZ(runif(n)*(1-pZ(c))+pZ(c))
+## mu <- function(x)exp(log(dnorm(x))-log(1-pnorm(x)))
+## theta.to.cutoff <- function(theta)uniroot(function(x)mu(x)-theta,c(-1,1),extendInt='yes')$root  #function(theta)2*theta-1/2
+## var.Z <- 1 # 1/12
+## ns <- round(seq(10,4000,length.out=50))
+## ## n <- 1e2
+## ## thetas <- seq(0,.2,length.out=50)
+## theta <- .3
+## by.n <- sapply(ns, function(n) {
+##     cutoff <- theta.to.cutoff(theta)
+##     mean(replicate(3e2, {
+##         z <- rZ.c(n,cutoff)
+##         s <- rS(n)
+##         beta0 <- mean(z) - mean(s)*cov(z,s)/var(s)
+##         RSS <- mean(z^2) - 1/((n-1)/n*var(s)) * (mean(s^2)*mean(z)^2 + mean(z*s)^2-2*mean(z*s)*mean(z)*mean(s))
+##         sd.beta0 <- sqrt(mean(s^2)/(n-1)/var(s)) * sqrt(RSS*n/(n-2))
+##         t <- beta0 / sd.beta0
+##         t > q
+##     }))
+## })
+## plot(ns,by.n)
+## sigma0 <- sqrt(mean.S2*var.Z/var.S)
+## points(ns, 1 - pnorm(q - sqrt(ns)*theta/sigma0 ), col='red')
+
+
+
+## ## 29d checking formulas p19
+
+## (kendall=cor.test(((y-mu.fe)/sqrt(sigma^2-1/sum(1/sigma^2))),1/sigma,method='kendall')$p.value)
+
+## require(metafor)
+## egger.test <- function(x,sei) coef(summary(lm(I(x/sei) ~ I(1/sei))))['(Intercept)',]
+## tau <- 0
+## mu <- .3
+## cutoff <- .2
+## n <- 100
+## keep.probs <- seq(0,1,length.out=10)
+## keep.prob <- 0#keep.probs[4]
+## sigma <- rchisq(n,df=10)
+## ## sigma <- 1/runif(n,5,25)
+## y <- rnorm(n,mean=mu,sd=sqrt(sigma^2+tau^2))
+## mu.fe <- sum(1/sigma^2 * y) / sum(1/sigma^2)
+## study.p <- pnorm(y/sigma,lower.tail=FALSE)
+## keep.idx <- study.p < cutoff
+## op <- par(mfrow=c(1,4))
+## plot( y/sigma,1/sigma);abline(v=mu.fe);points((y/sigma)[keep.idx], 1/sigma[keep.idx], col='green')
+## plot((y/sigma)[keep.idx] ~ 1/sigma[keep.idx],col='green')
+## plot(((y-mu.fe)/sqrt(sigma^2-1/sum(1/sigma^2)))[keep.idx] ~ 1/sigma[keep.idx],col='green')
+## plot(y[keep.idx] ~ 1/sigma[keep.idx],col='green')
+## par(op)
+
+## ranktest(x=y[keep.idx],sei=sigma[keep.idx],exact=FALSE)
+## abs(cor(y[keep.idx],1/sigma[keep.idx]))
+## abs(cor((y/sigma)[keep.idx],(1/sigma)[keep.idx]))
+## abs(cor(((y-mu.fe)/sqrt(sigma^2-1/sum(1/sigma^2)))[keep.idx],(1/sigma)[keep.idx]))
+
+## ## cor.test(((y-mu.fe)/sqrt(sigma^2-1/sum(1/sigma^2))),sigma,method='kendall')$estimate
+## cor.test((y-mu.fe)/sigma,sigma,method='kendall')$estimate
+## ## ranktest(x=y,sei=sigma,exact=FALSE)
+
+
+## n <- 100
+## x <- rnorm(n)
+## y <- rnorm(n)
+## tau <- 0
+## for(j in 1:n)
+##     for(k in 1:n)
+##         tau <- tau + (x[j]>x[k])*(y[j]>y[k])
+## print(2*tau/choose(n,2) - 1)
+## cor(x,y,method='kendall')
+
+
+## n <- 1e4
+## plot(ecdf((runif(n) - runif(n))))
+## curve((1/2*(1-x^2)+x)*(x>0) + 1/2*(1+x)^2*(x<0),add=TRUE,col='red')
+
+## pZ <- function(q)punif(q,-1/2,1/2)
+## qZ <- function(u) (u-1/2)*(u>0)*(u<1)
+## rZ.c <- function(n,c) qZ(runif(n)*(1-pZ(c))+pZ(c))
+## c <- 0
+## plot(ecdf(rZ.c(n,c) - rZ.c(n,c)))
+## F.diff <- function(q) (q>0 & q<1/2)*(-q^2/2/(1/2-c)^2+1/2+q/(1/2-c)) + (q<0 & q>-1/2+c)*(1/2*(q/(1/2-c)+1)^2) + 1*(q>1/2)
+## curve(F.diff,add=TRUE,col='red')
+
+
+
+
+## ## 29a fla for mean of tau
+
+## n <- 1e4
+## pZ <- function(q)punif(q,-1/2,1/2)
+## qZ <- function(u) (u-1/2)*(u>0)*(u<1)
+## rZ.c <- function(n,cutoff) qZ(runif(n)*(1-pZ(cutoff))+pZ(cutoff))
+## F.diff.c <- function(q,cutoff) (q>=0 & q<1/2-cutoff)*(-q^2/2/(1/2-cutoff)^2+1/2+q/(1/2-cutoff)) + (q<0 & q>-1/2+cutoff)*(1/2*(q/(1/2-cutoff)+1)^2) + 1*(q>1/2-cutoff)
+## ## with(list(cutoff=runif(1,0,.5)),{plot(ecdf(rZ.c(n,cutoff) - rZ.c(n,cutoff)));curve(F.diff.c(x,cutoff),add=TRUE,col='red')})
+## dS <- function(s)dunif(s,1,2)
+## pS <- function(q)punif(q,1,2)
+## rS <- function(n)runif(n,1,2)
+## ## s1 <- 3/2
+## theta <- runif(1,0,.5)
+## cutoff <- 2*theta-1/2
+## integrate(Vectorize(function(s1) integrate(function(s2) F.diff.c(theta*(s2-s1),cutoff)*dS(s2), -Inf,s1)$val * dS(s1)), -Inf, Inf)$val
+## n <- 3e2
+## s <- rS(n)
+## z <- rZ.c(n,cutoff)
+## ## sum(outer(s,s,`<`)*outer(z-theta*s,z-theta*s,`<`))/n^2
+## ## mean(outer(s,s, function(s1,s2) (F.diff.c(theta*(s2-s1),cutoff)*(s1>s2))))
+## tau <- 0
+## for(j in 1:n)
+##     for(k in 1:n)
+##         tau <- tau + ((z-theta*s)[j]>(z-theta*s)[k])*(s[j]>s[k])
+## print(2*tau/choose(n,2) - 1)
+## cor(z-theta*s,s,method='kendall')
+## I <- integrate(Vectorize(function(s1) integrate(function(s2) F.diff.c(theta*(s2-s1),cutoff)*dS(s2), -Inf,s1)$val * dS(s1)), -Inf, Inf)$val
+## ((mu.theta <- 2/choose(n,2)*n^2*I - 1))
+
+## ## variance of tau
+## n <- 1e4
+## pZ <- function(q)punif(q,-1/2,1/2)
+## qZ <- function(u) (u-1/2)*(u>0)*(u<1)
+## rZ.c <- function(n,cutoff) qZ(runif(n)*(1-pZ(cutoff))+pZ(cutoff))
+## F.diff.c <- function(q,cutoff) (q>=0 & q<1/2-cutoff)*(-q^2/2/(1/2-cutoff)^2+1/2+q/(1/2-cutoff)) + (q<0 & q>-1/2+cutoff)*(1/2*(q/(1/2-cutoff)+1)^2) + 1*(q>1/2-cutoff)
+## ## with(list(cutoff=runif(1,0,.5)),{plot(ecdf(rZ.c(n,cutoff) - rZ.c(n,cutoff)));curve(F.diff.c(x,cutoff),add=TRUE,col='red')})
+## dS <- function(s)dunif(s,1,2)
+## pS <- function(q)punif(q,1,2)
+## rS <- function(n)runif(n,1,2)
+## ## s1 <- 3/2
+## theta <- 0
+## cutoff <- 2*theta-1/2
+## n <- 3e2
+## taus <- replicate(1e2, {
+##     s <- rS(n)
+##     z <- rZ.c(n,cutoff)
+##     ## sum(outer(s,s,`<`)*outer(z-theta*s,z-theta*s,`<`))/n^2
+##     ## mean(outer(s,s, function(s1,s2) (F.diff.c(theta*(s2-s1),cutoff)*(s1>s2))))
+##     cor(z-theta*s,s,method='kendall')
+##     ## I <- integrate(Vectorize(function(s1) integrate(function(s2) F.diff.c(theta*(s2-s1),cutoff)*dS(s2), -Inf,s1)$val * dS(s1)), -Inf, Inf)$val
+##     ## ((mu.theta <- 2/choose(n,2)*n^2*I - 1))
+## })
+## n*var(taus) - 4/9
+
+
+
+
+
+
+## # 30 begg stat asy normality
+## mu.theta <- function(theta,n) {
+##     cutoff <- 2*theta-1/2
+##     I <- integrate(Vectorize(function(s1) integrate(function(s2) F.diff.c(theta*(s2-s1),cutoff)*dS(s2), -Inf,s1)$val * dS(s1)), -Inf, Inf)$val
+##     2/choose(n,2)*n^2*I - 1
+## }
+## ## n <- 5000
+## ## q <- qt(1-.05/2,df=n)
+## q <- qnorm(1-.05/2)
+## h <- .3
+## pZ <- function(q)punif(q,-1/2,1/2)
+## qZ <- function(u) (u-1/2)*(u>0)*(u<1)
+## rZ.c <- function(n,cutoff) qZ(runif(n)*(1-pZ(cutoff))+pZ(cutoff))
+## F.diff.c <- function(q,cutoff) (q>=0 & q<1/2-cutoff)*(-q^2/2/(1/2-cutoff)^2+1/2+q/(1/2-cutoff)) + (q<0 & q>-1/2+cutoff)*(1/2*(q/(1/2-cutoff)+1)^2) + 1*(q>1/2-cutoff)
+## ## with(list(cutoff=runif(1,0,.5)),{plot(ecdf(rZ.c(n,cutoff) - rZ.c(n,cutoff)));curve(F.diff.c(x,cutoff),add=TRUE,col='red')})
+## dS <- function(s)dunif(s,1,2)
+## pS <- function(q)punif(q,1,2)
+## rS <- function(n)runif(n,1,2)
+## ## E.s2 <- 1/12 + (3/2)^2
+## ## var.S <- 1/12
+## ## pZ <- function(q)punif(q,-1/2,1/2)
+## ## qZ <- function(u) (u-1/2)*(u>0)*(u<1)
+## ## rZ.c <- function(n,c) qZ(runif(n)*(1-pZ(c))+pZ(c))
+## ns <- seq(10,500,length.out=100)
+## by.n <- sapply(ns, function(n) {
+##     theta <- h/sqrt(n)
+##     cutoff <- 2*theta-1/2
+##     mu.theta.n <- mu.theta(theta,n)
+##     stats <- replicate(1e2, {
+##         s <- rS(n)
+##         z <- rZ.c(n,cutoff)
+##         sqrt(n) * (cor(z-theta*s,s,method='kendall') - mu.theta.n) / sqrt(4/9)
+##     })
+## })
+## plot(apply(by.n,2,sd)); abline(h=1)
+## plot(apply(by.n,2,mean)); abline(h=0)
+## op <- par(mfrow=c(3,3))
+## for(j in round(seq(1,100,length.out=9))) {qqnorm(by.n[,j],main=paste0('n=',j));abline(a=0,b=1)}
+## par(op)
+
+
+
+
+## ## 30a begg local power apprx
+## require(parallel)
+## n <- 100
+## ## q <- qt(1-.05/2,df=n)
+## q <- qnorm(1-.05/2)
+## pZ <- function(q)punif(q,-1/2,1/2)
+## qZ <- function(u) (u-1/2)*(u>0)*(u<1)
+## rZ.c <- function(n,cutoff) qZ(runif(n)*(1-pZ(cutoff))+pZ(cutoff))
+## F.delta.c <- function(q,cutoff) (q>=0 & q<=1/2-cutoff)*(-q^2/2/(1/2-cutoff)^2+1/2+q/(1/2-cutoff)) + (q<0 & q>=-1/2+cutoff)*(1/2*(q/(1/2-cutoff)+1)^2) + 1*(q>1/2-cutoff)
+## F.delta.c.prime <- function(q,cutoff) (q>=cutoff & q<=1/2-cutoff)*(q/(1/2-cutoff)^2 - q^2/(1/2-cutoff)^3) + (q<0 & q>=-1/2+cutoff)*(q/(1/2-cutoff)+1)*q/(1/2-cutoff)^2
+## ## curve(F.delta.c(q,x),-1,1,ylim=c(-1,1))
+## ## curve(F.delta.c.prime(q,x),add=TRUE,col='red')
+## mu.theta <- function(theta,n) {
+##     cutoff <- 2*theta-1/2
+##     I <- integrate(Vectorize(function(s1) integrate(function(s2) F.delta.c(theta*(s2-s1),cutoff)*dS(s2), -Inf,s1)$val * dS(s1)), -Inf, Inf)$val
+##     2/choose(n,2)*n^2*I - 1
+## }
+## mu.theta.prime <- function(theta,n) {
+##     cutoff <- 2*theta-1/2
+##     I <- integrate(Vectorize(function(s1) integrate(function(s2) F.delta.c.prime(theta*(s2-s1),cutoff)*dS(s2), -Inf,s1)$val * dS(s1)), -Inf, Inf)$val
+##     2/choose(n,2)*n^2*I - 1
+## }
+## ## with(list(cutoff=runif(1,0,.5)),{plot(ecdf(rZ.c(n,cutoff) - rZ.c(n,cutoff)));curve(F.delta.c(x,cutoff),add=TRUE,col='red')})
+## dS <- function(s)dunif(s,1,2)
+## pS <- function(q)punif(q,1,2)
+## rS <- function(n)runif(n,1,2)
+## thetas <- seq(0,.49,length.out=50)
+## by.theta <- mclapply(thetas,mc.cores=detectCores()-3, FUN=function(theta) {
+## ## by.theta <- sapply(thetas, function(theta) {
+##     cutoff <- 2*theta-1/2
+##     mu.theta.n <- mu.theta(theta,n)
+##     mean(replicate(1e2, {
+##         s <- rS(n)
+##         z <- rZ.c(n,cutoff)
+##         ## tau.stat <- sqrt(n) * (cor(z-theta*s,s,method='kendall') - mu.theta.n) / sqrt(4/9)
+##         tau.stat <- cor(z-theta*s,s,method='kendall')
+##         sqrt(9*n/4)*abs(tau.stat) > q
+##     }))
+## })
+## by.theta <- simplify2array(by.theta)
+## plot(thetas,by.theta)
+## ## points(thetas, 1 - pnorm(q - sqrt(n)*mu.theta.prime(0,n)*thetas/sqrt(9/4) ), col='red')
+## points(thetas, 1-pnorm(q - sqrt(n)*mu.theta.prime(0,n)*thetas/sqrt(9/4)) + pnorm(-q - sqrt(n)*mu.theta.prime(0,n)*thetas), col='blue')
+
+
+## ## 30b begg local power apprx, fixed theta varying n
+## n <- 100
+## ## q <- qt(1-.05/2,df=n)
+## q <- qnorm(1-.05/2)
+## pZ <- function(q)punif(q,-1/2,1/2)
+## qZ <- function(u) qunif(-1/2,1/2)
+## rZ.c <- function(n,cutoff) qZ(runif(n)*(1-pZ(cutoff))+pZ(cutoff))
+## F.delta.c <- function(q,cutoff) (q>=0 & q<=1/2-cutoff)*(-q^2/2/(1/2-cutoff)^2+1/2+q/(1/2-cutoff)) + (q<0 & q>=-1/2+cutoff)*(1/2*(q/(1/2-cutoff)+1)^2) + 1*(q>1/2-cutoff)
+## F.delta.c.prime <- function(q,cutoff) (q>=cutoff & q<=1/2-cutoff)*(q/(1/2-cutoff)^2 - q^2/(1/2-cutoff)^3) + (q<0 & q>=-1/2+cutoff)*(q/(1/2-cutoff)+1)*q/(1/2-cutoff)^2
+## mu.theta <- function(theta,n) {
+##     cutoff <- 2*theta-1/2
+##     I <- integrate(Vectorize(function(s1) integrate(function(s2) F.delta.c(theta*(s2-s1),cutoff)*dS(s2), -Inf,s1)$val * dS(s1)), -Inf, Inf)$val
+##     2/choose(n,2)*n^2*I - 1
+## }
+## mu.theta.prime <- function(theta,n) {
+##     cutoff <- 2*theta-1/2
+##     I <- integrate(Vectorize(function(s1) integrate(function(s2) F.delta.c.prime(theta*(s2-s1),cutoff)*dS(s2), -Inf,s1)$val * dS(s1)), -Inf, Inf)$val
+##     2/choose(n,2)*n^2*I - 1
+## }
+## ## with(list(cutoff=runif(1,0,.5)),{plot(ecdf(rZ.c(n,cutoff) - rZ.c(n,cutoff)));curve(F.delta.c(x,cutoff),add=TRUE,col='red')})
+## dS <- function(s)dunif(s,1,2)
+## pS <- function(q)punif(q,1,2)
+## rS <- function(n)runif(n,1,2)
+## thetas <- seq(0,.49,length.out=50)
+## theta <- .1
+## ns <- seq(10,3000,length.out=50)
+## by.n <- mclapply(ns,mc.cores=detectCores()-3, FUN=function(n) {
+## ## by.n <- sapply(ns, function(n) {
+##     cutoff <- 2*theta-1/2
+##     mu.theta.n <- mu.theta(theta,n)
+##     mean(replicate(1e2, {
+##         s <- rS(n)
+##         z <- rZ.c(n,cutoff)
+##         ## tau.stat <- sqrt(n) * (cor(z-theta*s,s,method='kendall') - mu.theta.n) / sqrt(4/9)
+##         tau.stat <- cor(z-theta*s,s,method='kendall')
+##         sqrt(9*n/4)*abs(tau.stat) > q
+##     }))
+## })
+## by.n <- simplify2array(by.n)
+## plot(ns,by.n)
+## ## abline(h=1 - pnorm(q - - sqrt(n)*mu.theta.prime(0,n)*theta/sqrt(9/4) ),col='red')
+## ## points(thetas, 1 - pnorm(q - - sqrt(n)*mu.theta.prime(0,n)*thetas/sqrt(9/4) ), col='red')
+## points(ns, 1-pnorm(q - sqrt(ns)*mu.theta.prime(0,ns)*theta) + pnorm(-q - sqrt(ns)*mu.theta.prime(0,ns)*theta),col='red')
+
+
+
+
+## ## 31 egger test asy power -- selection on y
+
+## ## 31a egger test asy normality
+## source('misc.R')
+## ## n <- 5000
+## ## q <- qt(1-.05/2,df=n)
+## q <- qnorm(1-.05)
+## h <- 1/2
+## rS <- function(n)runif(n,1,2)
+## E.s2 <- 1/12 + (3/2)^2
+## var.S <- 1/12
+## pZ <- function(q)punif(q,-1/2,1/2)
+## qZ <- function(u) qunif(u,-1/2,1/2)#(u-1/2)*(u>0)*(u<1)
+## rZ.c <- function(n,c) qZ(runif(n)*(1-pZ(c))+pZ(c))
+## theta.to.cutoff <- function(theta)2*theta-1/2
+## ns <- seq(10,500,length.out=100)
+## by.n <- sapply(ns, function(n) {
+##     theta <- h/sqrt(n)
+##     cutoff <- theta.to.cutoff(theta)
+##     stats <- replicate(1e2, {
+##         s <- rS(n)
+##         z <- rZ.c(n,cutoff*s)
+##         ## 1/sqrt(n) * sum( ((E.s2-3/2*s)*z - 1/12*1/12)  /  sqrt(E.s2*1/12*1/12) )
+##         mean.RSS <- mean(z^2) - 1/((n-1)/n*var(s)) * (mean(s^2)*mean(z)^2 + mean(z*s)^2-2*mean(z*s)*mean(z)*mean(s))  
+##         beta0.hat <- mean(z) - mean(s)*cov(z,s)/var(s)
+##         sd.beta0.hat <- sqrt(mean(s^2)/(n-1)/var(s)) * sqrt(mean.RSS*n/(n-2))
+##         ## numer <- sum( ((E.s2-3/2*s)*z - 1/12*theta))
+##         ## numer <- sum( ((mean(s^2)-mean(s)*s)*z - 1/12*theta))
+##         numer <- sqrt(n) * (beta0.hat - theta)
+##         ## sd.numer <- sqrt(n)*sqrt(E.s2*1/12*1/12) 
+##         sd.numer <- sqrt(mean(s^2)*mean.RSS/var.S) 
+##         numer / sd.numer
+##         ## numer
+##     })
+## })
+## plot(apply(by.n,2,sd)); abline(h=1)
+## plot(apply(by.n,2,mean)); abline(h=0)
+## op <- par(mfrow=c(3,3))
+## for(j in round(seq(1,100,length.out=9))) {qqnorm(by.n[,j],main=paste0('n=',j));abline(a=0,b=1)}
+## par(op)
+
+
+
+
+
+
+
+
+## ## 32 comparing power of egger vs begg, z thresholding
+## require(parallel)
+## source('misc.R')
+## n <- 1e2
+## ## q <- qt(1-.05/2,df=n)
+## q <- qnorm(1-.05/2)
+## ## pZ <- function(q)punif(q,-1/2,1/2)
+## ## qZ <- function(u) (u-1/2)*(u>0)*(u<1)
+## ## rZ.c <- function(n,cutoff) qZ(runif(n)*(1-pZ(cutoff))+pZ(cutoff))
+## ## theta.to.cutoff <- function(theta)2*theta-1/2
+## pZ <- pnorm #function(q)punif(q,-1/2,1/2)
+## qZ <- qnorm
+## rZ.c <- function(n,c) rnorm.trunc(n,0,1,c) #qZ(runif(n)*(1-pZ(c))+pZ(c))
+## mu <- function(x)exp(log(dnorm(x))-log(1-pnorm(x)))
+## theta.to.cutoff <- function(theta)uniroot(function(x)mu(x)-theta,c(-1,1),extendInt='yes')$root  #function(theta)2*theta-1/2
+## dS <- function(s)dunif(s,1,2)
+## pS <- function(q)punif(q,1,2)
+## rS <- function(n)runif(n,1,2)
+## ## dS <- function(s)dunif(s,1,5/4)
+## ## pS <- function(q)punif(q,1,5/4)
+## ## rS <- function(n)runif(n,1,5/4)
+## thetas <- seq(0,1.7,length.out=50)
+## by.theta <- mclapply(thetas,mc.cores=detectCores()-3, FUN=function(theta) {
+##     ## by.theta <- sapply(thetas, function(theta) {
+##     cutoff <- theta.to.cutoff(theta)
+##     rowMeans(replicate(5e2, {
+##         s <- rS(n)
+##         unlist(sapply(list(p=rZ.c(n,cutoff),raw=rZ.c(n,cutoff*s)), simplify=FALSE, FUN=function(z) {
+##             tau.stat <- cor(z-theta*s,s,method='kendall')
+##             beta0 <- mean(z) - mean(s)*cov(z,s)/var(s)
+##             RSS <- mean(z^2) - 1/((n-1)/n*var(s)) * (mean(s^2)*mean(z)^2 + mean(z*s)^2-2*mean(z*s)*mean(z)*mean(s))
+##             sd.beta0 <- sqrt(mean(s^2)/(n-1)/var(s)) * sqrt(RSS*n/(n-2))
+##             t <- beta0 / sd.beta0
+##             c(begg=sqrt(9*n/4)*abs(tau.stat) > q, egger = t>q)
+##         }))
+##     }))
+## })
+## by.theta <- simplify2array(by.theta)
+## by.theta <- lapply(list(p='p\\.',raw='raw\\.'),function(str)by.theta[grep(str,rownames(by.theta)),])
+## op <- par(mfrow=c(1,2))
+## invisible(lapply(by.theta, function(df) {
+##     plot(thetas,df[grep('begg',rownames(df)),],type='l',ylab='power',xlab=expression(paste(theta)),ylim=c(0,1))
+##     lines(thetas,df[grep('egger',rownames(df)),],lty=2)
+##     legend('bottomright',lty=1:2,legend=c('begg','egger'))
+##     ## plot(thetas,by.theta['raw.begg',],type='l',ylab='power',xlab=expression(paste(theta)))
+##     ## lines(thetas,by.theta['raw.egger',],lty=2)
+##     ## legend('bottomright',lty=1:2,legend=c('begg','egger'))
+## }))
+## par(op)
+
+
+## 33 verifying formula for mu'(0)
+
+
+
+## ## looking at numerical integration issues
+## cutoff <- .3
+## curve(F.delta.c(u,cutoff),xname='u',-.5,0,ylim=c(0,3))
+## ff.u <- Vectorize(function(u)    integrate(function(z)dZ(z)*dZ(z+u)/(1-pZ(cutoff))^2,max(cutoff,cutoff-u),Inf)$val)
+## curve(ff.u(u),xname='u',add=TRUE,col='red')
+## m <- (ff.u(-.1)-ff.u(-.2))/.1
+## curve(m/2*(x+.2)^2,add=TRUE,col='blue',lty=3)
+
+## delta <- .3
+## curve(F.delta.c(theta*delta,theta.to.cutoff(theta)),xname='theta',-3,0)#-2,-1.5)
+## ff.u <- Vectorize(function(theta)    integrate(function(z)dZ(z)*dZ(z+theta*delta)/(1-pZ(theta.to.cutoff(theta)))^2,max(theta.to.cutoff(theta),theta.to.cutoff(theta)-theta*delta),Inf)$val)
+## ff.u <- Vectorize(function(theta)    integral(function(z)dZ(z)*dZ(z+theta*delta)/(1-pZ(theta.to.cutoff(theta)))^2,max(theta.to.cutoff(theta),theta.to.cutoff(theta)-theta*delta),10))
+## curve(ff.u(theta),xname='theta',add=TRUE,col='red')
+
+
+## theta <- -2
+## integrate(function(z)dZ(z)*dZ(z+theta*delta)/(1-pZ(theta.to.cutoff(theta)))^2,max(theta.to.cutoff(theta),theta.to.cutoff(theta)-theta*delta),Inf)$val
+## integrate(function(z)dZ(z)*dZ(z+theta*delta)/(1-pZ(theta.to.cutoff(theta)))^2,max(theta.to.cutoff(theta),theta.to.cutoff(theta)-theta*delta),2)$val
+## integral(function(z)dZ(z)*dZ(z+theta*delta)/(1-pZ(theta.to.cutoff(theta)))^2,max(theta.to.cutoff(theta),theta.to.cutoff(theta)-theta*delta),10)
+## curve(dZ(z)*dZ(z+theta*delta)/(1-pZ(theta.to.cutoff(theta)))^2,xname='z',max(theta.to.cutoff(theta),theta.to.cutoff(theta)-theta*delta),3)
+
+## ## integrate() chokes on step function
+## f <- function(x)(x>0)*(x<1) 
+## integrate(f,-9,9)
+## with(list(as=seq(5,8,length.out=40)), plot(as, sapply(as,function(a)integrate(f,-a,a)$val),type='l',xlab='integration limit',ylab='value of integral'))
+## require(pracma)
+## integral(f,-Inf,Inf)
+
+## ## hasse1987
+## lst <- list(
+##     a  = 1,
+##     g = function() print(a)
+## )
+## with(lst, g())
+## attach(lst)
+## g()
+## detach(lst)
+
+## lst <- local({
+##     a <- 1
+##     g <- function()print(a)
+##     ## print(ls(envir=new.env()))
+##     ## print(ls())
+##     ## return(list(a=a,g=g))
+##     return(mget(ls()))
+## })
+## ## lst
+## with(lst,g())
+
+## dS <- function(s)dunif(s,1,2)
+## integrate(Vectorize(function(s2)integrate(function(s1)(s1-s2)*dS(s1),-Inf,s2)$val*dS(s2)),-Inf,Inf)$val
+
+## 33a flas for F_{diff,c}(u)
+source('misc.R')
+unif.Z <- local({
+    dZ <- function(z)dunif(z,-1/2,1/2)
+    pZ <- function(q)punif(q,-1/2,1/2)
+    qZ <- function(u) (u-1/2)*(u>0)*(u<1)
+    dZ.c <- function(z,cutoff) dunif(z,cutoff,1/2)
+    rZ.c <- function(n,cutoff) qZ(runif(n)*(1-pZ(cutoff))+pZ(cutoff))
+    pZ.c <- function(q,cutoff)(q>cutoff)*(pZ(q)-pZ(cutoff))/(1-pZ(cutoff))
+    theta.to.cutoff <- function(theta)2*theta-1/2
+    ## kernel.mean <- 1/6
+    F.diff.c <- function(q,cutoff) (q>=0 & q<=1/2-cutoff)*(-q^2/2/(1/2-cutoff)^2+1/2+q/(1/2-cutoff)) + (q<0 & q>=-1/2+cutoff)*(1/2*(q/(1/2-cutoff)+1)^2) + 1*(q>1/2-cutoff)
+    F.diff.c.prime <- function(q,cutoff) (q>=cutoff & q<=1/2-cutoff)*(q/(1/2-cutoff)^2 - q^2/(1/2-cutoff)^3) + (q<0 & q>=-1/2+cutoff)*(q/(1/2-cutoff)+1)*q/(1/2-cutoff)^2
+    return(mget(ls()))
+})
+normal.Z <- local({
+    pZ <- pnorm
+    qZ <- qnorm
+    dZ <- dnorm
+    rZ.c <- function(n,c) rnorm.trunc(n,0,1,c)
+    dZ.c <- function(z,c) dnorm.trunc(z,0,1,c)
+    pZ.c <- function(q,cutoff)(q>cutoff)*(pZ(q)-pZ(cutoff))/(1-pZ(cutoff))    
+    mu <- function(x)exp(log(dnorm(x))-log(1-pnorm(x)))
+    theta.to.cutoff <- function(theta)uniroot(function(x)mu(x)-theta,c(-1,1),extendInt='yes')$root  #function(theta)2*theta-1/2
+    ## kernel.mean <- integrate(function(x)dnorm(x)^2,-Inf,Inf)$val
+    return(mget(ls()))
+})
+cutoff <- -.4
+## fla for F.diff.c
+with(normal.Z, {
+    F.diff.c <- Vectorize(function(q,cutoff) integrate(function(z)pZ.c(z+q,cutoff)*dZ.c(z,cutoff),-Inf,Inf)$val)
+    curve(F.diff.c(x,cutoff),-4,4)
+    F.diff.c.2 <- Vectorize(function(x)integrate(function(z) (pZ(z+x)-pZ(cutoff))/(1-pZ(cutoff))^2*dZ(z), max(cutoff,cutoff-x),Inf)$val)
+    curve(F.diff.c.2,-1,1,add=TRUE,col='red',lty='dotted')
+    ## curve(F.diff.c(x,cutoff),-1.5,1.5,add=TRUE,col='blue',lty='dotted') #only calculated for uniform Z
+})
+with(unif.Z, {
+    F.diff.c <- Vectorize(function(q,cutoff) integrate(function(z)pZ.c(z+q,cutoff)*dZ.c(z,cutoff),-Inf,Inf)$val)
+    curve(F.diff.c.prime(x,cutoff),-2,2,ylim=c(-3,3))
+    F.diff.c.prime.2 <- Vectorize(function(u) -(pZ(max(cutoff,cutoff+u))-pZ(cutoff))*dZ(max(cutoff,cutoff-u))/(1-pZ(cutoff))^2 + integrate( function(z)dZ(cutoff)*dZ(z)*(2*pZ(z+u)-pZ(cutoff)-1)/(1-pZ(cutoff))^3, max(cutoff,cutoff-u),Inf)$val ) # derivative wrt c of F_{diff,c}(u)
+    curve(F.diff.c.prime.2,add=TRUE,col='red')
+    curve(F.diff.c(x,cutoff),add=TRUE,col='blue')
+})
+## ## dS <- function(s)dunif(s,1,2)
+## ## pZ <- function(q)punif(q,-1/2,1/2)
+## ## dZ <- function(z)dunif(z,-1/2,1/2)
+## ## qZ <- function(u) (u-1/2)*(u>0)*(u<1)
+## ## dZ.c <- function(z,cutoff)dunif(z,cutoff,1/2)
+## ## rZ.c <- function(n,cutoff) qZ(runif(n)*(1-pZ(cutoff))+pZ(cutoff))
+## ## theta.to.cutoff <- function(theta)2*theta-1/2
+## F.diff.c.prime <- function(q,cutoff) (q>=cutoff & q<=1/2-cutoff)*(q/(1/2-cutoff)^2 - q^2/(1/2-cutoff)^3) + (q<0 & q>=-1/2+cutoff)*(q/(1/2-cutoff)+1)*q/(1/2-cutoff)^2
+## ## curve(F.diff.c(q,x),-1,1,ylim=c(-1,1))
+## ## curve(F.diff.c.prime(q,x),add=TRUE,col='red')
+## mu.theta <- function(theta,n) {
+##     cutoff <- 2*theta-1/2
+##     I <- integrate(Vectorize(function(s1) integrate(function(s2) F.diff.c(theta*(s2-s1),cutoff)*dS(s2), -Inf,s1)$val * dS(s1)), -Inf, Inf)$val
+##     2/choose(n,2)*n^2*I - 1
+## }
+## mu.theta.prime <- function(theta,n) {
+##     cutoff <- 2*theta-1/2
+##     I <- integrate(Vectorize(function(s1) integrate(function(s2) F.diff.c.prime(theta*(s2-s1),cutoff)*dS(s2), -Inf,s1)$val * dS(s1)), -Inf, Inf)$val
+##     2/choose(n,2)*n^2*I - 1
+## }
+
+
+
+
+## 33b derivative wrt c of F_{diff,c}(u)
+require(pracma)
+source('misc.R')
+unif.Z <- local({
+    dZ <- function(z)dunif(z,-1/2,1/2)
+    pZ <- function(q)punif(q,-1/2,1/2)
+    qZ <- function(u) (u-1/2)*(u>0)*(u<1)
+    dZ.c <- function(z,cutoff) dunif(z,cutoff,1/2)
+    rZ.c <- function(n,cutoff) qZ(runif(n)*(1-pZ(cutoff))+pZ(cutoff))
+    pZ.c <- function(q,cutoff)(q>cutoff)*(pZ(q)-pZ(cutoff))/(1-pZ(cutoff))
+    theta.to.cutoff <- function(theta)2*theta-1/2
+    ## kernel.mean <- 1/6
+    F.diff.c.1 <- function(q,cutoff) (q>=0 & q<=1/2-cutoff)*(-q^2/2/(1/2-cutoff)^2+1/2+q/(1/2-cutoff)) + (q<0 & q>=-1/2+cutoff)*(1/2*(q/(1/2-cutoff)+1)^2) + 1*(q>1/2-cutoff)
+    F.diff.c.prime <- function(q,cutoff) (q>=cutoff & q<=1/2-cutoff)*(q/(1/2-cutoff)^2 - q^2/(1/2-cutoff)^3) + (q<0 & q>=-1/2+cutoff)*(q/(1/2-cutoff)+1)*q/(1/2-cutoff)^2
+    return(mget(ls()))
+})
+normal.Z <- local({
+    pZ <- pnorm
+    qZ <- qnorm
+    dZ <- dnorm
+    rZ.c <- function(n,c) rnorm.trunc(n,0,1,c)
+    dZ.c <- function(z,c) dnorm.trunc(z,0,1,c)
+    pZ.c <- function(q,cutoff)(q>cutoff)*(pZ(q)-pZ(cutoff))/(1-pZ(cutoff))    
+    mu <- function(x)exp(log(dnorm(x))-log(1-pnorm(x)))
+    theta.to.cutoff <- function(theta)uniroot(function(x)mu(x)-theta,c(-1,1),extendInt='yes')$root  #function(theta)2*theta-1/2
+    ## kernel.mean <- integrate(function(x)dnorm(x)^2,-Inf,Inf)$val
+    return(mget(ls()))
+})
+u <- 1
+xlim <- c(-1,1)*.7
+with(normal.Z, {
+    F.diff.c <- Vectorize(function(u,cutoff)integrate(function(z) (pZ(z+u)-pZ(cutoff))/(1-pZ(cutoff))^2*dZ(z), max(cutoff,cutoff-u),Inf)$val)
+    F.diff.c.prime.2 <- Vectorize(function(cutoff) -(pZ(max(cutoff,cutoff+u))-pZ(cutoff))*dZ(max(cutoff,cutoff-u))/(1-pZ(cutoff))^2 + integral( function(z)dZ(cutoff)*dZ(z)*(2*pZ(z+u)-pZ(cutoff)-1)/(1-pZ(cutoff))^3, max(cutoff,cutoff-u),25) ) # derivative wrt c of F_{diff,c}(u)
+    ## F.diff.c.prime.2 <- Vectorize(function(u) -(pZ(max(cutoff,cutoff+u))-pZ(cutoff))*dZ(max(cutoff,cutoff-u))/(1-pZ(cutoff))^2 + integral( function(z) dZ(z)*(-dZ(cutoff)/(1-pZ(cutoff))^2+2*(pZ(cutoff+u)-pZ(cutoff))/(1-pZ(cutoff))^3*dZ(cutoff)),max(cutoff-u,cutoff),20))
+    ## curve(F.diff.c.prime(x,cutoff),add=TRUE,col='red',lty='dotted') ## only defined for uniform Z
+    curve(F.diff.c.prime.2,xlim[1],xlim[2],ylim=c(-1,3))
+    curve(F.diff.c(u,cutoff),xname='cutoff',col='blue',add=TRUE)
+    with(list(x=runif(1,xlim[1],xlim[2])), {y <- F.diff.c(u,x); m <- F.diff.c.prime.2(x); abline(a=y-x*m,b=m,col='red',lty='dotted'); points(x,y,pch='x')})
+})
+
+
+
+
+## 33c derivative wrt u of F_{diff,c}(u)
+require(pracma)
+source('misc.R')
+unif.Z <- local({
+    dZ <- function(z)dunif(z,-1/2,1/2)
+    pZ <- function(q)punif(q,-1/2,1/2)
+    qZ <- function(u) (u-1/2)*(u>0)*(u<1)
+    dZ.c <- function(z,cutoff) dunif(z,cutoff,1/2)
+    rZ.c <- function(n,cutoff) qZ(runif(n)*(1-pZ(cutoff))+pZ(cutoff))
+    pZ.c <- function(q,cutoff)(q>cutoff)*(pZ(q)-pZ(cutoff))/(1-pZ(cutoff))
+    theta.to.cutoff <- function(theta)2*theta-1/2
+    ## kernel.mean <- 1/6
+    F.diff.c.1 <- function(q,cutoff) (q>=0 & q<=1/2-cutoff)*(-q^2/2/(1/2-cutoff)^2+1/2+q/(1/2-cutoff)) + (q<0 & q>=-1/2+cutoff)*(1/2*(q/(1/2-cutoff)+1)^2) + 1*(q>1/2-cutoff)
+    F.diff.c.prime <- function(q,cutoff) (q>=cutoff & q<=1/2-cutoff)*(q/(1/2-cutoff)^2 - q^2/(1/2-cutoff)^3) + (q<0 & q>=-1/2+cutoff)*(q/(1/2-cutoff)+1)*q/(1/2-cutoff)^2
+    return(mget(ls()))
+})
+normal.Z <- local({
+    pZ <- pnorm
+    qZ <- qnorm
+    dZ <- dnorm
+    rZ.c <- function(n,c) rnorm.trunc(n,0,1,c)
+    dZ.c <- function(z,c) dnorm.trunc(z,0,1,c)
+    pZ.c <- function(q,cutoff)(q>cutoff)*(pZ(q)-pZ(cutoff))/(1-pZ(cutoff))    
+    mu <- function(x)exp(log(dnorm(x))-log(1-pnorm(x)))
+    theta.to.cutoff <- function(theta)uniroot(function(x)mu(x)-theta,c(-1,1),extendInt='yes')$root  #function(theta)2*theta-1/2
+    ## kernel.mean <- integrate(function(x)dnorm(x)^2,-Inf,Inf)$val
+    return(mget(ls()))
+})
+cutoff <- .3
+xlim <- c(-1,1)*1.5
+with(normal.Z, {
+    F.diff.c <- Vectorize(function(u,cutoff)integrate(function(z) (pZ(z+u)-pZ(cutoff))/(1-pZ(cutoff))^2*dZ(z), max(cutoff,cutoff-u),Inf)$val)
+    ## F.diff.c.prime.2 <- Vectorize(function(cutoff) -(pZ(max(cutoff,cutoff+u))-pZ(cutoff))*dZ(max(cutoff,cutoff-u))/(1-pZ(cutoff))^2 + integral( function(z)dZ(cutoff)*dZ(z)*(2*pZ(z+u)-pZ(cutoff)-1)/(1-pZ(cutoff))^3, max(cutoff,cutoff-u),25) ) # derivative wrt c of F_{diff,c}(u)
+    F.diff.u.prime <- Vectorize(function(u)integrate(function(z)dZ(z)*dZ(z+u)/(1-pZ(cutoff))^2,max(cutoff,cutoff-u),Inf)$val)
+    curve(F.diff.u.prime,xlim[1],xlim[2],ylim=c(-1,4))
+    curve(F.diff.c(u,cutoff),xname='u',col='blue',add=TRUE)
+    invisible(replicate(2, {
+        with(list(u=runif(1,xlim[1],xlim[2])), {y <- F.diff.c(u,cutoff); m <- F.diff.u.prime(u); abline(a=y-u*m,b=m,col='red',lty='dotted'); points(u,y,pch='x')})
+    }))
+})
+
+
+## 33d derivative of F.diff_{c(theta)}(theta*delta) wrt theta
+require(pracma)
+unif.Z <- local({
+    dZ <- function(z)dunif(z,-1/2,1/2)
+    pZ <- function(q)punif(q,-1/2,1/2)
+    qZ <- function(u) (u-1/2)*(u>0)*(u<1)
+    dZ.c <- function(z,cutoff) dunif(z,cutoff,1/2)
+    rZ.c <- function(n,cutoff) qZ(runif(n)*(1-pZ(cutoff))+pZ(cutoff))
+    pZ.c <- function(q,cutoff)(q>cutoff)*(pZ(q)-pZ(cutoff))/(1-pZ(cutoff))
+    theta.to.cutoff <- function(theta)(2*theta-1/2)
+    ## kernel.mean <- 1/6
+    F.delta.c <- function(q,cutoff) (q>=0 & q<=1/2-cutoff)*(-q^2/2/(1/2-cutoff)^2+1/2+q/(1/2-cutoff)) + (q<0 & q>=-1/2+cutoff)*(1/2*(q/(1/2-cutoff)+1)^2) + 1*(q>1/2-cutoff)
+    c.prime <- function(theta)2
+    return(mget(ls()))
+})
+normal.Z <- local({
+    pZ <- pnorm
+    qZ <- qnorm
+    dZ <- dnorm
+    rZ.c <- function(n,c) rnorm.trunc(n,0,1,c)
+    dZ.c <- function(z,c) dnorm.trunc(z,0,1,c)
+    pZ.c <- function(q,cutoff)(q>cutoff)*(pZ(q)-pZ(cutoff))/(1-pZ(cutoff))    
+    mu <- function(x)exp(log(dnorm(x))-log(1-pnorm(x)))
+    ## theta.to.cutoff <- function(theta){print(theta);uniroot(function(x)mu(x)-theta,c(-1,1),extendInt='yes')$root}
+    c.prime <- function(theta)theta^3 ## TODO
+    theta.to.cutoff <- Vectorize(function(theta)uniroot(function(x)mu(x)-theta,c(-1,1),extendInt='yes')$root)
+    ## kernel.mean <- integrate(function(x)dnorm(x)^2,-Inf,Inf)$val
+    return(mget(ls()))
+})
+delta <- .4
+xlim <- c(0,5)
+## xlim <- c(-1,1)*.2
+with(normal.Z, {
+    F.diff.c <- Vectorize(function(u,cutoff)integrate(function(z) (pZ(z+u)-pZ(cutoff))/(1-pZ(cutoff))^2*dZ(z), max(cutoff,cutoff-u),Inf)$val)
+    curve(F.diff.c(theta*delta,theta.to.cutoff(theta)),xname='theta',xlim[1],xlim[2],ylim=c(0,1))
+    ## F.diff.c.1 <- Vectorize(function(q,cutoff) integrate(function(z)pZ.c(z+q,cutoff)*dZ.c(z,cutoff),-Inf,Inf)$val)
+    ## curve(F.diff.c.1(theta*delta,theta.to.cutoff(theta)),xname='theta',add=TRUE,lty='dotted')
+    F.diff.prime.c <- Vectorize(function(u,cutoff) -(pZ(max(cutoff,cutoff+u))-pZ(cutoff))*dZ(max(cutoff,cutoff-u))/(1-pZ(cutoff))^2 + integral( function(z)dZ(cutoff)*dZ(z)*(2*pZ(z+u)-pZ(cutoff)-1)/(1-pZ(cutoff))^3, max(cutoff,cutoff-u),25) ) # derivative wrt c of F_{diff,c}(u)
+    ## ff.c <- function(theta)F.diff.prime.c(theta*delta,theta.to.cutoff(theta))
+    ## ff.c <- Vectorize(function(theta) {
+    ##     cutoff <- theta.to.cutoff(theta)
+    ##     u <- theta*delta
+    ##     -(pZ(max(cutoff,cutoff+u))-pZ(cutoff))*dZ(max(cutoff,cutoff-u))/(1-pZ(cutoff))^2 + integral( function(z)dZ(cutoff)*dZ(z)*(2*pZ(z+u)-pZ(cutoff)-1)/(1-pZ(cutoff))^3, max(cutoff,cutoff-u),25)
+    ## }) # derivative wrt c of F_{diff,c}(u)
+    ## F.diff.prime.u <- Vectorize(function(theta) {
+    ##     cutoff <- theta.to.cutoff(theta)
+    ##     u <- theta*delta
+    ##     integral(function(z)dZ(z)*dZ(z+u)/(1-pZ(cutoff))^2,max(cutoff,cutoff-u),25)
+    ## })# derivative wrt u of F_{diff,c}(u)
+    F.diff.prime.u <- Vectorize(function(u,cutoff) {
+        integral(function(z)dZ(z)*dZ(z+u)/(1-pZ(cutoff))^2,max(cutoff,cutoff-u),25)
+    })# derivative wrt u of F_{diff,c}(u)
+    F.diff.prime.theta <- function(theta) c.prime(theta)*F.diff.prime.c(theta*delta,theta.to.cutoff(theta)) + delta*F.diff.prime.u(theta*delta,theta.to.cutoff(theta))
+    ## curve(2*ff.c(theta)  +delta*ff.u(theta),xname='theta',add=TRUE,col='blue')
+    curve(F.diff.prime.theta(theta),xname='theta',add=TRUE,col='blue')
+    invisible(replicate(3,{
+        ## with(list(theta=runif(1,xlim[1],xlim[2])), {y <- F.diff.c(theta*delta,theta.to.cutoff(theta)); m <- ff.c(theta)+delta*ff.u(theta); abline(a=y-theta*m,b=m,col='red',lty='dotted'); points(theta,y,pch='x')})
+        with(list(theta=runif(1,xlim[1],xlim[2])), {y <- F.diff.c(theta*delta,theta.to.cutoff(theta)); m <- F.diff.prime.c(theta*delta,theta.to.cutoff(theta))+delta*F.diff.prime.u(theta*delta,theta.to.cutoff(theta)); abline(a=y-theta*m,b=m,col='red',lty='dotted'); points(theta,y,pch='x')})
+    }))
+})
+
+
+
+## 33e fla for mean of kernel of kendalls tau
+n <- 1e3
+rS <- function(n)runif(n,1,2)
+dS <- function(s)dunif(s,1,2)
+unif.Z <- local({
+    pZ <- function(q)punif(q,-1/2,1/2)
+    qZ <- function(u) (u-1/2)*(u>0)*(u<1)
+    dZ.c <- function(z,cutoff) dunif(z,cutoff,1/2)
+    rZ.c <- function(n,cutoff) qZ(runif(n)*(1-pZ(cutoff))+pZ(cutoff))
+    pZ.c <- function(q,cutoff)(q>cutoff)*(pZ(q)-pZ(cutoff))/(1-pZ(cutoff))
+    theta.to.cutoff <- function(theta)2*theta-1/2
+    ## kernel.mean <- 1/6
+    return(mget(ls()))
+})
+normal.Z <- local({
+    pZ <- pnorm
+    qZ <- qnorm
+    rZ.c <- function(n,c) rnorm.trunc(n,0,1,c)
+    dZ.c <- function(z,c) dnorm.trunc(z,0,1,c)
+    pZ.c <- function(q,cutoff)(q>cutoff)*(pZ(q)-pZ(cutoff))/(1-pZ(cutoff))    
+    mu <- function(x)exp(log(dnorm(x))-log(1-pnorm(x)))
+    theta.to.cutoff <- function(theta)uniroot(function(x)mu(x)-theta,c(-1,1),extendInt='yes')$root  #function(theta)2*theta-1/2
+    ## kernel.mean <- integrate(function(x)dnorm(x)^2,-Inf,Inf)$val
+    return(mget(ls()))
+})
+## with(unif.Z, {
+with(normal.Z, {
+    F.diff.c <- Vectorize(function(q,cutoff) integrate(function(z)pZ.c(z+q,cutoff)*dZ.c(z,cutoff),-Inf,Inf)$val)
+    theta <- runif(1,0,.5)
+    cutoff <- theta.to.cutoff(theta)
+    theoretical <- integrate(Vectorize(function(s1) integrate(function(s2) F.diff.c(theta*(s2-s1),cutoff)*dS(s2), -Inf,s1)$val * dS(s1)), -Inf, Inf)$val
+    n <- 3e2
+    s <- rS(n)
+    z <- rZ.c(n,cutoff)
+    mc <- sum(outer(s,s,`<`)*outer(z-theta*s,z-theta*s,`<`))/n^2
+    c(theoretical,mc)
+})
+
+
+
+
+## 33f mu'(0)=?1
+require(parallel)
+require(pracma)
+source('misc.R')
+n <- 2e3
+rS <- function(n)runif(n,1,2)
+dS <- function(s)dunif(s,1,2)
+unif.Z <- local({
+    dZ <- function(z)dunif(z,-1/2,1/2)
+    pZ <- function(q)punif(q,-1/2,1/2)
+    qZ <- function(u) (u-1/2)*(u>0)*(u<1)
+    ## dZ.c <- function(z,cutoff) dunif(z,cutoff,1/2)
+    rZ.c <- function(n,cutoff) qZ(runif(n)*(1-pZ(cutoff))+pZ(cutoff))
+    ## pZ.c <- function(q,cutoff)(q>cutoff)*(pZ(q)-pZ(cutoff))/(1-pZ(cutoff))
+    theta.to.cutoff <- function(theta)(2*theta-1/2)
+    ## kernel.mean <- 1/6
+    F.delta.c <- function(q,cutoff) (q>=0 & q<=1/2-cutoff)*(-q^2/2/(1/2-cutoff)^2+1/2+q/(1/2-cutoff)) + (q<0 & q>=-1/2+cutoff)*(1/2*(q/(1/2-cutoff)+1)^2) + 1*(q>1/2-cutoff)
+    c.prime <- function(theta)2
+    return(mget(ls()))
+})
+normal.Z <- local({
+    dZ <- dnorm
+    pZ <- pnorm
+    qZ <- qnorm
+    rZ.c <- function(n,c) rnorm.trunc(n,0,1,c)
+    mu <- function(x)exp(log(dnorm(x))-log(1-pnorm(x)))
+    theta.to.cutoff <- function(theta)uniroot(function(x)mu(x)-theta,c(-1,1),extendInt='yes')$root  #function(theta)2*theta-1/2
+    kernel.mean <- integrate(function(x)dnorm(x)^2,-Inf,Inf)$val
+    return(mget(ls()))
+})
+thetas <- seq(0,3,length.out=100)
+by.theta <- mclapply(thetas, mc.cores=detectCores()-3, FUN=function(theta) {
+    with(normal.Z, {
+        cutoff <- theta.to.cutoff(theta)
+        s <- rS(n)
+        z <- rZ.c(n,cutoff)
+        kernel.mc <- mean(outer(s,s,`<`)*outer(z-theta*s,z-theta*s,`<`))        
+        ## 2/choose(n,2)*n^2*kernel.mc - 1
+    })    
+})
+by.theta <- simplify2array(by.theta)
+kernel.mean <- with(normal.Z, {
+    ## F.diff.prime.c <- Vectorize(function(u,cutoff) -(pZ(max(cutoff,cutoff+u))-pZ(cutoff))*dZ(max(cutoff,cutoff-u))/(1-pZ(cutoff))^2 + integral( function(z)dZ(cutoff)*dZ(z)*(2*pZ(z+u)-pZ(cutoff)-1)/(1-pZ(cutoff))^3, max(cutoff,cutoff-u),25) ) # derivative wrt c of F_{diff,c}(u)
+    F.diff.prime.u <- Vectorize(function(u,cutoff) {
+        integral(function(z)dZ(z)*dZ(z+u)/(1-pZ(cutoff))^2,max(cutoff,cutoff-u),25)
+    })# derivative wrt u of F_{diff,c}(u)
+    ## F.diff.prime.theta <- function(theta) c.prime(theta)*F.diff.prime.c(theta*delta,theta.to.cutoff(theta)) + delta*F.diff.prime.u(theta*delta,theta.to.cutoff(theta))
+    ## F.diff.prime.theta(0)
+    F.diff.prime.u(0,theta.to.cutoff(0))
+})
+S.factor <- integrate(Vectorize(function(s2)integrate(function(s1)(s1-s2)*dS(s1),-Inf,s2)$val*dS(s2)),-Inf,Inf)$val
+op <- par(mfrow=c(1,2))
+plot(thetas,by.theta,asp=1); abline(a=1/4,b=S.factor*kernel.mean); abline(v=0)
+plot(thetas,2/choose(n,2)*n^2*by.theta-1,asp=1); abline(a=2/choose(n,2)*n^2*1/4-1,b=2/choose(n,2)*n^2*S.factor*kernel.mean); abline(v=0)
+par(op)
+
+
+
+
+
+
+
+
+## 34 begg local power apprx
+require(parallel)
+require(pracma)
+source('misc.R')
+n <- 1e3
+q <- qnorm(1-.05/2)
+rS <- function(n)runif(n,1,2)
+dS <- function(s)dunif(s,1,2)
+thetas <- seq(0,2,length.out=1e2)
+by.theta <- mclapply(thetas,mc.cores=detectCores()-3, FUN=function(theta) {
+## by.theta <- sapply(thetas, function(theta) {
+    with(normal.Z, {
+        cutoff <- theta.to.cutoff(theta)
+        ## mu.theta.n <- mu.theta(theta,n)
+        mean(replicate(3e2, {
+            s <- rS(n)
+            z <- rZ.c(n,cutoff)
+            tau.stat <- cor(z-theta*s,s,method='kendall')
+            sqrt(9*n/4)*abs(tau.stat) > q
+        }))
+    })
+})
+by.theta <- simplify2array(by.theta)
+plot(thetas,by.theta)
+## points(thetas, 1 - pnorm(q - sqrt(n)*mu.theta.prime(0,n)*thetas/sqrt(9/4) ), col='red')
+kernel.mean <- with(normal.Z, {
+    ## F.diff.prime.c <- Vectorize(function(u,cutoff) -(pZ(max(cutoff,cutoff+u))-pZ(cutoff))*dZ(max(cutoff,cutoff-u))/(1-pZ(cutoff))^2 + integral( function(z)dZ(cutoff)*dZ(z)*(2*pZ(z+u)-pZ(cutoff)-1)/(1-pZ(cutoff))^3, max(cutoff,cutoff-u),25) ) # derivative wrt c of F_{diff,c}(u)
+    F.diff.prime.u <- Vectorize(function(u,cutoff) {
+        integral(function(z)dZ(z)*dZ(z+u)/(1-pZ(cutoff))^2,max(cutoff,cutoff-u),25)
+    })# derivative wrt u of F_{diff,c}(u)
+    ## F.diff.prime.theta <- function(theta) c.prime(theta)*F.diff.prime.c(theta*delta,theta.to.cutoff(theta)) + delta*F.diff.prime.u(theta*delta,theta.to.cutoff(theta))
+    ## F.diff.prime.theta(0)
+    F.diff.prime.u(0,theta.to.cutoff(0))
+})
+S.factor <- integrate(Vectorize(function(s2)integrate(function(s1)(s1-s2)*dS(s1),-Inf,s2)$val*dS(s2)),-Inf,Inf)$val
+mu.prime.0 <- 2/choose(n,2)*n^2*S.factor*kernel.mean
+points(thetas, 1-pnorm(q - sqrt(n)*mu.prime.0*thetas/sqrt(4/9)) + pnorm(-q - sqrt(n)/sqrt(4/9)*mu.prime.0*thetas), col='blue')
+
+

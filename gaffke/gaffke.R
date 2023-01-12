@@ -1,0 +1,252 @@
+a <- .5;b <- .6
+dX <- function(x)dunif(x,a,b)
+pX <- function(q)punif(q,a,b)
+qX <- function(p)qunif(p,a,b)
+stopifnot(integrate(function(x)x*dX(x),0,Inf)$val<=1.001)
+gaffke <- function(x,mc=1e3) {
+    n <- length(x)
+    U <- matrix(runif(n*mc),nrow=mc)
+    U.diffs <- apply(U,1,function(r)diff(c(sort(r),1)))
+    mean(U%*%x)
+}
+## gaffke <- function(x,mc=1e3) {
+##     n <- length(x)
+##     Z <- matrix(rexp(n*mc),nrow=mc)
+##     mean(Z%*%(x-1) <= rexp(mc))
+## }
+alphas <- seq(0.01,1-.01,len=40)
+by.alpha <- sapply(alphas, function(alpha)1-integrate(function(x)pX(1/alpha/x)*dX(x),0,2)$val)
+plot(alphas,by.alpha)
+abline(a=0,b=1)
+max(by.alpha-alphas)
+
+
+gaffke.stats <- replicate(1e3,gaffke(qX(runif(2))))
+by.alpha <- sapply(alphas,function(alpha)mean(gaffke.stats>alpha))
+plot(alphas,by.alpha); abline(a=0,b=1)
+
+a <- 1; b <- 2
+dX <- function(x)dunif(x,a,b)
+pX <- function(q)punif(q,a,b)
+alpha <- .3
+stopifnot((1/b^2 < alpha) && (alpha < 1/a/b))
+integrate(function(x)pX(1/alpha/x)*dX(x),0,2)$val
+integrate(function(x)((1/alpha/x-a)/(b-a)*(1/alpha/x<b) + ((1/alpha/x)>b))/(b-a),a,b)$val
+## (1/alpha*log(b^2*alpha)+1/alpha-2*a*b+a^2)/(b-a)^2
+1-1/(b-a)^2*(b^2-1/alpha*log(b^2*alpha*exp(1)))
+curve(pX(1/alpha/x),0,10)
+
+uu <- replicate(1e6,{
+a <- runif(1)
+b <- runif(1,a,2-a)
+if((1/b^2 < alpha) && (alpha < 1/a/b))
+    stopifnot(1/(b-a)^2*(b^2-1/alpha*log(b^2*alpha*exp(1)))<alpha)
+})
+
+
+## gaffke test statistic formulas
+gaffke.unif <- function(x,mc=1e4) {
+    n <- length(x)
+    U <- matrix(runif(n*mc),nrow=mc)
+    U.diffs <- t(apply(U,1,function(r)diff(c(sort(r),1))))
+    mean(U.diffs%*%x <= 1)
+}
+gaffke.exp <- function(x,mc=1e4) {
+    n <- length(x)
+    Z <- matrix(rexp(n*mc),nrow=mc)
+    mean(Z%*%(x-1) <= rexp(mc))
+}
+n <- 3
+x <- rchisq(n,4)
+gaffke.theoretical <- 1/prod(x)
+c(gaffke.unif(x),gaffke.exp(x),gaffke.theoretical)
+
+
+
+gaffke.stats <- replicate(1e4,{
+    x1 <- runif(1,1,10)
+    x2 <- runif(1)
+    1-(x1-1)^2/x1/(x1-x2)
+})
+summary(gaffke.stats)
+plot(ecdf(gaffke.stats))
+abline(a=0,b=1,col='red')
+
+integrate(Vectorize(function(z2)exp(-x2*z2)*integrate(function(z1)exp(-x1*z1),-z2*(x2-1)/(x1-1),Inf)$val),lower=0,upper=Inf)
+1/x1*(x1-1)/(x1-x2)
+
+integrate(Vectorize(function(z2)exp(-z2)*integrate(function(z1)exp(-z1),0,-(x2-1)/(x1-1)*z2)$val),0,Inf)$val
+1-(x1-1)/(x1-x2)
+
+
+K2s.mc <- replicate(1e3,{
+    cat('.')
+    x <- rX(2)
+    gaffke.unif(x)
+})
+plot(ecdf(K2s.mc))
+
+
+K2 <- function(x1,x2)  1/x1/x2 * (x1>=1 & x2>=1) + (1-(x1-1)^2/x1/(x1-x2))*(x1>=1 & x2<=1) + (1-(x2-1)^2/x2/(x2-x1))*(x2>=1 & x1<=1) + 1*(x1<1 & x2<1)
+K2.approx <- function(x1,x2)  1/x1/x2 * (x1>=1 & x2>=1) + (1/x1)*(x1>=1 & x2<=1) + (1/x2)*(x2>=1 & x1<=1) + 1*(x1<1 & x2<1)
+## x <- runif(2,0,10)
+## gaffke.exp(x,mc=1e6)
+## K2(x[1],x[2])
+B <- 1e5
+rX <- function(n)runif(n,0,2.4)
+rX <- function(n)rexp(n,.7)
+x <- matrix(rX(B*2),ncol=2)
+K2s <- K2(x[,1],x[,2])
+K2s.approx <- K2.approx(x[,1],x[,2])
+plot(ecdf(K2s),xlim=c(0,1)); abline(a=0,b=1,col='red')
+lines(ecdf(K2s.approx),col='blue')#; abline(a=0,b=1,col='red')
+
+
+## FPR for gamma
+require(parallel)
+B <- 1e3
+q <- seq(0,1,len=20)
+param <- runif(1e4,0,10)
+## ans <- mclapply(1:nrow(shapes),mc.cores=detectCores()-2,FUN=function(j){
+ans <- lapply(1:length(param),FUN=function(j){
+    rX <- function(n)rgamma(n,shape=param[j],rate=param[j])
+    x <- matrix(rX(B*2),ncol=2)
+    ## K2s <- K2.approx(x[,1],x[,2])
+    K2s <- K2(x[,1],x[,2])
+    sum.devs <- sum(pmax((q-quantile(ecdf(K2s),q)),0))
+    ## if(    sum.devs > .0001) cat(shape1,' ',shape2,'\n')
+    sum.devs
+})
+ans <- simplify2array(ans)
+max(ans)
+
+
+B <- 1e6
+shape <- rate <- param[which.max(ans)]
+rX <- function(n)rgamma(n,shape=shape,rate=rate)
+x <- matrix(rX(B*2),ncol=2)
+K2s <- K2.approx(x[,1],x[,2])
+mean(x)
+plot(ecdf(K2s)); abline(a=0,b=1)
+
+
+a <- 16/25+.1;a.bar <- 1-a
+f <- function(x)(1/2/a * (2-a.bar*x + sqrt((x<1)*(a.bar^2*x^2-4*a.bar*x+4*a.bar))))*(x<1) + 1/a/x*(x>=1 & x<1/a)
+curve(f,0,5,asp=1,ylim=c(0,5));abline(v=1,h=1);abline(a=0,b=1)
+abline(b=-1,a=2/sqrt(a),col='red')
+points(sqrt(1/a),sqrt(1/a),pch='x')    
+
+curve(1+sqrt(1-alpha)-2*sqrt(alpha),xname='alpha')
+abline(v=16/25,h=0)
+
+
+## beta
+## empirical FPR for beta
+require(parallel)
+B <- 1e3
+q <- seq(0,1,len=20)
+shapes <- matrix(runif(1e5*2,0,10),ncol=2)
+ans <- mclapply(1:nrow(shapes),mc.cores=detectCores()-2,FUN=function(j){
+    shape1 <- shapes[j,1]; shape2 <- shapes[j,2]
+    rX <- function(n)rbeta(n,shape1,shape2)
+    x <- matrix(rX(B*2),ncol=2)/(.001+shape1/(shape1+shape2))
+    ## K2s <- K2.approx(x[,1],x[,2])
+    K2s <- K2(x[,1],x[,2])
+    sum.devs <- tryCatch(sum(pmax((q-quantile(ecdf(K2s),q)),0)),error=NA,finally=-Inf)
+    ## if(    sum.devs > .0001) cat(shape1,' ',shape2,'\n')
+    sum.devs
+})
+ans <- simplify2array(ans)
+max(ans)
+
+shape1 <- 0.0005104346; shape2 <-  3.20151
+shape1 <-  0.001364874; shape2 <-  0.109061
+shape1 <- 0.001; shape2 <- .1
+B <- 1e6
+## shape1 <- shapes[which.max(ans),1]; shape2 <- shapes[which.max(ans),2]
+rX <- function(n)rbeta(n,shape1,shape2)
+x <- matrix(rX(B*2),ncol=2)/(shape1/(shape1+shape2))
+K2s <- K2(x[,1],x[,2])
+mean(x)
+plot(ecdf(K2s)); abline(a=0,b=1)
+
+plot(ecdf(K2s),xlim=c(0,.001)); abline(a=0,b=1)
+
+
+## beta--formula for K2(X1,X2)
+a <- 1
+b <- 2
+pX <- function(q)pbeta(q,shape1=a,shape2=b)
+dX <- function(x)dbeta(x,shape1=a,shape2=b)
+B <- 1e4
+alpha <- runif(1)
+c <- runif(1,1,10)
+x <- matrix(rbeta(2*B,shape1=a,shape2=b),ncol=2) * c
+## mean((1/x[,1]/x[,2] < alpha) & (x[,1]>1) & (x[,2]>1))
+## integrate(Vectorize(function(x1)integrate(function(x2)(x1*x2>1/alpha)*dX(x2/c)/c,1,Inf)$val*dX(x1/c)/c),1,Inf)$val
+## integrate(Vectorize(function(x1)integrate(function(x2)dX(x2/c)/c,1/alpha/x1,Inf)$val*dX(x1/c)/c),1,1/alpha)$val  + integrate(Vectorize(function(x1)integrate(function(x2)dX(x2/c)/c,1,Inf)$val*dX(x1/c)/c),1/alpha,Inf)$val
+## integrate(function(x1)dX(x1)*(1-pX(1/alpha/x1/c^2)),1/c,1/alpha/c)$val + (1-pX(1/alpha/c))*(1-pX(1/c))
+## 1+pX(1/c)*(pX(1/alpha/c)-2) - integrate(function(x1)pX(1/alpha/x1/c^2)*dX(x1),1/c,1/alpha/c)$val
+####################
+g <- function(x1)1/2/alpha*(2-(1-alpha)*x1+sqrt((1-alpha)^2*x1^2-4*(1-alpha)*x1+4*(1-alpha)))
+## mean(((1-(x[,2]-1)^2/x[,2]/(x[,2]-x[,1])) < alpha) & (x[,1]<1) & (x[,2]>1))
+## integrate(Vectorize(function(x1)integrate(function(x2)((1-(x2-1)^2/x2/(x2-x1))<alpha)*dX(x2/c)/c,g(x1),Inf)$val*dX(x1/c)/c),0,1)$val
+## integrate(function(x1)dX(x1)*(1-pX(g(c*x1)/c)),0,1/c)$val
+####################
+K2 <- function(x1,x2)  1/x1/x2 * (x1>=1 & x2>=1) + (1-(x1-1)^2/x1/(x1-x2))*(x1>=1 & x2<1) + (1-(x2-1)^2/x2/(x2-x1))*(x2>=1 & x1<1) + 1*(x1<1 & x2<1)
+K2 <- function(x1,x2)ifelse(x1>=1, yes=ifelse(x2>=1,1/x1/x2,1-(x1-1)^2/x1/(x1-x2)), no=ifelse(x2>=1,1-(x2-1)^2/x2/(x2-x1),1))
+mean(K2(x[,1],x[,2])<alpha)
+mean((1/x[,1]/x[,2] < alpha) & (x[,1]>1) & (x[,2]>1)) + 2*mean(((1-(x[,2]-1)^2/x[,2]/(x[,2]-x[,1])) < alpha) & (x[,1]<1) & (x[,2]>1))
+1+pX(1/alpha/c)*pX(1/c) - integrate(function(x1)pX(1/alpha/x1/c^2)*dX(x1),1/c,1/alpha/c)$val - 2*integrate(function(x1)pX(g(c*x1)/c)*dX(x1),0,1/c)$val
+####################
+pK2 <- Vectorize(function(shape1,shape2,c,alpha) {
+    pX <- function(q)pbeta(q,shape1,shape2)
+    dX <- function(x)dbeta(x,shape1,shape2)
+    x2 <- function(x1)1/2/alpha*(2-(1-alpha)*x1+sqrt((1-alpha)^2*x1^2-4*(1-alpha)*x1+4*(1-alpha)))
+    1+pX(1/alpha/c)*pX(1/c) - integrate(function(x1)pX(1/alpha/x1/c^2)*dX(x1),1/c,min(1,1/alpha/c))$val - 2*integrate(function(x1)pX(x2(c*x1)/c)*dX(x1),0,min(1,1/c))$val
+})
+shape1 <- runif(1,0,10)
+shape2 <- runif(1,0,10)
+pX <- function(q)pbeta(q,shape1,shape2)
+dX <- function(x)dbeta(x,shape1,shape2)
+alpha <- runif(1)
+c <- runif(1,1,10)
+pK2(shape1,shape2,c,alpha)
+## x <- matrix(rbeta(2*B,shape1,shape2),ncol=2) * c
+## mean(K2(x[,1],x[,2])<alpha)
+shape1 <- 0.0005104346; shape2 <-  3.20151
+shape1 <-  0.001364874; shape2 <-  0.109061
+## shape1 <- .001; shape2 <
+- .1
+c <- 1/(shape1/(shape1+shape2))
+pK2(shape1,shape2,c,alpha)
+## curve(pX(1/alpha/x/c^2)*dX(x),1/c,1/alpha/c)
+## g <- function(x1)1/2/alpha*(2-(1-alpha)*x1+sqrt((1-alpha)^2*x1^2-4*(1-alpha)*x1+4*(1-alpha)))
+with(list(alpha=4e-4),pK2(shape1,shape2,c,alpha)-alpha)
+curve(pK2(shape1,shape2,c,alpha),xname='alpha',from=0,to=1/100)
+abline(a=0,b=1)
+
+alphas <- seq(0,1e-3,len=20)
+for(alpha in alphas){
+    print(alpha)
+    pK2(shape1,shape2,c,alpha)
+}
+plot(alphas,pK2(shape1,shape2,c,alphas))
+
+pX <- function(q)pbeta(q,shape1,shape2)
+dX <- function(x)dbeta(x,shape1,shape2)
+x2 <- function(x1)1/2/alpha*(2-(1-alpha)*x1+sqrt((1-alpha)^2*x1^2-4*(1-alpha)*x1+4*(1-alpha)))
+1+pX(1/alpha/c)*pX(1/c) - integrate(function(x1)pX(1/alpha/x1/c^2)*dX(x1),1/c,1/alpha/c)$val - 2*integrate(function(x1)pX(x2(c*x1)/c)*dX(x1),0,1/c)$val
+
+
+B <- 1e5
+## shape1 <- shapes[which.max(ans),1]; shape2 <- shapes[which.max(ans),2]
+shape1 <- .001;shape2 <- .1
+c <- 1/(shape1/(shape1+shape2))
+rX <- function(n)rbeta(n,shape1,shape2)
+x <- matrix(rX(B*2),ncol=2)/(shape1/(shape1+shape2))
+K2s <- K2(x[,1],x[,2])
+mean(x)
+plot(ecdf(K2s),xlab=expression(alpha)); abline(a=0,b=1)
+curve(pK2(shape1,shape2,c,alpha),xname='alpha',add=TRUE,col='red',from=0,to=1)
+mean(is.na(K2s))

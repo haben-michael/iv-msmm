@@ -1,0 +1,26 @@
+\begin{table}
+  \subfloat[Binormal model \eqref{model:binormal}]{
+    \input{220105.tex}
+ % \caption{}
+  % \label{table:1}
+    }
+  \\
+    \subfloat[Binormal model with censoring \eqref{model:censored binormal}]{\input{220811.tex}}
+      %       \label{table:2}
+    \caption{The results of a simulation examining the coverage of a nominal 95\% confidence ellipse obtained using the asymptotic estimator given in Section \ref{section:asymptotics}.\comment{make conssitent order of theta11 vs theta12 columns}. For $\aucindiv$ and $\aucpop$, the bias is computed as the mean difference between the estimates and the known true values. For the elements of the covariance matrix $\Sigma_{ij}$, the bias is the mean difference between the estimates given by Theorem \ref{theorem:asymptotic}   and the empirical covariance.}
+    \label{table:1}
+\end{table}
+\efloatseparator
+ 
+\begin{table}
+    \input{220823.tex}
+    \caption{Summary estimates on the duration of Terry stops by racial group.\comment{boston data has black/white without hispanic coded; here blacks where ethnicity is not recorded or NA are grouped as black non-hisp. maybe do alternative analysis where those are all NA'd. boston data puts south asian with middle eastern, which is other here.}\comment{in the boston data about [[]] of the black or whtie observations have no recorded hispanic/non-hispanic status.}}
+    \label{table:data analysis:summary estimates}
+\end{table}
+\efloatseparator
+ 
+\begin{table}
+    \input{220821.tex}
+    \caption{Estimates of the population and personalized AUCs of the duration of Terry stops by racial group.}
+    \label{table:data analysis:AUC estimates}
+\end{table}

@@ -1,0 +1,1187 @@
+require(mvtnorm)
+require(dplyr)
+
+concord.xy <- function(x,y) {
+    m <- length(x)
+    n <- length(y)
+    ## stopifnot(m>1,n>1)
+    if(length(x)==0 | length(y)==0)return(0)
+
+    sum(sapply(y,function(y.i)x<y.i))
+    ## sum(outer(x,y,`<`))
+}
+
+
+
+auc.obu <- function(x,y,alpha=.05) {
+
+    I <- length(x)
+    stopifnot(length(x)==length(y))
+    m <- sapply(x,length)
+    n <- sapply(y,length)
+    I.10 <- sum(m>0)
+    I.01 <- sum(n>0)
+    M <- sum(m)
+    N <- sum(n)
+
+    theta.hat <- concord.xy(unlist(x),unlist(y)) / (M*N)
+    V.10 <- sapply(x,function(x.i)concord.xy(x.i,unlist(y)))/N
+    V.01 <- sapply(y,function(y.i)concord.xy(unlist(x),y.i))/M
+
+    S.10 <- sum((V.10 - m*theta.hat)^2) * I.10 / ((I.10-1)*M)
+    S.01 <- sum((V.01 - n*theta.hat)^2) * I.01 / ((I.01-1)*N)
+    S.11 <- sum((V.10 - m*theta.hat)*(V.01 - n*theta.hat)) * I / (I-1)
+
+    var.hat <- S.10/M + S.01/N + 2*S.11/(M*N)
+    q <- qnorm(1-alpha/2)
+    return(c(theta.hat=theta.hat,var.hat=var.hat,CI.lower=theta.hat-q*sqrt(var.hat),CI.upper=theta.hat+q*sqrt(var.hat)))
+
+}
+
+
+auc.obu <- function(x,y,x.prime=NULL,y.prime=NULL,alpha=.05) {
+
+    I <- length(x)
+    ## stopifnot(length(x)==length(y))
+    m <- sapply(x,length)
+    n <- sapply(y,length)
+    I.10 <- sum(m>0)
+    I.01 <- sum(n>0)
+    M <- sum(m)
+    N <- sum(n)
+    q <- qnorm(1-alpha/2)
+
+    get.components <- function(x,y) {
+        theta.hat <- concord.xy(unlist(x),unlist(y)) / (M*N)
+        V.10 <- sapply(x,function(x.i)concord.xy(x.i,unlist(y)))/N
+        V.01 <- sapply(y,function(y.i)concord.xy(unlist(x),y.i))/M
+
+        S.10 <- sum((V.10 - m*theta.hat)^2) * I.10 / ((I.10-1)*M)
+        S.01 <- sum((V.01 - n*theta.hat)^2) * I.01 / ((I.01-1)*N)
+        S.11 <- sum((V.10 - m*theta.hat)*(V.01 - n*theta.hat)) * I / (I-1)
+
+        var.hat <- S.10/M + S.01/N + 2*S.11/(M*N)
+
+        return(list(theta.hat=theta.hat,V.10=V.10,V.01=V.01,S.10=S.10,S.01=S.01,S.11=S.11,var.hat=var.hat))
+    }
+
+    first <- get.components(x,y)
+    if(is.null(x.prime) | is.null(y.prime)) {
+        return(c(theta.hat=first$theta.hat,var.hat=first$var.hat,CI.lower=first$theta.hat-q*sqrt(first$var.hat),CI.upper=first$theta.hat+q*sqrt(first$var.hat)))
+    }
+
+    second <- get.components(x.prime,y.prime)
+
+    S.10.12 <- sum((first$V.10 - m*first$theta.hat)*(second$V.10 - m*second$theta.hat)) * I.10 / ((I.10-1)*M)
+    S.01.12 <- sum((first$V.01 - n*first$theta.hat)*(second$V.01 - n*second$theta.hat)) * I.01 / ((I.01-1)*N)
+    S.11.12 <- sum((first$V.10 - m*first$theta.hat)*(second$V.01 - n*second$theta.hat)) * I / (I-1)
+    S.11.21 <- sum((second$V.10 - m*second$theta.hat)*(first$V.01 - n*first$theta.hat)) * I / (I-1)
+
+    cov.hat <- S.10.12/M + S.01.12/N + S.11.12/(M*N) + S.11.21/(M*N)
+
+    theta.hat.diff <- first$theta.hat - second$theta.hat
+    var.hat.diff <- first$var.hat + second$var.hat - 2*cov.hat
+    return(list(theta.hat.diff=theta.hat.diff,var.hat.diff=var.hat.diff,CI.lower=theta.hat.diff-q*sqrt(var.hat.diff),CI.upper=theta.hat.diff+q*sqrt(var.hat.diff),first=first,second=second))
+
+}
+
+
+auc.true <- function(delta)
+    integrate(function(u)pnorm(u)*dnorm(u,mean=delta),lower=-Inf,upper=Inf)$value
+
+## delta <- .6
+## auc.true(delta)
+## concord.xy(rnorm(1e3),rnorm(1e3,delta))
+
+
+
+
+
+I <- 3e2
+theta.true <- .7
+delta <- uniroot(Vectorize(function(delta)auc.true(delta)-theta.true), interval=c(0,4))$root
+cluster.size <- 30
+Sigma <- matrix(.6,nrow=cluster.size,ncol=cluster.size)
+diag(Sigma) <- 1
+
+## ans <- replicate(2e1, {
+ans <- sapply(seq(.5,2,length.out=30),function(delta) {
+    cat('.')
+    coverage <- replicate(2e1, {
+        status <- replicate(I,{
+            as.numeric(rnorm(cluster.size)>0)
+        }, simplify=F)
+        data <- lapply(status, function(status.i) {
+            ## u <- rnorm(cluster.size)+delta*status.i
+
+            ## Sigma <- matrix(runif(1,0,.6),nrow=cluster.size,ncol=cluster.size)
+            ## diag(Sigma) <- 1
+            ## delta <- rbeta(1,2,3)
+            u <- rmvnorm(1,sigma=Sigma) + delta*status.i
+            list(x=u[status.i==0],y=u[status.i==1])
+        })
+        x <- lapply(data,function(data.i)data.i$x)
+        y <- lapply(data,function(data.i)data.i$y)
+        ## hist(unlist(x))
+        ## hist(unlist(y),add=T,col=2)
+        est0 <- auc.obu(x,y, alpha=.2)
+        ##prod(c(est0$CI.upper, est0$CI.lower) - theta.true)<0
+    })
+    CIs <- coverage[c('CI.lower','CI.upper'),]
+    mean(apply(CIs - theta.true, 2, prod)<0)
+    c(sqrt(mean(coverage['var.hat',])),
+      sd(coverage['theta.hat',]))
+    ## hist(coverage['theta.hat',])
+})
+
+plot(ans[1,],ans[2,])
+
+
+
+## 2. try different covariance structures
+
+I <- 1e3
+theta.true <- .7
+delta <- uniroot(Vectorize(function(delta)auc.true(delta)-theta.true), interval=c(0,4))$root
+cluster.size <- 30
+
+## Sigma <- matrix(.6,nrow=cluster.size,ncol=cluster.size)
+## diag(Sigma) <- 1
+
+rho <- .5
+Sigma <- matrix(rho,nrow=cluster.size,ncol=cluster.size)
+Sigma <- Sigma^abs(row(Sigma)-col(Sigma))
+
+Sigma <- matrix(runif(cluster.size^2,0,.5),nrow=cluster.size)
+Sigma <- Sigma%*%t(Sigma)
+Sigma <- Sigma/max(Sigma)
+coverage <- replicate(1e2, {
+    status <- replicate(I,{
+        as.numeric(rnorm(cluster.size)>0)
+    }, simplify=F)
+    data <- lapply(status, function(status.i) {
+        ## u <- rnorm(cluster.size)+delta*status.i
+
+        ## Sigma <- matrix(runif(1,0,.6),nrow=cluster.size,ncol=cluster.size)
+        ## diag(Sigma) <- 1
+        ## delta <- rbeta(1,2,3)
+        u <- rmvnorm(1,sigma=Sigma) + delta*status.i
+        list(x=u[status.i==0],y=u[status.i==1])
+    })
+    x <- lapply(data,function(data.i)data.i$x)
+    y <- lapply(data,function(data.i)data.i$y)
+    ## hist(unlist(x))
+    ## hist(unlist(y),add=T,col=2)
+    est0 <- auc.obu(x,y, alpha=.05)
+    ##prod(c(est0$CI.upper, est0$CI.lower) - theta.true)<0
+})
+CIs <- coverage[c('CI.lower','CI.upper'),]
+mean(apply(CIs - theta.true, 2, prod)<0)
+
+
+## 2. multiple biomarkers
+
+
+
+I <- 1e2
+theta.true <- .7
+theta.true.prime <- .8
+delta <- uniroot(Vectorize(function(delta)auc.true(delta)-theta.true), interval=c(0,4))$root
+delta.prime <- uniroot(Vectorize(function(delta)auc.true(delta)-theta.true.prime), interval=c(0,4))$root
+cluster.size <- 30
+
+Sigma <- matrix(.6,nrow=cluster.size,ncol=cluster.size)
+diag(Sigma) <- 1
+
+coverage <- replicate(1e2, {
+    status <- replicate(I,{
+        as.numeric(rnorm(cluster.size)>0)
+    }, simplify=F)
+    data <- lapply(status, function(status.i) {
+        ## u <- rnorm(cluster.size)+delta*status.i
+
+        ## Sigma <- matrix(runif(1,0,.6),nrow=cluster.size,ncol=cluster.size)
+        ## diag(Sigma) <- 1
+        ## delta <- rbeta(1,2,3)
+        u <- rmvnorm(1,sigma=Sigma) + delta*status.i
+        u.prime <- rmvnorm(1,sigma=Sigma) + delta.prime*status.i
+        list(x=u[status.i==0],y=u[status.i==1],x.prime=u.prime[status.i==0],y.prime=u.prime[status.i==1])
+    })
+    x <- lapply(data,function(data.i)data.i$x)
+    y <- lapply(data,function(data.i)data.i$y)
+    x.prime <- lapply(data,function(data.i)data.i$x.prime)
+    y.prime <- lapply(data,function(data.i)data.i$y.prime)
+
+    est0 <- auc.obu(x,y, alpha=.3, x.prime,y.prime)
+
+},simplify=F)
+coverage <- sapply(coverage,function(x)c(theta.hat.diff=x$theta.hat.diff,CI.lower=x$CI.lower,CI.upper=x$CI.upper))
+CIs <- coverage[c('CI.lower','CI.upper'),]
+mean(apply(CIs - (theta.true-theta.true.prime), 2, prod)<0)
+
+
+## 3. HIV data
+
+data <- read.csv('final.csv')
+data$blip <- as.numeric(data$VL>1e3)
+data <- subset(data,select=c('ID','Blip_YN50','CD4','CD4P','Visits','blip','Sex','Transmission','trtm','AgeDiag','TimeDiag','AGE'))
+data <- subset(data,select=c('ID','CD4','CD4P','Visits','blip','Blip_YN50'))
+data <- rename(data,Visit=Visits)
+data$CD4[data$CD4>6000] <- NA
+data$CD4P[data$CD4P>=99] <- NA
+data$Visit <- unlist(sapply(rle(data$ID)$lengths,function(x)seq_len(x)))
+data$blip <- 1-data$blip
+data$blip <- factor(data$blip)
+data$ID <- factor(data$ID)
+data <- droplevels(data)
+
+data <- split(data,data$ID)
+data <- lapply(data,function(data.i)
+    with(na.omit(data.i), list(x=CD4[blip==0],y=CD4[blip==1],w=CD4P[blip==0],z=CD4P[blip==1])))
+
+x <- lapply(data,function(data.i)data.i$x)
+y <- lapply(data,function(data.i)data.i$y)
+x.prime <- lapply(data,function(data.i)data.i$w)
+y.prime <- lapply(data,function(data.i)data.i$z)
+
+auc0 <- auc.obu(x,y,x.prime,y.prime)
+auc0$theta.hat.diff
+auc0$CI.lower
+auc0$CI.upper
+
+## n <- sapply(data,function(data.i)c(n.x=length(data.i$x),n.y=length(data.i$y)))
+## n.x <- n['n.x',]; n.y <- n['n.y',]
+## data <- data[n.y>1]
+
+
+
+
+
+
+## 2. asymmetric covariance structure
+I <- 1e2
+cluster.size <- 30
+
+## Sigma <- matrix(.6,nrow=cluster.size,ncol=cluster.size)
+## diag(Sigma) <- 1
+
+## rho <- .5
+## Sigma <- matrix(rho,nrow=cluster.size,ncol=cluster.size)
+## Sigma <- Sigma^abs(row(Sigma)-col(Sigma))
+
+Sigma <- matrix(runif(cluster.size^2,0,.5),nrow=cluster.size)
+Sigma <- Sigma%*%t(Sigma)
+Sigma <- Sigma/max(Sigma)
+
+distr <- function() {
+    rmvnorm(1,sigma=Sigma)
+}
+
+delta <- 1
+ans <- replicate(1e2, {
+    x <- as.numeric(replicate(1e2,distr()))
+    y <- as.numeric(replicate(1e2,distr()))+delta
+    concord.xy(x,y)/(length(x)*length(y))
+})
+theta.true <- mean(ans)
+
+coverage <- replicate(1e2, {
+    status <- replicate(I,{
+        as.numeric(rnorm(cluster.size)>0)
+    }, simplify=F)
+    data <- lapply(status, function(status.i) {
+        ## u <- rnorm(cluster.size)+delta*status.i
+
+        ## Sigma <- matrix(runif(1,0,.6),nrow=cluster.size,ncol=cluster.size)
+        ## diag(Sigma) <- 1
+        ## delta <- rbeta(1,2,3)
+        u <- distr() + delta*status.i
+        list(x=u[status.i==0],y=u[status.i==1])
+    })
+    x <- lapply(data,function(data.i)data.i$x)
+    y <- lapply(data,function(data.i)data.i$y)
+    ## hist(unlist(x))
+    ## hist(unlist(y),add=T,col=2)
+    est0 <- auc.obu(x,y, alpha=.05)
+    ##prod(c(est0$CI.upper, est0$CI.lower) - theta.true)<0
+})
+CIs <- coverage[c('CI.lower','CI.upper'),]
+mean(apply(CIs - theta.true, 2, prod)<0)
+## --good coverage
+
+
+
+
+## 3. try different distributions among clusters
+I <- 1e3
+cluster.size <- 30
+
+Sigma <- matrix(.6,nrow=cluster.size,ncol=cluster.size)
+diag(Sigma) <- 1
+
+## rho <- .5
+## Sigma <- matrix(rho,nrow=cluster.size,ncol=cluster.size)
+## Sigma <- Sigma^abs(row(Sigma)-col(Sigma))
+
+## Sigma <- matrix(runif(cluster.size^2,0,.5),nrow=cluster.size)
+## Sigma <- Sigma%*%t(Sigma)
+## Sigma <- Sigma/max(Sigma)
+
+distr <- function() {
+    if(runif(1)<.5) {
+        ## rmvt(1,sigma=Sigma,df=1)
+        pnorm(rmvnorm(1,sigma=Sigma))
+    } else {
+        rmvnorm(1,sigma=Sigma)
+    }
+    ## rmvt(1,sigma=Sigma,df=rpois(1,4))
+}
+
+delta <- 0
+ans <- replicate(1e2, {
+    x <- as.numeric(replicate(1e2,distr()))
+    y <- as.numeric(replicate(1e2,distr()))+delta
+    concord.xy(x,y)/(length(x)*length(y))
+})
+theta.true <- mean(ans)
+
+coverage <- replicate(1e2, {
+    cat('.')
+    status <- replicate(I,{
+        as.numeric(rnorm(cluster.size)>0)
+    }, simplify=F)
+    data <- lapply(status, function(status.i) {
+        ## u <- rnorm(cluster.size)+delta*status.i
+
+        ## Sigma <- matrix(runif(1,0,.6),nrow=cluster.size,ncol=cluster.size)
+        ## diag(Sigma) <- 1
+        ## delta <- rbeta(1,2,3)
+        u <- distr() + delta*status.i
+        list(x=u[status.i==0],y=u[status.i==1])
+    })
+    x <- lapply(data,function(data.i)data.i$x)
+    y <- lapply(data,function(data.i)data.i$y)
+    ## hist(unlist(x))
+    ## hist(unlist(y),add=T,col=2)
+    est0 <- auc.obu(x,y, alpha=.05)
+    ##prod(c(est0$CI.upper, est0$CI.lower) - theta.true)<0
+})
+CIs <- coverage[c('CI.lower','CI.upper'),]
+mean(apply(CIs - theta.true, 2, prod)<0)
+## [1] 0.82
+## >
+
+
+
+## 4. try different distributions bw disease statuses
+I <- 1e2
+cluster.size <- 30
+
+Sigma <- matrix(.6,nrow=cluster.size,ncol=cluster.size)
+diag(Sigma) <- 1
+
+## rho <- .5
+## Sigma <- matrix(rho,nrow=cluster.size,ncol=cluster.size)
+## Sigma <- Sigma^abs(row(Sigma)-col(Sigma))
+
+## Sigma <- matrix(runif(cluster.size^2,0,.5),nrow=cluster.size)
+## Sigma <- Sigma%*%t(Sigma)
+## Sigma <- Sigma/max(Sigma)
+
+
+ans <- replicate(1e2, {
+    x <- rmvnorm(1e3,sigma=Sigma)
+    y <- pnorm(rmvnorm(1e3,sigma=Sigma))
+    concord.xy(x,y)/(length(x)*length(y))
+})
+theta.true <- mean(ans)
+
+coverage <- replicate(1e2, {
+    cat('.')
+    status <- replicate(I,{
+        as.numeric(rnorm(cluster.size)>0)
+    }, simplify=F)
+    data <- lapply(status, function(status.i) {
+        ## u <- rnorm(cluster.size)+delta*status.i
+
+        ## Sigma <- matrix(runif(1,0,.6),nrow=cluster.size,ncol=cluster.size)
+        ## diag(Sigma) <- 1
+        ## delta <- rbeta(1,2,3)
+        u <- rmvnorm(1,sigma=Status)
+        u[status.i==1] <- pnorm(u[status.i==1])
+        list(x=u[status.i==0],y=u[status.i==1])
+    })
+    x <- lapply(data,function(data.i)data.i$x)
+    y <- lapply(data,function(data.i)data.i$y)
+    ## hist(unlist(x))
+    ## hist(unlist(y),add=T,col=2)
+    est0 <- auc.obu(x,y, alpha=.05)
+    ##prod(c(est0$CI.upper, est0$CI.lower) - theta.true)<0
+})
+CIs <- coverage[c('CI.lower','CI.upper'),]
+mean(apply(CIs - theta.true, 2, prod)<0)
+
+
+## 5. try different variances
+
+
+I <- 3e2
+theta.true <- .7
+delta <- uniroot(Vectorize(function(delta)auc.true(delta)-theta.true), interval=c(0,4))$root
+cluster.size <- 30
+
+Sigma <- diag(runif(cluster.size))
+
+x <- rmvnorm(1e3,sigma=Sigma)
+y <- rmvnorm(1e3,sigma=Sigma) + delta
+theta.true <- mean(outer(as.numeric(x),as.numeric(y),`<`))
+
+
+coverage <- replicate(3e1, {
+    status <- replicate(I,{
+        as.numeric(rnorm(cluster.size)>0)
+    }, simplify=F)
+    data <- lapply(status, function(status.i) {
+        ## u <- rnorm(cluster.size)+delta*status.i
+
+        ## Sigma <- matrix(runif(1,0,.6),nrow=cluster.size,ncol=cluster.size)
+        ## diag(Sigma) <- 1
+        ## delta <- rbeta(1,2,3)
+        u <- rmvnorm(1,sigma=Sigma) + delta*status.i
+        list(x=u[status.i==0],y=u[status.i==1])
+    })
+    x <- lapply(data,function(data.i)data.i$x)
+    y <- lapply(data,function(data.i)data.i$y)
+    ## hist(unlist(x))
+    ## hist(unlist(y),add=T,col=2)
+    est0 <- auc.obu(x,y, alpha=.3)
+    ##prod(c(est0$CI.upper, est0$CI.lower) - theta.true)<0
+})
+CIs <- coverage[c('CI.lower','CI.upper'),]
+mean(apply(CIs - theta.true, 2, prod)<0)
+
+
+## x <- rnorm(1e3)
+## y <- rnorm(1e3)+delta
+
+
+## cluster.size <- 30
+## ## a <- .5
+## Sigma <- matrix(runif(cluster.size^2,0,.5),nrow=cluster.size)
+## Sigma <- Sigma%*%t(Sigma)
+## Sigma <- Sigma/max(Sigma)
+
+## Sigma <- diag(cluster.size)
+
+## ans <- replicate(5e3, {
+##     x <- as.numeric(rmvnorm(1e0,sigma=Sigma))
+##     y <- as.numeric(rmvnorm(1e0,sigma=Sigma)) + a
+##     mean(outer(x,y,`<`))
+## })
+## mean(ans)
+## hist(ans)
+## abline(v=mean(ans),col='red')
+
+## x <- as.numeric(rmvnorm(1e3,sigma=Sigma))
+## y <- as.numeric(rmvnorm(1e3,sigma=Sigma)) + a
+## mean(outer(x,y,`<`))
+## hist(ans)
+## abline(v=mean(ans),col='red')
+
+## cluster.size <- 3
+## a <- .75
+## Sigma <- matrix(runif(cluster.size^2,0,.5),nrow=cluster.size)
+## Sigma <- Sigma%*%t(Sigma)
+## Sigma <- Sigma/max(Sigma)
+## diag(Sigma) <- 1
+
+## Sigma <- diag(cluster.size)
+
+
+## x <- as.numeric(rmvnorm(3e3,sigma=Sigma))
+## y <- as.numeric(rmvnorm(3e3,sigma=Sigma)) + a
+## mean(outer(x,y,`<`))
+
+
+## Let's say $X$ is multivariate normal $(0,\Sigma)$ and, independent of $X$, $Y$ is multivariate normal $(a,\Sigma)$. So marginally $Y$ is $X$ shifted by $a$. Each is of length $n=30$, say. Then
+
+## $$P(X_i<Y_j)=\int F_{X_i}(y)dF_{Y_j}(y)=\int\Phi(y)\phi(y-a)dy$$
+
+## should be independent of $\Sigma$, as well as the choice of components $i,j$, right? Here $\Phi,\phi$ are the standard normal cdf and pdf. I ask because my simulations give different results depending on $\Sigma$. Eg when $\Sigma$ is the identity:
+
+##     require(mvtnorm)
+##     cluster.size <- 3
+##     a <- .75
+
+##     Sigma <- diag(cluster.size)
+
+
+##     x <- as.numeric(rmvnorm(1e3,sigma=Sigma))
+##     y <- as.numeric(rmvnorm(1e3,sigma=Sigma)) + a
+##     mean(outer(x,y,`<`))
+## [1] 0.7049445
+
+
+
+## 6. check variance of cluster size is a component
+gen.data <- function(N,cluster.size=30,Sigma=diag(cluster.size),delta=.3) {
+    status <- replicate(N,{
+        ## ## as.numeric(rnorm(cluster.size)>0)
+        ## x.size <- sample(2:(cluster.size-1),1)
+        ## (1:cluster.size) %in% sample(1:cluster.size,x.size)
+        c(0,1)
+    }, simplify=F)
+    data <- lapply(status, function(status.i) {
+        u <- rmvnorm(1,sigma=diag(cluster.size)) + delta*status.i
+        list(x=u[status.i==0],y=u[status.i==1])
+    })
+    x <- lapply(data,function(data.i)data.i$x)
+    y <- lapply(data,function(data.i)data.i$y)
+    return(list(x=x,y=y))
+}
+data <- gen.data(1e3,cluster.size=2)
+x <- data$x; y <- data$y
+n.x <- length(x); n.y <- length(y)
+
+Phi <- function(x,y) as.numeric(unlist(x)<unlist(y))
+
+V10 <- sapply(x,function(x.i)sum(outer(x.i,unlist(y),Phi))/n.y)
+U <- Phi(unlist(x),unlist(y))/(n.x*n.y)
+s10 <- sum((V10 - U)^2)/(n.x-1)
+
+
+
+## 6. try cluster size varying more
+
+
+auc.obu <- function(x,y,alpha=.05) {
+
+    I <- length(x)
+    stopifnot(length(x)==length(y))
+    m <- sapply(x,length)
+    n <- sapply(y,length)
+    I.10 <- sum(m>0)
+    I.01 <- sum(n>0)
+    M <- sum(m)
+    N <- sum(n)
+
+    theta.hat <- concord.xy(unlist(x),unlist(y)) / (I^2)#(M*N)
+    V.10 <- sapply(x,function(x.i)concord.xy(x.i,unlist(y)))/I#(I.10*mean(m)*mean(n))
+    V.01 <- sapply(y,function(y.i)concord.xy(unlist(x),y.i))/I#(I.01*mean(m)*mean(n))
+
+    ## S.10 <- sum((V.10 - m*theta.hat)^2) * I.10 / ((I.10-1)*M)
+    ## S.01 <- sum((V.01 - n*theta.hat)^2) * I.01 / ((I.01-1)*N)
+    ## S.11 <- 0#sum((V.10 - m*theta.hat)*(V.01 - n*theta.hat)) * I / (I-1)
+
+    ## var.hat <- S.10/M + S.01/N + 2*S.11/(M*N)
+    var.hat <- (var(V.10) + var(V.01))/I
+    q <- qnorm(1-alpha/2)
+
+    ## var.hat <- (var.hat + theta.hat^2) / ((var(m)/I + mean(m)^2)*(var(n)/I + mean(n)^2)) + theta.hat^2 / (mean(m)*mean(n))^2
+    theta.hat <- theta.hat / (mean(m)*mean(n))
+    var.hat <- var.hat/(mean(m)*mean(n))^2
+
+    return(c(theta.hat=theta.hat,var.hat=var.hat,CI.lower=theta.hat-q*sqrt(var.hat),CI.upper=theta.hat+q*sqrt(var.hat)))
+
+}
+
+
+I <- 1e3
+theta.true <- .7
+delta <- uniroot(Vectorize(function(delta)auc.true(delta)-theta.true), interval=c(0,4))$root
+cluster.size <- 30
+
+theta.trues <- replicate(1e5,{
+    ## x.size <- sample(1:(cluster.size-1),1)
+    ## status <- (1:cluster.size) %in% sample(1:cluster.size,x.size)
+    ## u <- rnorm(cluster.size) + delta*status
+    ## x <- u[status==0]
+    ## y <- u[status==1]
+    x <- rnorm(sample(1:cluster.size,1))
+    y <- rnorm(sample(1:cluster.size,1))+delta
+    concord.xy(x,y)
+})
+(theta.true <- mean(theta.trues))
+
+coverage <- replicate(1e2, {
+    ## status <- replicate(I,{
+    ##     ## as.numeric(rnorm(cluster.size)>0)
+    ##     x.size <- sample(1:(cluster.size-1),1)
+    ##     (1:cluster.size) %in% sample(1:cluster.size,x.size)
+    ##     ## 1:cluster.size %in% sample(1:cluster.size,as.integer(cluster.size/3))
+    ## }, simplify=F)
+    ## data <- lapply(status, function(status.i) {
+    ##     ## u <- rmvnorm(1,sigma=diag(cluster.size)) + delta*status.i
+    ##     u <- rnorm(cluster.size) + delta*status.i
+    ##     list(x=u[status.i==0],y=u[status.i==1])
+    ## })
+    ## x <- lapply(data,function(data.i)data.i$x)
+    ## y <- lapply(data,function(data.i)data.i$y)
+    ## ## x <- replicate(I,rnorm(19),simplify=F)
+    ## ## y <- replicate(I,rnorm(10) + delta,simplify=F)
+    x <- replicate(I,rnorm(sample(1:cluster.size,1)),simplify=F)
+    y <- replicate(I,rnorm(sample(1:cluster.size,1))+delta,simplify=F)
+
+    (est0 <- auc.obu(x,y, alpha=.05))
+})
+## var.hat.sen <- coverage['var.hat',]
+## var.hat.obu <- coverage['var.hat',]
+
+CIs <- coverage[c('CI.lower','CI.upper'),]
+mean(apply(CIs - theta.true, 2, prod)<0)
+
+
+
+## 7. try jackknife
+concord <- function(x,y) mean(outer(x,y,`<`))
+
+auc.jk <- function(x,y,alpha=.05) {
+
+    m <- sapply(x,length); n <- sapply(y,length)
+    M <- sum(m); N <- sum(n)
+    I <- length(x); stopifnot(length(x)==length(y))
+
+
+    theta.hat <- concord(unlist(x),unlist(y))
+    ## theta.del.x <- sapply(1:I,function(i)concord(unlist(x[-i]),unlist(y)))
+    ## theta.del.y <- sapply(1:I,function(j)concord(unlist(x),unlist(y[-j])))
+    theta.del.x <- sapply(1:I,function(i) (theta.hat*M*N - concord.xy(x[[i]],unlist(y)))/(N*(M-m[i])))
+    theta.del.y <- sapply(1:I,function(j) (theta.hat*M*N - concord.xy(unlist(x),y[[j]]))/((N-n[j])*M))
+    pseudo.x <- I*theta.hat - (I-1)*theta.del.x
+    pseudo.y <- I*theta.hat - (I-1)*theta.del.y
+    theta.jk <- (sum(pseudo.x)+sum(pseudo.y))/(2*I)
+    var.hat <- (var(pseudo.x) + var(pseudo.y))/I
+
+    q <- qnorm(1-alpha/2)
+
+    ## return(c(theta.hat=theta.jk,var.hat=var.hat,CI.lower=theta.hat-q*sqrt(var.hat),CI.upper=theta.hat+q*sqrt(var.hat)))
+    return(c(theta.hat=theta.jk,var.hat=var.hat,CI.lower=theta.jk-q*sqrt(var.hat),CI.upper=theta.jk+q*sqrt(var.hat)))
+}
+
+
+## V <- sapply(x,function(x.i)concord.xy(unlist(x.i),unlist(y))/N)
+## (V-m*theta.hat)*I/(M-m) - ((I-1)/I)*sum((V-m*theta.hat)/(M-m))
+
+I <- 1e2
+theta.true <- .7
+delta <- uniroot(Vectorize(function(delta)auc.true(delta)-theta.true), interval=c(0,4))$root
+cluster.size <- 30
+
+coverage <- replicate(1e2, {
+    x <- replicate(I,rnorm(sample(1:cluster.size,1)),simplify=F)
+    y <- replicate(I,rnorm(sample(1:cluster.size,1))+delta,simplify=F)
+
+    est0 <- auc.jk(x,y, alpha=.3)
+})
+ c## var.hat.sen <- coverage['var.hat',]
+## var.hat.obu <- coverage['var.hat',]
+
+CIs <- coverage[c('CI.lower','CI.upper'),]
+mean(apply(CIs - theta.true, 2, prod)<0)
+
+
+
+
+I <- 1e2
+theta.true <- .7
+delta <- uniroot(Vectorize(function(delta)auc.true(delta)-theta.true), interval=c(0,4))$root
+cluster.size <- 30
+
+## Sigma <- matrix(.6,nrow=cluster.size,ncol=cluster.size)
+## diag(Sigma) <- 1
+
+rho <- .5
+Sigma <- matrix(rho,nrow=cluster.size,ncol=cluster.size)
+Sigma <- Sigma^abs(row(Sigma)-col(Sigma))
+
+## Sigma <- matrix(runif(cluster.size^2,0,.5),nrow=cluster.size)
+## Sigma <- Sigma%*%t(Sigma)
+## Sigma <- Sigma/max(Sigma)
+coverage <- replicate(1e2, {
+    status <- replicate(I,{
+        as.numeric(rnorm(cluster.size)>0)
+    }, simplify=F)
+    data <- lapply(status, function(status.i) {
+        ## ## u <- rnorm(cluster.size)+delta*status.i
+
+        ## ## Sigma <- matrix(runif(1,0,.6),nrow=cluster.size,ncol=cluster.size)
+        ## ## diag(Sigma) <- 1
+        ## ## delta <- rbeta(1,2,3)
+        ## u <- rmvnorm(1,sigma=Sigma) + delta*status.i
+        ## list(x=u[status.i==0],y=u[status.i==1])
+        list(x=pnorm(rmvnorm(1,sigma=Sigma)),y=pnorm(rmvnorm(1,sigma=Sigma)+delta))
+    })
+    x <- lapply(data,function(data.i)data.i$x)
+    y <- lapply(data,function(data.i)data.i$y)
+    ## hist(unlist(x))
+    ## hist(unlist(y),add=T,col=2)
+    c(jk=auc.jk(x,y, alpha=.05),obu=auc.obu(x,y,alpha=.05))
+    ##prod(c(est0$CI.upper, est0$CI.lower) - theta.true)<0
+})
+mean(apply(coverage[c('obu.CI.lower','obu.CI.upper'),] - theta.true,2,prod)<0)
+mean(apply(coverage[c('jk.CI.lower','jk.CI.upper'),] - theta.true,2,prod)<0)
+op <- par(mfrow=c(1,2))
+hist(coverage['jk.CI.upper',]-coverage['jk.CI.lower',])
+hist(coverage['obu.CI.upper',]-coverage['obu.CI.lower',])
+par(op)
+plot(coverage['jk.var.hat',],coverage['obu.var.hat',])
+abline(a=0,b=1,col='blue')
+
+
+
+## 8. dependency between vector values and lengths
+I <- 1e2
+
+d <- 15
+lambda=20
+y <- replicate(6e3,{
+    y.length <- rpois(1,lambda=lambda)
+    rnorm(y.length,mean=y.length/d)
+},simplify=T) %>% unlist
+x <- rnorm(6e3)
+theta.true <- concord.xy(x,y)/(length(x)*length(y))
+
+coverage <- replicate(1e3, {
+
+    y <- replicate(I,{
+        y.length <- rpois(1,lambda=lambda)
+        rnorm(y.length,mean=y.length/d)
+    },simplify=F)
+    x <- replicate(I,rnorm(10),simplify=F)
+
+    est0 <- auc.obu(x,y, alpha=.05)
+})
+CIs <- coverage[c('CI.lower','CI.upper'),]
+(mean(apply(CIs - theta.true, 2, prod)<0))
+
+
+cover.by.I.obu <- sapply(seq(1e2,1e3,length.out=10),function(I) {
+    coverage <- replicate(1e2, {
+
+        y <- replicate(I,{
+            y.length <- rpois(1,lambda=lambda)
+            rnorm(y.length,mean=y.length/d)
+        },simplify=F)
+        x <- replicate(I,rnorm(10),simplify=F)
+
+        est0 <- auc.obu(x,y, alpha=.05)
+    })
+    CIs <- coverage[c('CI.lower','CI.upper'),]
+    mean(apply(CIs - theta.true, 2, prod)<0)
+})
+
+ cover.by.I.jk <- sapply(seq(1e2,1e3,length.out=10),function(I) {
+    coverage <- replicate(1e2, {
+
+        y <- replicate(I,{
+            y.length <- rpois(1,lambda=lambda)
+            rnorm(y.length,mean=y.length/d)
+        },simplify=F)
+        x <- replicate(I,rnorm(10),simplify=F)
+
+        est0 <- auc.jk(x,y, alpha=.05)
+    })
+    CIs <- coverage[c('CI.lower','CI.upper'),]
+    mean(apply(CIs - theta.true, 2, prod)<0)
+})
+
+
+
+##9. one-sample (x,y) jackknife
+concord <- function(x,y) mean(outer(x,y,`<`))
+concord.sum <- function(x,y)sum(outer(x,y,`<`))
+auc.jk <- function(x,y,alpha=.05) {
+
+    m <- sapply(x,length); n <- sapply(y,length)
+    M <- sum(m); N <- sum(n)
+    I <- length(x); stopifnot(length(x)==length(y))
+
+    theta.hat <- concord(unlist(x),unlist(y))
+    theta.del <- sapply(1:I,function(i)concord(unlist(x[-i]),unlist(y[-i])))
+    pseudo <- I*theta.hat - (I-1)*theta.del
+    theta.jk <- mean(pseudo)
+    var.hat <- var(pseudo)/I
+    q <- qnorm(1-alpha/2)
+
+
+    return(c(theta.hat=theta.jk,var.hat=var.hat,CI.lower=theta.jk-q*sqrt(var.hat),CI.upper=theta.jk+q*sqrt(var.hat)))
+}
+
+
+
+I <- .2e2
+theta.true <- .7
+delta <- uniroot(Vectorize(function(delta)auc.true(delta)-theta.true), interval=c(0,4))$root
+cluster.size <- 30
+
+## Sigma <- matrix(.6,nrow=cluster.size,ncol=cluster.size)
+## diag(Sigma) <- 1
+
+rho <- .5
+Sigma <- matrix(rho,nrow=cluster.size,ncol=cluster.size)
+Sigma <- Sigma^abs(row(Sigma)-col(Sigma))
+
+## Sigma <- matrix(runif(cluster.size^2,0,.5),nrow=cluster.size)
+## Sigma <- Sigma%*%t(Sigma)
+## Sigma <- Sigma/max(Sigma)
+coverage <- replicate(1e2, {
+    status <- replicate(I,{
+        as.numeric(rnorm(cluster.size)>0)
+    }, simplify=F)
+    data <- lapply(status, function(status.i) {
+        ## u <- rnorm(cluster.size)+delta*status.i
+
+        ## Sigma <- matrix(runif(1,0,.6),nrow=cluster.size,ncol=cluster.size)
+        ## diag(Sigma) <- 1
+        ## delta <- rbeta(1,2,3)
+        u <- rmvnorm(1,sigma=Sigma) + delta*status.i
+        list(x=u[status.i==0],y=u[status.i==1])
+        ## list(x=pnorm(rmvnorm(1,sigma=Sigma)),y=pnorm(rmvnorm(1,sigma=Sigma)+delta))
+    })
+    x <- lapply(data,function(data.i)data.i$x)
+    y <- lapply(data,function(data.i)data.i$y)
+    ## hist(unlist(x))
+    ## hist(unlist(y),add=T,col=2)
+    c(jk=auc.jk(x,y, alpha=.05),obu=auc.obu(x,y,alpha=.05))
+    ##prod(c(est0$CI.upper, est0$CI.lower) - theta.true)<0
+})
+mean(apply(coverage[c('obu.CI.lower','obu.CI.upper'),] - theta.true,2,prod)<0)
+mean(apply(coverage[c('jk.CI.lower','jk.CI.upper'),] - theta.true,2,prod)<0)
+op <- par(mfrow=c(1,2))
+hist(coverage['jk.CI.upper',]-coverage['jk.CI.lower',])
+hist(coverage['obu.CI.upper',]-coverage['obu.CI.lower',])
+par(op)
+plot(coverage['jk.var.hat',],coverage['obu.var.hat',])
+abline(a=0,b=1,col='blue')
+
+
+
+## 10. check obu estimator consistency with new vector length distribution
+I <- 100
+sigma <- 4e+6
+mu <- 20
+m <- abs(round(rnorm(I,mean=mu,sd=sigma)))+1
+n <- abs(round(rnorm(I,mean=mu,sd=sigma)))+1
+M <- sum(m); N <- sum(n)
+num <- M*n-m*n+N*m - (M*mean(n)-mean(m)*mean(n)+N*mean(m))
+den <- mean(n)*(M-mean(m))
+## hist(abs(num))
+mean(num/den)
+
+I <- 1000
+m <- c(rep(2,I/2),rep(1e3,I/2))
+n <- c(rep(2,I/2),rep(1e3,I/2))
+M <- sum(m); N <- sum(n)
+num <- M*n-m*n+N*m - (M*mean(n)-mean(m)*mean(n)+N*mean(m))
+den <- mean(n)*(M-mean(m))
+err <- I*(I*(n/N - (m*n)/(M*N) + m/N) - 1) / (I-1)
+## hist(abs(num))
+mean(num/den)
+hist(num/den) # diff from 0
+
+
+I <- 30
+m <- c(rep(40,I/2),rep(5,I/2))
+n <- rep(10,I)#c(rep(2,I/2),rep(1e3,I/2))
+m <- c(rep(1,I-1),60)
+M <- sum(m); N <- sum(n)
+eps.m <- 1-m/mean(m)
+eps.n <- 1-n/mean(n)
+err.coef <- err.coef1 <- I - (M-m)*(N-n)/((I-1)*mean(m)*mean(n))
+err.coef2 <- 1 - eps.m - eps.n - eps.m*eps.n/(I-1)
+plot(err.coef,err.coef2);abline(0,1,col='blue')
+data <- lapply(1:I,function(i) {
+    list(x=rnorm(m[i]),y=rnorm(n[i])+delta)
+})
+x <- lapply(data,function(data.i)data.i$x)
+y <- lapply(data,function(data.i)data.i$y)
+concord.sum <- function(x,y)sum(outer(x,y,`<`))
+ww <- (M-m)*(N-n)
+Vx <- sapply(1:I,function(k)concord.sum(x[[k]],unlist(y)))/N
+Vy <- sapply(1:I,function(k)concord.sum(unlist(x),y[[k]]))/M
+uu <- matrix(nrow=I,ncol=I)
+theta.hat <- mean(outer(unlist(x),unlist(y),`<`))
+for(i in 1:I) for(j in 1:I) uu[i,j] <- m[i]*n[j]*theta.hat-concord.sum(x[[i]],y[[j]])
+uuu <- sapply(1:I,function(i)sum(uu[i,])+sum(uu[,i]))
+Sx <- Vx - m*theta.hat; Sy <- Vy-n*theta.hat
+err <- (1/ww)*(diag(uu) - (1-(I/(I-1))*(M-m)*(N-n)/(M*N))*uuu)
+err2 <- (diag(uu) - uuu/I)#*err.coef/I)
+err <- (diag(uu) - uuu*err.coef/I)/ww
+plot(err,err2)
+
+zz <- (Sx/M + Sy/N)*(I/(I-1)) + err
+## plot(zz,zz5);abline(0,1)
+sum(zz^2)*(I-1)/I
+auc.obu(x,y) ## error like 1/I
+
+
+concord <- function(x,y) mean(outer(x,y,`<`))
+concord.sum <- function(x,y)sum(outer(x,y,`<`))
+auc.jk <- function(x,y,alpha=.05) {
+
+    m <- sapply(x,length); n <- sapply(y,length)
+    M <- sum(m); N <- sum(n)
+    I <- length(x); stopifnot(length(x)==length(y))
+
+    theta.hat <- concord(unlist(x),unlist(y))
+    theta.del <- sapply(1:I,function(i)concord(unlist(x[-i]),unlist(y[-i])))
+    pseudo <- I*theta.hat - (I-1)*theta.del
+    theta.jk <- mean(pseudo)
+    var.hat <- var(pseudo)/I
+    ## var.hat <- sum((pseudo-theta.hat)^2)/(I*(I-1))
+    q <- qnorm(1-alpha/2)
+
+    return(c(theta.hat=theta.jk,var.hat=var.hat,CI.lower=theta.jk-q*sqrt(var.hat),CI.upper=theta.jk+q*sqrt(var.hat)))
+}
+
+## Sigma <- matrix(runif(cluster.size^2,0,.5),nrow=cluster.size)
+## Sigma <- Sigma%*%t(Sigma)
+## Sigma <- Sigma/max(Sigma)
+coverage <- replicate(1e3, {
+    data <- lapply(1:I,function(i) {
+        list(x=rnorm(m[i]),y=rnorm(n[i])+delta)
+    })
+    x <- lapply(data,function(data.i)data.i$x)
+    y <- lapply(data,function(data.i)data.i$y)
+    ## hist(unlist(x))
+    ## hist(unlist(y),add=T,col=2)
+    c(jk=auc.jk(x,y, alpha=.05),obu=auc.obu(x,y,alpha=.05))
+    ##prod(c(est0$CI.upper, est0$CI.lower) - theta.true)<0
+})
+mean(apply(coverage[c('obu.CI.lower','obu.CI.upper'),] - theta.true,2,prod)<0)
+mean(apply(coverage[c('jk.CI.lower','jk.CI.upper'),] - theta.true,2,prod)<0)
+op <- par(mfrow=c(1,2))
+hist(coverage['jk.CI.upper',]-coverage['jk.CI.lower',])
+hist(coverage['obu.CI.upper',]-coverage['obu.CI.lower',])
+par(op)
+plot(coverage['jk.var.hat',],coverage['obu.var.hat',])
+abline(a=0,b=1,col='blue')
+
+
+
+
+## 10a. check obu estimator consistency with new vector length distribution
+
+
+concord <- function(x,y) mean(outer(x,y,`<`))
+concord.sum <- function(x,y)sum(outer(x,y,`<`))
+auc.jk <- function(x,y,alpha=.05) {
+
+    m <- sapply(x,length); n <- sapply(y,length)
+    M <- sum(m); N <- sum(n)
+    I <- length(x); stopifnot(length(x)==length(y))
+
+    theta.hat <- concord(unlist(x),unlist(y))
+    theta.del <- sapply(1:I,function(i)concord(unlist(x[-i]),unlist(y[-i])))
+    pseudo <- I*theta.hat - (I-1)*theta.del
+    theta.jk <- mean(pseudo)
+    var.hat <- var(pseudo)/I
+    ## var.hat <- sum((pseudo-theta.hat)^2)/(I*(I-1))
+    q <- qnorm(1-alpha/2)
+
+    return(c(theta.hat=theta.jk,var.hat=var.hat,CI.lower=theta.jk-q*sqrt(var.hat),CI.upper=theta.jk+q*sqrt(var.hat)))
+}
+
+I <- 1e2
+centers <- runif(I)
+delta <- .75
+x <- matrix(runif(I*m,min=centers-delta,max=centers),nrow=I)
+y <- matrix(runif(I*m,min=centers,max=centers+delta),nrow=I)
+x <- split(x,1:I); y <- split(y,1:I)
+
+centers <- runif(I)
+x <- runif(I,min=centers-delta,max=centers)
+plot(ecdf(unlist(x)))
+f <- function(x)((x<0)&(x>=-delta))*((x+delta)^2/2/delta)+((x>=0) & (x<= 1-delta))*(x+delta/2)+(1-(1-x)^2/2/delta)*((x>1-delta)&(x<=1))+(x>1)
+curve(f(x),-delta,1+delta,add=T)
+y <- runif(I,min=centers,max=centers+delta)
+plot(ecdf(unlist(y)))
+curve(f(x-delta),add=T,col='red')
+(-3/4)*delta^2-delta/6-1/2+2/delta
+integrate(function(y)(y+delta/2)*y/delta,0,delta)$value +
+    integrate(function(y)y+delta/2,delta,1-delta)$value +
+    integrate(function(y)1-(1-y)^2/2/delta,1-delta,1)$value +
+    integrate(function(y)(1-y+delta)/delta,1,1+delta)$value
+theta.true <- -7*delta^2/12+delta+1/2
+
+cluster.size <- 10
+
+
+coverage <- replicate(1e2, {
+    centers <- runif(I)
+    m <- n <- rep(cluster.size,I)
+    x <- matrix(runif(I*m,min=centers-1,max=centers),nrow=I)
+    y <- matrix(runif(I*m,min=centers,max=centers+1),nrow=I)
+    x <- split(x,1:I); y <- split(y,1:I)
+    c(jk=auc.jk(x,y, alpha=.05),obu=auc.obu(x,y,alpha=.05))
+})
+mean(apply(coverage[c('obu.CI.lower','obu.CI.upper'),] - theta.true,2,prod)<0)
+mean(apply(coverage[c('jk.CI.lower','jk.CI.upper'),] - theta.true,2,prod)<0)
+op <- par(mfrow=c(1,2))
+hist(coverage['jk.CI.upper',]-coverage['jk.CI.lower',])
+hist(coverage['obu.CI.upper',]-coverage['obu.CI.lower',])
+par(op)
+plot(coverage['jk.var.hat',],coverage['obu.var.hat',])
+abline(a=0,b=1,col='blue')
+(`-`(coverage['jk.var.hat',],coverage['obu.var.hat',]))/coverage['obu.var.hat',]*100
+
+
+## 11. check magnitude of error term of |auc.obu - auc.jk|
+I <- 1e2
+delta <- .75
+m <- c(rep(30,I/2),rep(20,I/2))
+n <- rep(10,I)#c(rep(2,I/2),rep(1e3,I/2))
+m <- rep(30,I)
+M <- sum(m); N <- sum(n)
+data <- lapply(1:I,function(i) {
+    list(x=runif(m[i]),y=runif(n[i])+delta)
+})
+x <- lapply(data,function(data.i)data.i$x)
+y <- lapply(data,function(data.i)data.i$y)
+
+centers <- runif(I)
+m <- n <- rep(20,I)
+M <- sum(m); N <- sum(n)
+x <- matrix(runif(I*m,min=centers-1,max=centers),nrow=I)
+y <- matrix(runif(I*m,min=centers,max=centers+1),nrow=I)
+x <- split(x,1:I); y <- split(y,1:I)
+
+
+ww <- (M-m)*(N-n)
+concord.sum <- function(x,y)sum(outer(x,y,`<`))
+theta.hat <- mean(outer(unlist(x),unlist(y),`<`))
+theta.del <- sapply(1:I,function(i)concord(unlist(x[-i]),unlist(y[-i])))
+pseudo <- I*theta.hat - (I-1)*theta.del
+eps.m <- 1-m/mean(m)
+eps.n <- 1-n/mean(n)
+Vx <- sapply(1:I,function(k)concord.sum(x[[k]],unlist(y)))/N
+Vy <- sapply(1:I,function(k)concord.sum(unlist(x),y[[k]]))/M
+uu <- matrix(nrow=I,ncol=I)
+for(i in 1:I) for(j in 1:I) uu[i,j] <-concord.sum(x[[i]],y[[j]])- m[i]*n[j]*theta.hat
+uuu <- colSums(uu)+rowSums(uu)
+plot(diag(uu),uuu/I)
+Sx <- Vx - m*theta.hat; Sy <- Vy-n*theta.hat
+phi <- matrix(nrow=I,ncol=I)
+for(i in 1:I) for(j in 1:I) phi[i,j] <- concord.sum(x[[i]],y[[j]])
+phiphi <- rowSums(phi)+colSums(phi)
+
+
+err.coef <- err.coef1 <- I - (M-m)*(N-n)/((I-1)*mean(m)*mean(n))
+err.coef2 <- 1 - eps.m - eps.n - eps.m*eps.n/(I-1)
+plot(err.coef,err.coef2);abline(0,1,col='blue')
+err2 <- (1/ww)*(diag(uu) - (1-(I/(I-1))*(M-m)*(N-n)/(M*N))*uuu);abline(0,1)
+err2 <- (diag(uu) - uuu/I)#*err.coef/I)
+err <- (diag(uu) - uuu*err.coef/I)/ww
+err <- ((I-1)/I)*diag(uu) + (ww/(I*(I-1))*(theta.hat-pseudo))
+err <- (diag(uu)/mean(m)/mean(n)-(pseudo-theta.hat))/I/(I-1)
+## err <- diag(uu) - (diag(uu)-ww*(theta.hat-pseudo)/(I-1))/I*err.coef2
+plot(err,err2)
+plot(uuu,diag(uu) - (ww/(I-1))*(theta.hat-pseudo))
+abline(0,1)
+
+
+
+zz <- (Sx/M + Sy/N)*(I/(I-1)) + err
+## plot(zz,zz5);abline(0,1)
+sum(zz^2)*(I-1)/I
+auc.obu(x,y) ## error like 1/I
+
+
+u <- uu
+plot(rowSums(u)-diag(u)*I,-colSums(u));abline(0,1)
+plot(I*diag(u),rowSums(u)+colSums(u))
+plot(I*diag(u),2*colSums(u))
+plot(rowSums(u),colSums(u))
+abline(0,1)
+rowSums(u)[1]
+
+
+plot(phiphi,diag(phi)+M*N*theta.hat - (M-m)*(N-n)*theta.del)
+abline(0,1)
+plot(uuu,diag(phi) - m*n*theta.hat + (M-m)*(N-n)*(pseudo - theta.hat)/(I-1))
+plot(uuu ,phiphi - (m*N+M*n)*theta.hat)
+plot(phiphi - (m*N+M*n)*theta.hat) - diag(phi),M*N*theta.hat
+abline(0,1,col='blue')
+plot(phiphi,diag(phi)+M*N*theta.hat-ww*theta.del)
+plot(phiphi,diag(phi)+M*N*theta.hat+ww*(pseudo-I*theta.hat)/(I-1))
+plot((pseudo-I*theta.hat)/(I-1),-theta.del)
+plot(phiphi,diag(phi)+(M*N-I*ww/(I-1))*theta.hat+ww*pseudo/(I-1))
+plot(uuu,diag(phi)+(M*N-ww*I/(I-1)-m*N-n*M)*theta.hat+ww*pseudo/(I-1))
+
+plot((I-1)*diag(uu),ww*(pseudo-theta.hat)/(I-1))
+abline(0,1)
+plot(ww*theta.del,M*N*theta.hat-uuu+diag(phi))
+theta.del[i]
+concord.sum(unlist(x[-i]),unlist(y[-i]))/((M-m[i])*(N-n[i]))
+par(mfrow=c(1,2))
+plot(diag(uu), (diag(uu)-ww*(theta.hat-pseudo)/(I-1))/I*err.coef2)
+plot(diag(uu)/mean(m)/mean(n),pseudo-theta.hat)
+
+
+k <- 2
+diag(uu)/(mean(m)*mean(n))-(pseudo-theta.hat)
+kk <- sum(phi) - I*rowSums(phi) - I*colSums(phi) + I^2*diag(phi)
+plot( - I*rowSums(phi)- I*colSums(phi),  + I^2*diag(phi))
+
+
+## 11. pop auc vs individual auc
+I <- 3e2
+ans <- replicate(1e2, {
+    data <- replicate(I,list(x=rnorm(20),y=rnorm(20)),simplify=F)
+    x <- sapply(data,function(d)d$x);y <- sapply(data,function(d)d$y)
+    pop <- concord(unlist(x),unlist(y))
+    ind <- mean(sapply(1:I,function(i)concord(x[[i]],y[[i]])))
+    c(pop=pop,ind=ind)
+})
+op <- par(mfrow=c(1,2))
+hist(ans['pop',])
+hist(ans['ind',])
+par(op)
+
+
+
+## ans <- replicate(1e3, {
+n <- 1e1
+x <- rnorm(n)
+y <- rnorm(n)
+## x <- rep(0,n); y <- rep(1,n)
+theta.0 <- mean(outer(x,y,'<'))
+theta.del <- sapply(1:n,function(j)mean(outer(x[-j],y[-j],'<')))
+pseudo <- n*theta.0 - (n-1)*theta.del
+theta.jk <- mean(pseudo)
+s2.jk <- var(pseudo)
+
+Vx <- sapply(x,function(x.i)mean(x.i<y))
+Vy <- sapply(y,function(y.i)mean(x<y.i))
+s2.obu <- sum((Vx+Vy-2*theta.0)^2)/(n*(n-1))
+c(x=s2.jk,y=s2.obu)
+## })
+## plot(ans[1,],ans[2,])
+
+phi <- outer(x,y,'<')
+n^2*theta.0-n*(Vx+Vy)+diag(phi)
+(n-1)^2*theta.del
+sum((diag(phi) - mean(diag(phi)) - n*(Vx+Vy-2*theta.0))^2)/(n-1)^3
+var(diag(phi))/(n-1)^2 - 2*cov(diag(phi),n*(Vx+Vy))/(n-1)^2 + n^3/(n-1)^2*s2.obu
+(var(diag(phi)) - 2*n*cov(diag(phi),(Vx+Vy)) + n^3*s2.obu) /(n-1)^2
+var(Vx+Vy)/n - s2.obu
+var(diag(phi) - n*(Vx+Vy))/(n-1)^2 - s2.jk
+
+
+(var(diag(phi)) - 2*n*cov(diag(phi),(Vx+Vy)))/(n-1)
+mean(diag(phi)) - (sum(outer(diag(phi),diag(phi))) - sum(diag(phi)))/(n*(n-1))
+ans <- replicate(1e4, {
+    u <- sample(0:1,n,replace=TRUE)
+    var(u)
+})
+max(ans)
+n/(n-1)*(1/4)
+1/(n-((n-1)/n)^2)*(n-1)^(-2)*(2*n*cov(Vx+Vy,diag(phi)) - var(diag(phi)))
+((n-1)/n)^2*(s2.jk - (n-1)^(-2)*(var(diag(phi))-2*n*cov(Vx+Vy,diag(phi)))) - n*s2.obu
+
+
+require(ggplot2)
+df <- data.frame(x=(1:30)/30,y=(1:30)/30)
+df$fac=gl(3,10)
+ggplot(df,aes(x=x,y=y,linetype=fac))+geom_line()+scale_linetype_discrete(name = "ROC type",labels=c('GLMM',expression(ROC[1]),expression(ROC[4])))+labs(x='FPR',y='TPR')
+ggsave('c:/users/haben/desktop/test.pdf')

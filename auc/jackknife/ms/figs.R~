@@ -1,0 +1,146 @@
+
+## 1. Difference vs I. setting rho=0 for fair comparison to jk2.
+source('misc.R')
+require(parallel)
+require(mvtnorm)
+I <- 1e1
+cluster.sizes <- c(1,5,10)
+Is <- round(seq(1,40,len=20))
+by.cluster.size <- mclapply(cluster.sizes, mc.cores=detectCores()-3,FUN=function(cluster.size) {
+    m <- n <- cluster.size
+    rho <- .0
+    Sigma.XX <- matrix(0,nrow=m,ncol=m)
+    Sigma.XX <- rho^(abs(row(Sigma.XX)-col(Sigma.XX)))
+    Sigma.YY <- matrix(0,nrow=n,ncol=n)
+    Sigma.YY <- rho^(abs(row(Sigma.YY)-col(Sigma.YY)))
+    Sigma.XY <- matrix(0,nrow=m,ncol=n)
+    Sigma.XY <- rho^(abs(row(Sigma.XY)-col(Sigma.XY)))/2
+    Sigma <- rbind(cbind(Sigma.XX,Sigma.XY),cbind(t(Sigma.XY),Sigma.YY))
+    mu.X <- 0; mu.Y <- .5
+    by.I <- mclapply(Is,mc.cores=detectCores()-3,FUN=function(I){
+        print(I)
+        auc.hats <- replicate(1e2,{
+            xy <- rmvnorm(I,c(rep(mu.X,m),rep(mu.Y,n)),sigma=Sigma)
+            x <- t(xy[,1:m]); y <- t(xy[,(m+1):(m+n)])
+            x <- unname(as.list(as.data.frame(x)))
+            y <- unname(as.list(as.data.frame(y)))
+            ## xy.cauchy <- qcauchy(pnorm(xy))
+            ## x.cauchy <- t(xy.cauchy[,1:m]); y.cauchy <- t(xy.cauchy[,(m+1):(m+n)])
+            ## x.cauchy <- unname(as.list(as.data.frame(x.cauchy)))
+            ## y.cauchy <- unname(as.list(as.data.frame(y.cauchy)))
+            ## rbind(obu=auc.obu(x,y), jk=auc.jk(x,y))
+            ## abs(auc.obu(x,y)['var.hat'] - auc.jk(x,y)['var.hat'])
+            c(obu=unname(auc.obu(x,y)['var.hat']), jk=unname(auc.jk(x,y)['var.hat']),jk2=unname(auc.jk2(x,y)['var.hat']))
+        })
+    })
+    by.I <- simplify2array(by.I)
+})
+
+## png('fig1.png')
+plot(0,type='n',xlim=range(Is),ylim=c(0.0,1.5),xlab='sample size',ylab=expression('(sample size)'^2%*%'(difference of variance estimates)'))
+## op <- par(mfrow=c(1,2))
+for(j in 1:length(by.cluster.size)) {
+    by.I <- by.cluster.size[[j]]
+    diffs <- abs(by.I['obu',,]-by.I['jk',,])
+    points(Is,apply(diffs,2,max)*Is^2,type='l',lty=j)
+    diffs <- abs(by.I['obu',,]-by.I['jk2',,])
+    rel.diffs <- abs(by.I['obu',,]-by.I['jk2',,]) / by.I['obu',,]
+    points(Is,apply(diffs,2,max)*Is^(2),type='o',lty=j)
+}
+## par(op)
+legend('topright',lty=rep(1:length(by.cluster.size),each=2),pch=rep(c(NA,1),2),legend=paste0(rep(paste0('m=n=',cluster.sizes),each=2),c(', jackknife',', 2-sample jackknife')))
+## dev.off()
+
+## ## 2-sample jk for comparison
+## plot(0,type='n',xlim=range(Is),ylim=c(0.0,1),xlab='number of cluster pairs',ylab='')
+## ## op <- par(mfrow=c(1,2))
+## for(j in 1:length(by.cluster.size)) {
+##     by.I <- by.cluster.size[[j]]
+##     diffs <- abs(by.I['obu',,]-by.I['jk2',,])
+##     rel.diffs <- abs(by.I['obu',,]-by.I['jk2',,]) / by.I['obu',,]
+##     ## matplot(Is,t(abs(diffs))*Is^(2.5),col=1,pch=1)
+##     ## plot(Is,colMeans(diffs)*Is^(2))
+##     points(Is,apply(diffs,2,max)*Is^(2),type='o',lty=j)
+##     ## points(Is,apply(rel.diffs,2,max)*Is^(1.5),type='o')
+## }
+## ## par(op)
+## legend('topright',lty=1:length(by.cluster.size),legend=paste0('m=n=',cluster.sizes))
+
+dd
+
+
+
+
+## ## The three normalized variance estimates versus I. Normalized by
+## ## I. Not very useful since true var not subtracted out.
+## set.seed(1)
+## source('misc.R')
+## require(parallel)
+## require(mvtnorm)
+## I <- 1e1
+## cluster.sizes <- c(1)
+## Is <- round(seq(8,200,len=100))
+## m <- n <- cluster.sizes[1]
+## rho <- .3
+## Sigma.XX <- matrix(0,nrow=m,ncol=m)
+## Sigma.XX <- rho^(abs(row(Sigma.XX)-col(Sigma.XX)))
+## Sigma.YY <- matrix(0,nrow=n,ncol=n)
+## Sigma.YY <- rho^(abs(row(Sigma.YY)-col(Sigma.YY)))
+## Sigma.XY <- matrix(0,nrow=m,ncol=n)
+## Sigma.XY <- rho^(abs(row(Sigma.XY)-col(Sigma.XY)))/2
+## Sigma <- rbind(cbind(Sigma.XX,Sigma.XY),cbind(t(Sigma.XY),Sigma.YY))
+## mu.X <- 0; mu.Y <- .5
+## xy <- rmvnorm(max(Is),c(rep(mu.X,m),rep(mu.Y,n)),sigma=Sigma)
+## by.I <- mclapply(Is,mc.cores=detectCores()-3,FUN=function(I){
+##     print(I)
+##     ## auc.hats <- replicate(1e2,{    
+##     x <- t(xy[1:I,1:m]); y <- t(xy[1:I,(m+1):(m+n)])
+##     x <- unname(as.list(as.data.frame(x)))
+##     y <- unname(as.list(as.data.frame(y)))
+##     structure(unname(c(auc.obu(x,y)['var.hat'], auc.jk(x,y)['var.hat'], auc.jk2(x,y)['var.hat'])), names=c('obu','jk','jk2'))
+## })
+## by.I <- simplify2array(by.I)
+## plot(Is,Is*by.I['obu',],type='l',xlab='number of clusters',ylab='normalized variance estimate',ylim=range(I*by.I))
+## lines(Is,Is*by.I['jk',],lty=2)
+## lines(Is,Is*by.I['jk2',],lty=3)
+## legend('topright',lty=1:3,legend=c('obuchowski','jackknife','2-sample jackknife'))
+
+
+
+## The three normalized variance estimates versus I. Normalized by
+## I. rho is set to 0, m=n=1, so that the comparison with the two-sample
+## jackknife is fair, also for closed form expressions for the variance.
+set.seed(1)
+require(parallel)
+source('misc.R')
+I <- 10
+B <- 1e2
+Is <- round(seq(8,200,len=100))
+mu.x <- 1; sd.x <- 2
+mu.y <- -1; sd.y <- 1
+E.yxx <- integrate(function(x)pnorm(x,mu.y,sd.y)^2*dnorm(x,mu.x,sd.x),mu.x-7,mu.x+7)$val
+E.xyy <- integrate(function(y)pnorm(y,mu.x,sd.x)^2*dnorm(y,mu.y,sd.y),mu.y-7,mu.y+7)$val
+theta <- integrate(function(x)pnorm(x,mu.y,sd.y)*dnorm(x,mu.x,sd.x),mu.x-7,mu.x+7)$val
+true.var <- E.yxx-theta^2+E.xyy-(1-theta)^2
+by.I <- mclapply(Is,mc.cores=detectCores()-3,FUN=function(I){
+    print(I)
+## auc.hats <- replicate(1e3, {
+    x <- rnorm(I,mu.x,sd.x)
+    y <- rnorm(I,mu.y,sd.y)
+    var.bs <- var(replicate(B,{
+        idx <- sample(length(x),replace=TRUE)
+        mean(outer(x[idx],y[idx],'<'))
+    }))
+    x <- unname(as.list(x))
+    y <- unname(as.list(y))
+    structure(unname(c(auc.obu(x,y)['var.hat'], auc.jk(x,y)['var.hat'], auc.jk2(x,y)['var.hat'],var.bs)), names=c('obu','jk','jk2','bs'))
+})
+by.I <- simplify2array(by.I)
+
+## png('fig2.png')
+plot(Is,Is*(by.I['obu',]-true.var/Is),type='l',xlab='number of clusters',ylab='normalized variance estimate',ylim=c(-.1,.1))#range(Is*(by.I-true.var/Is)))
+lines(Is,Is*(by.I['jk',]-true.var/Is),lty=2)
+lines(Is,Is*(by.I['jk2',]-true.var/Is),lty=3)
+lines(Is,Is*(by.I['bs',]-true.var/Is),lty=4)
+legend('topright',lty=1:4,legend=c('obuchowski','jackknife','2-sample jackknife','boostrap'))
+## dev.off()

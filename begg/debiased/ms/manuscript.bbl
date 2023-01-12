@@ -1,0 +1,66 @@
+\begin{thebibliography}{9}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Begg(1994)]{begg1994b}
+Colin Begg.
+\newblock Publication bias.
+\newblock In Harries Cooper and Larry Hedges, editors, \emph{The Handbook of
+  Research Synthesis}, pages 399--409. Russel Sage Foundation, New York, 1994.
+
+\bibitem[Begg and Mazumdar(1994)]{begg1994a}
+Colin Begg and Madhuchhanda Mazumdar.
+\newblock Operating characteristics of a rank correlation test for publication
+  bias.
+\newblock \emph{Biometrics}, pages 1088--1101, 1994.
+
+\bibitem[DerSimonian and Laird(1986)]{dersimonian1986}
+Rebecca DerSimonian and Nan Laird.
+\newblock Meta-analysis in clinical trials.
+\newblock \emph{Controlled clinical trials}, 7\penalty0 (3):\penalty0 177--188,
+  1986.
+
+\bibitem[Gjerdevik and Heuch(2014)]{gjerdevik2014}
+Miriam Gjerdevik and Ivar Heuch.
+\newblock Improving the error rates of the begg and mazumdar test for
+  publication bias in fixed effects meta-analysis.
+\newblock \emph{BMC Medical Research Methodology}, 14\penalty0 (1):\penalty0
+  1--16, 2014.
+
+\bibitem[Hooper et~al.(2020)Hooper, Abdelhamid, Jimoh, Bunn, and
+  Skeaff]{hooper2020}
+Lee Hooper, Asmaa~S Abdelhamid, Oluseyi~F Jimoh, Diane Bunn, and C~Murray
+  Skeaff.
+\newblock Effects of total fat intake on body fatness in adults.
+\newblock \emph{Cochrane Database of Systematic Reviews}, \penalty0 (6), 2020.
+
+\bibitem[Lin and Chu(2018)]{lin2018}
+Lifeng Lin and Haitao Chu.
+\newblock Quantifying publication bias in meta-analysis.
+\newblock \emph{Biometrics}, 74\penalty0 (3):\penalty0 785--794, 2018.
+
+\bibitem[McNicol et~al.(2016)McNicol, Ferguson, Haroutounian, Carr, and
+  Schumann]{mcnicol2016}
+Ewan~D McNicol, McKenzie~C Ferguson, Simon Haroutounian, Daniel~B Carr, and
+  Roman Schumann.
+\newblock Single dose intravenous paracetamol or intravenous propacetamol for
+  postoperative pain.
+\newblock \emph{Cochrane database of systematic reviews}, \penalty0 (5), 2016.
+
+\bibitem[Nolan and Pollard(1988)]{nolan1988}
+Deborah Nolan and David Pollard.
+\newblock Functional limit theorems for $ u $-processes.
+\newblock \emph{The Annals of Probability}, 16\penalty0 (3):\penalty0
+  1291--1298, 1988.
+
+\bibitem[Van~de Laar et~al.(2005)Van~de Laar, Lucassen, Akkermans, Van~de
+  Lisdonk, Rutten, and Van~Weel]{van2005}
+Floris~A Van~de Laar, Peter~LBJ Lucassen, Reinier~P Akkermans, Eloy~H Van~de
+  Lisdonk, Guy~EHM Rutten, and Chris Van~Weel.
+\newblock Alpha-glucosidase inhibitors for type 2 diabetes mellitus.
+\newblock \emph{Cochrane database of systematic reviews}, \penalty0 (2), 2005.
+
+\end{thebibliography}

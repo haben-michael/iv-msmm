@@ -1,0 +1,10 @@
+\begin{table}
+\input{sim/power_0.tex}
+\caption{$\theta=0$. }
+\end{table}
+\efloatseparator
+ 
+\begin{table}
+\input{sim/power_0.2.tex}
+\caption{$\theta=0.2.$}\label{table:power 0.2}
+\end{table}

@@ -1,0 +1,10 @@
+## rnorm.trunc <- function(n,mean,sd,a) {u <- runif(n); mean+sd*qnorm(u+pnorm((a-mean)/sd)*(1-u))}
+## dnorm.trunc <- function(x,mean,sd,a) (x>=a) * 1/sd * dnorm((x-mean)/sd) / (1-pnorm((a-mean)/sd))
+## pnorm.trunc <- function(q,mean,sd,a) (q>=a)*(pnorm((q-mean)/sd) - pnorm((a-mean)/sd)) / (1-pnorm((a-mean)/sd))
+
+rnorm.trunc <- function(n,mean,sd,lower) {u <- runif(n); mean+sd*qnorm(u+pnorm((lower-mean)/sd)*(1-u))}
+dnorm.trunc <- function(x,mean,sd,lower) (x>=lower) * 1/sd * dnorm((x-mean)/sd) / (1-pnorm((lower-mean)/sd))
+pnorm.trunc <- function(q,mean,sd,lower) (q>=lower)*(pnorm((q-mean)/sd) - pnorm((lower-mean)/sd)) / (1-pnorm((lower-mean)/sd))
+
+
+egger.test <- function(x,sei) coef(summary(lm(I(x/sei) ~ I(1/sei))))['(Intercept)',]

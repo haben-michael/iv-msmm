@@ -1,0 +1,395 @@
+\documentclass[12pt]{article}
+\usepackage{amsthm}
+\usepackage{bbm}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+\usepackage{mathtools,etoolbox,xcolor}
+% \usepackage{booktabs}
+\usepackage{enumitem}
+% \usepackage{url}
+\usepackage{setspace}
+\usepackage[margin=1in]{geometry}
+\usepackage{authblk}
+\usepackage{natbib}
+\usepackage[page]{appendix}
+\usepackage[nomarkers,nolists]{endfloat}
+\usepackage{subcaption}
+\usepackage{tikz}
+% \newcommand{\Bprime}{B'}
+% \newcommand{\Aprime}{A'}
+% \newcommand{\fbound}{b}
+% \newcommand{\mindensity}{f}
+% \newcommand{\thetaind}{\theta_{ind}}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+% \DeclareMathOperator{\supp}{supp}
+% \DeclareMathOperator{\diag}{diag}
+% \DeclareMathOperator{\E}{E}
+% \DeclareMathOperator{\P}{P}
+\DeclareMathOperator{\var}{Var}
+\DeclareMathOperator{\cov}{Cov}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\N}{\mathcal{N}}
+\DeclareMathOperator{\B}{B}
+\newcommand{\ind}{\perp \!\!\! \perp}
+% \newcommand{\corr}{Corr}
+% \newcommand{\mean}[1]{\overline{#1}}
+% \newcommand{\sel}[1]{#1^*}
+% \newcommand{\biasratio}{r}% {$(E|S_1-S_2|)^2/\E(S^2)$}
+% \renewcommand{\t}[1]{\tilde{#1}}
+% \newcommand{\partiall}[1]{\frac{\partial}{\partial #1}}
+% \newcommand{\gm}{\theta}
+% \renewcommand{\P}{P}
+% \newcommand{\bnd}{B}
+% \newcommand{\A}{A}
+% \newcommand{\B}{B}
+\newcommand{\ol}{\overline}
+\newcommand{\sigmavec}{\vec{\frac{1}{\sigma}}}
+\newcommand{\yvec}{\vec{\frac{\y}{\sigma}}}
+\newcommand{\m}{m}
+\newcommand{\z}{Z}
+\let\N\relax
+\newcommand{\N}{N}
+\newcommand{\J}{J}
+\newcommand{\s}{S}
+\newcommand{\y}{Y}
+\renewcommand{\t}{t}
+\newcommand{\p}{p}
+% \newcommand{\hat\tau}{\hat{\tau}}
+\newcommand{\thetahat}{\hat{\theta}}
+\newcommand{\zdiff}{\zeta}
+\newcommand{\zs}[2]{\frac{\z_{#1}-\z_{#2}}{\s_{#1}-\s_{#2}}}
+% \newcommand{\E}[1]{\text{E}^{(n)}}
+% \makeatletter
+% \def\ifemptyarg#1{%
+%   \if\relax\detokenize{#1}\relax % H. Oberdiek
+%   \expandafter\@firstoftwo
+%   \else
+%   \expandafter\@secondoftwo
+%   \fi}
+% \makeatother
+% \newcommand{\E}[1][]{%
+%   \ifemptyarg{#1}
+%   {\text{E}}
+%   {\text{E}^{(#1)}}%
+% }
+% \let\P\relax
+% \newcommand{\P}[1][]{%
+%   \ifemptyarg{#1}
+%   {\text{P}}
+%   {\text{P}^{(#1)}}%
+% }
+% \newcommand{\Proj}[1][]{%
+%   \ifemptyarg{#1}
+%   {\Pi}
+%   {\Pi^{(#1)}}%
+% }
+\let\n\relax
+\newcommand{\n}[1]{{#1}^{(n)}}
+\newcommand{\iinfty}[1]{{#1}^{(\infty)}}
+\newcommand{\gn}{g^{(n)}}
+\newcommand{\Pin}{\Pi^{(n)}}
+\newcommand{\FZn}{F_{\z-\z'}^{(n)}}
+\newcommand{\En}{E^{(n)}}
+\newcommand{\Einf}{E^{(\infty)}}
+\newcommand{\EE}{\mathbb{E}}
+\newcommand{\EEn}{\mathbb{E}^{(n)}}
+\newcommand{\EEinf}{\mathbb{E}^{(\infty)}}
+\newcommand{\Pn}{P^{(n)}}
+\newcommand{\Pinf}{P^{(\infty)}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\PPn}{\mathbb{P}^{(n)}}
+\newcommand{\Fn}{\mathcal{F}^{(n)}}
+\newcommand{\FFn}{\tilde{\mathcal{F}}^{(n)}}
+% \newcommand{\En}{\text{E}^{(n)}}
+% \newcommand{\Pn}{\text{P}^{(n)}}
+\newcommand{\thetan}{\theta^{(n)}}
+\let\P\relax
+\newcommand{\P}{P}
+\newcommand{\E}{E}
+% \newcommand{\B}{10000}
+% \newcommand{\w}{W}
+% \newcommand{\x}{X}
+% \newcommand{\thetahat}{\hat{\theta}}
+% \newcommand{\h}[2]{\{(\u_{#1}-\u_{#2})(\v_{#1}-\v_{#2})>0\}}
+% \newcommand{\zs}[2]{\frac{\z_{#1}-\z_{#2}}{\s{#1}-\s{#2}}}
+% \DeclareMathOperator{\x}{x}
+% \DeclareMathOperator{\theta4}{\hat{\theta4}}
+% \DeclareMathOperator{\thetaind}{\hat{\theta}_{\cind}}
+% \DeclareMathOperator{\mindensity}{p}
+% \DeclareMathOperator{\bnd}{r}
+% \DeclareMathOperator{\A}{A}
+% \DeclareMathOperator{\B}{B}
+% \DeclareMathOperator{\Aprime}{A'}
+% \DeclareMathOperator{\Bprime}{B'}
+% \DeclareMathOperator{\f0bound}{p}
+% \DeclareMathOperator{\C}{C}
+\mathtoolsset{showonlyrefs=true}
+\newtoggle{commenttoggle}
+\newcommand{\comment}[1]{
+  \iftoggle{commenttoggle}{
+    {\normalsize{\color{red}{ #1}}\normalsize}
+  }
+  {}
+}
+
+\togglefalse{commenttoggle}
+
+
+% % \doublespace
+% \title{The Effect of Screening for Publication Bias on the Outcomes of Meta-Analyses.}
+% \author[1]{Haben Michael}
+% % \author[2]{Musie Ghebremichael}
+% \affil[1]{University of Massachusetts, Amherst, MA (hmichael@math.umass.edu)}
+% % \affil[2]{Ragon Institute and Harvard University, Cambridge, MA (musie\_ghebremichael@dfci.harvard.edu)}
+% \date{}                   
+\begin{document}
+% \maketitle
+
+
+Given a sequence of continuous laws $\Pn,n\in\mathbb{N},$ for $(\z,\s), \z\ind\s$, and a limit law $\P^{(\infty)}$, let:
+\begin{align}
+  \hat\tau(\theta) &=2{n\choose 2}^{-1}\sum_{1\le j<k\le n}\left\{\frac{\z_j-\z_k}{\s_j-\s_k}<\theta\right\}-1\\
+  \tau(\theta) &= \n{\EE}\hat\tau(\theta)=2\n{\PP}\left(\frac{z-z'}{s-s'}<\theta\right)-1\\
+  \Pin\hat\tau(\theta) &= 2\left(\left.\frac{1}{n}\sum_{j=1}^n2\n{\P}\left(\frac{\z_j-\z}{\s_j-\s}<\theta\right|\z_j,\s_j\right)-1\right) - \left(2\n{\PP}\left(\frac{z-z'}{s-s'}<\theta\right)-1\right)
+\end{align}
+\begin{theorem}
+Assuming:
+\begin{enumerate}
+\item $\thetan = \En\z \to \Einf\z=\theta^{(\infty)}=0$
+\item $  \En\z^2 \to \Einf\z^2$
+  \item $\iinfty{\E}\iinfty{f}_\z(\z)=\int \left(\iinfty{f}_\z\right)^2<\infty$
+\item $f_{\z-\z'}^{(n)} \to   f_{\z-\z'}^{(\infty)}$ uniformly
+\item the distribution of $\s$ under $\Pn$ does not depend on $n$
+  \item $\mu_p=\En\s^p=\E\s^p<\infty$ for $p=1,2$
+\end{enumerate}
+
+
+Then:
+
+\begin{align}
+  &\sqrt{n}\left(\hat\tau(\hat\theta) - (\EEn\hat\tau)\left(\frac{\mu_1}{\mu_2}\thetan\right)\right) \\
+  &\qquad = \sqrt{n}(\Pin\hat\tau)(0)
+  + \sqrt{n}\left(\frac{\overline{\z\s}}{\mu_2}-\frac{\mu_1}{\mu_2}\thetan\right)\cdot 2 \EE|\s_1-\s_2|\EEinf f_{\z}^{(\infty)}(\z) + o_{\PPn}(1).
+\end{align}
+\end{theorem}
+
+\begin{proof}
+Show that:
+\begin{enumerate}
+\item \label{theorem:1:expansion:1}$ \sqrt{n}\left(\hat\tau(\hat\theta) - (\Pin\hat\tau)(\hat\theta) \right)=o_{\PPn}(1)$
+\item \label{theorem:1:expansion:2}$\sqrt{n}((\Pin\hat\tau)(\hat\theta) - (\EEn\hat\tau)(\hat\theta))=\sqrt{n}(\Pin\hat\tau)(0)+o_{\PPn}(1)$
+\item \label{theorem:1:expansion:3}$\sqrt{n}\left( (\EEn\hat\tau)(\hat\theta) - (\EEn\hat\tau)\left(\frac{\mu_1}{\mu_2}\thetan\right)\right)=\sqrt{n}\left(\frac{\overline{\z\s}}{\mu_2}-\frac{\mu_1}{\mu_2}\thetan\right)\cdot 2 \EE|\s_1-\s_2|\EEinf f_{\z}^{(\infty)}(\z).$
+\end{enumerate}
+
+
+
+
+\begin{enumerate}[wide, labelwidth=!, labelindent=0pt]
+
+
+\item \label{theorem:1:1}
+
+Let $$\gn(\theta)=\sqrt{n}\left(\hat\tau(\theta)-\Pin\hat\tau(\theta)\right),$$ so the left-hand side of the equation in step \ref{theorem:1:expansion:1} is $\gn(\hat\theta)$. So enough to show that $\sup_\theta |\gn(\theta)|=O(n^{-1/2}).$
+
+% Let
+% \begin{align}
+%   \Pn_n = ...\\
+%   % U_n(f) = ...
+%   % \FFn = ...
+% \end{align}
+% Then $\n{\Pi}\hat\tau(\theta)=...$
+
+\begin{align}
+  \gn(\theta)&=\sqrt{n}\left(\hat\tau(\theta)-\Pin\hat\tau(\theta)\right)\\
+             &=\sqrt{n}{n\choose 2}^{-1}\sum_{1\le j<k\le n}\left(
+               \left\{\zs{j}{k}<\theta\right\}
+               - \n{\P}\left(\left.\zs{j}{k}\right|z_j,s_j\right)
+               \right.\\&\left.\qquad
+               - \n{\P}\left(\left.\zs{j}{k}\right|z_k,s_k\right)
+               + \n{\P}\otimes\n{\P}\left(\zs{j}{k}\right)
+               \right).
+\end{align}
+For any fixed $\theta$ and $n$, the last line is a U-statistic with bivariate kernel
+\begin{align}
+  ((z,s),(z',s')) \mapsto \left\{\frac{z-z'}{s-s'}\right\} - \n{\P}\left(\left.\frac{z-z'}{s-s'}\right|z,s\right)
+  - \n{\P}\left(\left.\frac{z-z'}{s-s'}\right|z',s'\right) + \n{\P}\otimes\n{\P}\left(\frac{z-z'}{s-s'}\right).
+  \label{theorem:1:1:function class}
+\end{align}
+Let $\FFn$ denote the class of functions \eqref{theorem:1:1:function class} as $\theta\in\mathbb{R}$ varies. The kernels in this class give rise to degenerate U-statistics with respect to $\n{\PP}$, i.e., for any $f\in\FFn$ and $(z,s)$,
+\begin{align}
+  \n{\P} f((z,s),(z',s')\mid (z,s))=0.
+\end{align}
+
+\citet{nolan87,nolan88} provides a bound for the supremum of $|\gn(\theta)|$ over a class of degenerate bivariate kernels such as $\FFn$. 
+Given an IID sample $x_1,\ldots,x_{2n},$ let $T_n$ denote the random measure that places mass $1$ on all pairs of observations of the form $(x_{2j},x_{2k}),(x_{2j-1},x_{2k-1}),(x_{2j-1},x_{2k}),$ or $(x_{2j},x_{2k-1}),$ where $j\neq k, 1\le j,k\le n$. Given a class of real function $\mathcal{F},$ measure $\mu$, and $u>0$, let $\N(u,\mu,\mathcal{F})$ denote the $L^2(\mu)$ covering number of $\mathcal{F}$, and let $\J(\mu,\mathcal{F})=\int_0^1\log N(u,\mu,\mathcal{F})du$ denote the associated covering integral. Let $F$ denote a bound for the functions in $\FFn$.
+% \begin{align}
+%   T_n &=\\
+%   \N() &=...\\
+%   \J() &= ...\\
+%   F &=
+% \end{align}
+By Theorem 6 of \citet{nolan87}, there is a constant $c$ such that
+\begin{align}
+  \n{\PP}\sup_{\FFn} |\n{g}| \le \frac{c}{\sqrt n} \n{\PP}\left(\frac{1}{4}\sup_{\FFn}\sqrt{\frac{T_nf^2}{n^2}}
+  +\sqrt{\frac{T_nF^2}{n^2}}\J\left(T_n,\FFn\right)\right).
+\end{align}
+With two applications of the Cauchy-Schwarz inequality,
+\begin{align}
+  \n{\PP}\sup_{\FFn} |\n{g}| \le \frac{c}{\sqrt{n}}\sqrt{\n{\PP}\frac{T_nF^2}{n^2}}
+  \left(1 + \sqrt{\n{\PP}\J(T_n,\FFn)^2}\right).
+\end{align}
+Taking the bound $F=4$ for $f\in\FFn$,  $\sqrt{\n{\PP}\frac{T_nF^2}{n^2}}\le 64.$ Since $\FFn \subset \mathcal{F} + 2\n{\P}\mathcal{F}+\n{\P}\otimes\n{\P}\mathcal{F}$, the subadditive property of covering numbers, Lemma 16 of \citet{nolan87}, implies
+\begin{align}
+  \N(u,T_n,\FFn)\le \N(u/4,T_n,\mathcal{F})\cdot\N(u/16,T_n,\n{\P}\mathcal{F})\cdot\N(u/64,T_n,\n{\P}\mathcal{F})\cdot \N(u/64,T_n,\n{\P}\n{\P}\mathcal{F}).
+\end{align}
+The functions in each of the classes $\mathcal{F}, \n{\P}\mathcal{F},$ and $\n{\P}\otimes\n{\P}\mathcal{F}$ are monotonic in $\theta,$ so each has a linear discriminating polynomial, $p(x)=x+1.$ By the Approximation Lemma, II.25 of \citet{pollard84}, there exist constants $A,W$, depending only on the discriminating polynomial, such that
+\begin{align}
+\N(u,\FFn)\le A\left(\frac{u}{4}\right)^{-W}\cdot A\left(\frac{u}{16}\right)^{-W} \cdot 2A\left(\frac{u}{64}\right)^{-W} = 2A^3\left(\frac{u^3}{4^6}\right)^{-W}. 
+\end{align}
+Therefore,
+\begin{align}
+  \J(T_n,\FFn) &= \int_0^1\log\N(u,T_n,\FFn)du \le
+                   \int_0^1\log\left(2A^3\left(\frac{u^3}{4^6}\right)^{-W}\right)du
+\end{align}
+is bounded uniformly in $n$.
+
+
+
+\item \label{theorem:1:2}Let $\n{\P}_n$ denote the empirical measure on a sample of size $n$ under $\n{\P}$. For $\theta\in\mathbb{R}$, let $\n{h}_\theta$ denote the function $(z,s)\mapsto \n{\P}\left(\left.\frac{z-z'}{s-s'}<\theta\right|z,s\right).$ Then 
+\begin{align}
+  \sqrt{n}\left((\Pin\hat\tau)(\theta)-(\EEn\hat\tau)(\theta)\right)
+  &= \sqrt{n}\left(\frac{4}{n}\sum_{j=1}^n\n{\P}\left(\left.\frac{\z_j-\z}{\s_j-\s}<\theta\right|\z_j,\s_j\right)-4\n{\P}\otimes\n{\P}\left(\frac{\z-\z'}{\s-\s'}<\theta\right)
+    \right)\\
+  &=\sqrt{n}\left(\n{\P}_n-\n{\P}\right)(\n{h}_\theta).
+\end{align}
+For fixed $n$, letting $\theta$ vary, $  \sqrt{n}\left((\Pin\hat\tau)(\theta)-(\EEn\hat\tau)(\theta)\right)$ is therefore an empirical process indexed by the class of functions
+\begin{align}
+  \n{\P}\mathcal{F}=\left\{\n{h}_\theta : \theta\in\mathbb{R}\right\}.
+\end{align}
+In terms of this process, the equation in step \ref{theorem:1:expansion:2} is
+\begin{align}
+  \sqrt{n}\left(\n{\P}_n-\n{\P}\right)(f_\theta-f_0) = o_{\n{\PP}}(1),
+\end{align}
+which follows on showing
+\begin{enumerate}
+\item  \label{theorem:1:2:A}$\sqrt{n}\left(\n{\P}_n-\n{\P}\right)$ is stochastically equicontinuous along $\n{\P}$, that is, for any $\eta>0,\epsilon>0,$ there is $\delta>0$ such that
+  \begin{align}
+    \limsup_{n\to\infty}\n{\PP}\left( \sup_{\n{[\delta]}} |\sqrt{n}\left(\n{\P}_n-\n{\P}\right)(h_\theta-h_{\theta'})|>\eta\right)<\epsilon,
+  \end{align}
+  where $\n{[\delta]}=\{(\theta,\theta')\in \n{\P}\n{\mathcal{F}}: \n{\P}(h_\theta-h_{\theta'})^2\le \delta^2\},$ 
+\item \label{theorem:1:2:B}%The $L^2\left(\n{\P}\right)$ metric on $\n{\mathcal{F}$ is continuous in $\theta$ at $0$
+  For any $\epsilon>0$, there is $\delta>0$ such that $|\theta|<\delta$ implies $\limsup\n{\P}(h_\theta-f_0)^2<\epsilon,$ and
+  \item \label{theorem:1:2:C}$\hat\theta$ is consistent along $\n{\P}$, i.e., for any $\delta>0,\epsilon>0$, $\lim\n{P}(|\hat\theta|>\delta)<\epsilon.$
+  \end{enumerate}
+
+\begin{enumerate}[wide, labelwidth=!, labelindent=0pt]
+\item Were $\n{\P}$ and $\n{\mathcal{F}}$ fixed, the stochastic
+  equicontinuity of $\sqrt{n}\left(\n{\P}_n-\n{\P}\right)$ would
+  follow from standard empirical process theory.  A small variation of
+  the Equicontinuity Lemma, Theorem VII.15 of \citet{pollard84},
+  accommodates changing probability measures and function classes. The
+  variation presented below ignores measurability qualifications that
+  are not relevant for the present application. 
+  \begin{lemma}
+    Given function classes $\n{\mathscr{F}}$ and probability measures $\n{\mathscr{P}},n\in\mathbb{N}.$ Assume for any $\epsilon>0,\eta>0$, there is $\gamma>0$ such that
+    \begin{align}
+      \limsup_n\n{\mathscr{P}}\left(\J\left(\gamma,\n{\mathscr{P}},\n{\mathscr{F}}\right)>\eta\right)<\epsilon.
+    \end{align}
+    Then there exists $\delta>0$ such that
+    \begin{align}
+      \limsup_n\n{\mathscr{P}}\left(\sup_{\n{[\delta]}}|\left(\n{\mathscr{P}}_n-\n{\mathscr{P}}\right)(f-g)|>\eta\right)<\epsilon,
+    \end{align}
+    where $\n{[\delta]}=\left\{(f,g)\in\n{\mathscr{F}}:\n{\mathscr{P}}(f-g)^2<\delta^2\right\}.$
+  \end{lemma}
+  The proof follows by superficial changes to the proof of the form for fixed $\n{\mathscr{F}}$ and $\n{\mathscr{P}}$ cited above, and is omitted.
+  
+  The stochastic equicontinuity \ref{theorem:1:2:A} follows from the conclusion of the Lemma by setting $\n{\mathscr P}=\n{\P},\n{\mathscr F}=\n{\mathcal{P}}\mathcal{F}.$ The assumptions of the Lemma hold by similar arguments as in\ \ref{theorem:1:1}. That is, the functions in $\n{\mathcal{F}}$ are monotonic in $\theta$, so the graphs have discriminating polynomial $p(x)=x+1$ for all $n$, and then it follows from the Approximation Lemma, II.25 of \citet{pollard84}, that $\J\left(\gamma,\n{\P},\n{\mathcal{F}}\right)$ is $O(\gamma)$ deterministically.
+
+
+
+  
+  \item
+  For $\theta>0,$
+  \begin{align}
+%    \n{\P}(h_\theta-h_0)^2 &= 16\n{\P}\left(\n{\P}\left(\left.\frac{\z-\z'}{\s-\s'}<\theta\right|\z,\s\right)-\n{\P}\left(\left.\frac{\z-\z'}{\s-\s'}<0\right| z,s\right)\right)^2\\
+    \n{\P}(h_\theta-h_0)^2 &= 16\n{\P}\left(\n{\P}\left(\left.0<\frac{\z-\z'}{\s-\s'}<\theta\right|z,s\right)\right)^2\\
+                            &\le 16\n{\P}\left(0<\frac{\z-\z'}{\s-\s'}<\theta\right)\\
+    &=8\EE\left(2 \n{F}_{\z-\z'}(\theta|\s-\s'|)-1\right).
+  \end{align}
+
+Since $\n{f}_{\z-\z'}\to\iinfty{f}_{\z-\z'}$ uniformly, the same holds for the convergence of the CDFs $\n{F}_{\z-\z'}\to\iinfty{F}_{\z-\z'}.$ Therefore, for any $\epsilon>0$ and all sufficiently large $n$, $\n{F}_{\z-\z'}(\theta|\s-\s'|)=\n{F}_{\z-\z'}(0)+\epsilon/16=\frac12+\epsilon/16$, and the last expression of the above display is $\le\epsilon$.
+
+\item Asymptotic normality is established in \ref{theorem:1:3}.
+
+% Then since $\rho...$ is uniformly continuous at $\theta=0$ and $\hat\theta$ is consistent,
+% \begin{align}
+% \end{align}
+% % and the right hand side tends in distribution to $\mathcal{N}(0,4/9)$.
+\end{enumerate}
+
+
+
+
+
+
+\item \label{theorem:1:3}
+
+  
+As $\left(\n{\EE}\hat\tau\right)(\theta)=2\n{\PP}\left(\frac{\z-\z'}{\s-\s'}<\theta\right)-1=\EE\left(2\n{F}_{\z-\z'}(\theta|\s-\s'|)-1\right),$ its derivative is 
+\begin{align}
+  \frac{\text{d}}{\text{d}\theta}\left(\n{\EE}\hat\tau\right)(\theta) &=
+                                                                        \frac{\text{d}}{\text{d}\theta}\EE\left(2\n{F}_{\z-\z'}(\theta|\s-\s'|)-1\right)\\
+                                                                      &=\EE\left(2|\s-\s'|\n{f}_{\z-\z'}(\theta|\s-\s'|)\right)\\
+                                                                      &=2\iinfty{f}_{\z-\z'}(0)\EE|\s-\s'|+o(1).
+\end{align}
+The derivative may be brought inside the expectation in the second equality since the derivative $\frac{\text{d}}{\text{d}\theta}\left(2\n{F}_{\z-\z'}(\theta|\s-\s'|)-1\right)=2|\s-\s'|\n{f}_{\z-\z'}(\theta|\s-\s'|)$ is nonnegative. The interchange of limits in the last equality is justified by the assumed uniform convergence $\n{f}_{\z-\z'}\to\iinfty{f}_{\z-\z'}$ and uniform continuity of the latter:
+\begin{align}
+  \iinfty{f}_{\z-\z'}(x)-\iinfty{f}_{\z-\z'}(y)&=\int\left(\iinfty{f}_{\z}(x+\xi)-\iinfty{f}_{\z}(y+\xi)\right)\iinfty{f}_{\z}(\xi)d\xi\\
+                                               &\le \left|\left(\iinfty{f}_{\z}(x+\cdot)-\iinfty{f}_{\z}(y+\cdot)\right)\right|_{L^2}
+                                                 \left|\iinfty{f}_{\z}\right|_{L^2}\\
+  &\le 2\left|\iinfty{f}_{\z}\right|_{L^2}^2.
+\end{align}
+
+
+Therefore,
+\begin{align}
+  &\sqrt{n}\left(\left(\EEn\hat\tau\right)(\hat\theta)-\left(\EEn\hat\tau\right)\left(\frac{\mu_1}{\mu_2}\thetan\right)\right)\\
+  &\qquad=\sqrt{n}\left(\hat\theta-\frac{\mu_1}{\mu_2}\thetan\right)\left.\frac{\text{d}}{\text{d}\theta}\left(\EEn\hat\tau\right)(\theta)\right|_{\theta=\frac{\mu_1}{\mu_2}\thetan} + \sqrt{n}\cdot o\left(\hat\theta-\frac{\mu_1}{\mu_2}\thetan\right)\\
+  &\qquad=\sqrt{n}\left(\hat\theta-\frac{\mu_1}{\mu_2}\thetan\right)\cdot 2 \EE|\s_1-\s_2|\EEinf f_{\z}^{(\infty)}(\z) + \sqrt{n}\cdot o\left(\hat\theta-\frac{\mu_1}{\mu_2}\thetan\right)\\
+  &\qquad=\sqrt{n}\left(\frac{1}{\mu_2n}\sum_j\z_j\s_j-\frac{\mu_1}{\mu_2}\n{\theta}\right)\cdot 2 \EE|\s_1-\s_2|\EEinf f_{\z}^{(\infty)}(\z) + o_{\PPn}(1).
+\end{align}
+
+% \begin{align}
+%   \En\hat\tau(\theta) &= 2\n{\PP}\left(\zs{1}{2} < \theta\right)-1\\
+%                         % &= \Pn\left(0<\zs{1}{2}<\theta\right)\\
+%                         % &=\E\Pn(0 < |\z_1-\z_2|<\theta|\s_1-\s_2| \mid |\s_1-\s_2|)\\
+%                       &= \n{\PP}\left(-\theta<\zs{1}{2}<\theta\right)\\
+%                       &= \E \left(\n{F_{\z-\z'}}(\theta|\s_-\s'|)-\n{F_{\z-\z'}}(-\theta|\s_-\s'|)\right).
+% \end{align}
+
+The last line follows by rewriting $\sqrt{n}\left(\hat\theta-\frac{\mu_1}{\mu_2}\n{\theta}\right)$ as an IID sum and establishing asymptotic normality. By assumption [[ref consistency assumption]]  $n^{-1/2}\sum_j\z_j\s_j\left(\frac{n}{\sum_j\s_j^2}-\frac{1}{\mu_2}\right)=n^{-1/2}\sum_j\s_j\s_j\cdot o_{\PP}(1)$. The right-hand side tends to $0$ along $\n{\PP}$ as long as $n^{-1/2}\sum_j\z_j\s_j=O_{\n{\PP}}(1)$, which holds since $\n{\EE}\left(n^{-1/2}\sum_j\z_j\s_j\right)^2=\E\s^2\n{\E}\z^2$ is uniformly bounded by [[ref assumption on means squares]]. Therefore $\sqrt{n}\left(\hat\theta-\frac{\mu_1}{\mu_2}\n{\theta}\right)=\sqrt{n}\left(\frac{1}{\mu_2n}\sum_j\z_j\s_j-\frac{\mu_1}{\mu_2}\n{\theta}\right)+o_{\n{\PP}}(1)$, and the common distributional limit is given by a traingular array CLT,
+\begin{align}
+   \n{\EE}\frac{1}{\mu_2n}\sum_j\z_j\s_j&=\n{\theta}\frac{\mu_1}{\mu_2}\\
+   % \n{\var}\frac{1}{\mu_2n}\sum_j\z_j\s_j&=\frac{1}{\mu_2^2}\left((\E\s^2)\n{\var}\z+(\n{\theta})^2\var\s\right)
+                                           % =\frac{\n{\var}\z}{\mu_2}+\left(\n{\theta}\right)^2\left(\frac{1}{\mu_2}-\left(\frac{\mu_1}{\mu_2}\right)^2\right)\\
+   % \n{\EE}\frac{1}{\mu_2n}\sum_j\z_j\s_j&=\n{\theta}\frac{\mu_1}{\mu_2}\\
+   \n{\var}\frac{1}{\mu_2n}\sum_j\z_j\s_j&=\frac{\n{\var}\z}{\mu_2}+\left(\n{\theta}\right)^2\left(\frac{1}{\mu_2}-\left(\frac{\mu_1}{\mu_2}\right)^2\right)\\
+   \sqrt{n}\left(\frac{1}{\mu_2n}\sum_j\z_j\s_j-\frac{\mu_1}{\mu_2}\n{\theta}\right)&\overset{\n{\PP}}{\leadsto}
+                                                                                      \mathcal{N}\left(0,\frac{\iinfty{\var}\z}{\mu_2}\right)
+\end{align}
+
+\end{enumerate}
+
+\end{proof}
+
+
+\bibliographystyle{chicago}
+\bibliography{begg2.bib}
+
+
+\end{document}
+uniform convergence of cdfs follows from conv in distr
+may not need $E \s^2<\infty$ here? just first moment

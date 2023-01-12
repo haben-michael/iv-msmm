@@ -1,0 +1,154 @@
+## 1. figures showing large indiv auc vs small pop auc and vice versa
+
+
+## 1a. large indiv auc, small pop auc
+
+require(mvtnorm)
+source('../misc.R')
+I <- 10
+max.cluster.size <- 20
+m <- sample(1:max.cluster.size,I,replace=TRUE); n <- sample(1:max.cluster.size,I,replace=TRUE)
+Delta <- 2
+var.z <- 1e2
+data <- rbinormal(I=I,m=m,n=n,mean.x=0,mean.y=Delta,cov.xx=0,cov.xy=0,cov.yy=0,var.x=1,var.y=1,mean.z=rep(0,I),var.z=var.z,plot=FALSE)
+x <- data$x; y <- data$y
+auc.cluster(x,y,get.vcov=FALSE)
+## save.image('211223a.RData')
+
+pch.control <- '|'
+pch.case <- '-'
+plot(0,type='n',xlim=range(unlist(c(x,y))),ylim=c(0,I))
+for(i in 1:I) points(x[[i]],y=rep(i,length(x[[i]])),pch=pch.control)
+for(i in 1:I) points(y[[i]],y=rep(i,length(y[[i]])),pch=pch.case)
+points(unlist(c(x,y)),y=rep(0,sum(m)+sum(n)),pch=rep(c(pch.control,pch.case),c(sum(m),sum(n))))
+
+
+## 1b. large pop auc, small indiv auc
+
+require(mvtnorm)
+source('../misc.R')
+I <- 15
+max.cluster.size <- 10
+## m <- sample(1:max.cluster.size,I,replace=TRUE); n <- sample(1:max.cluster.size,I,replace=TRUE)
+m <- rpois(I,1)+1
+m <- m + rbinom(I,1,1/2)*(20-2*m)
+n <- 20-m
+Delta <- 0
+var.z <- 1
+data <- rbinormal(I=I,m=m,n=n,mean.x=0,mean.y=Delta,cov.xx=0,cov.xy=0,cov.yy=0,var.x=1,var.y=1,mean.z=(n*(n>m)-m*(n<=m))/5,var.z=var.z,plot=FALSE)
+x <- data$x; y <- data$y
+auc.cluster(x,y,get.vcov=FALSE)
+## save.image('211223b.RData')
+
+
+## 1c. plotting routine after 1a and 1b have been run
+
+## op <- par(mfrow=c(1,2))
+rm(list=ls())
+for(save.file in c('211223a','211223b')) {
+    load(paste0(save.file,'.RData'))
+    pch.control <- '|'
+    pch.case <- '-'
+    png(paste0(save.file,'.png'))
+    plot(0,type='n',xlim=range(unlist(c(x,y))),ylim=c(0,I),xlab='predictor',ylab='clusters',xaxt='n',yaxt='n',mgp=c(1,1,0))   
+    for(i in 1:I) points(x[[i]],y=rep(i,length(x[[i]])),pch=pch.control)
+    for(i in 1:I) points(y[[i]],y=rep(i,length(y[[i]])),pch=pch.case)
+    abline(h=1/2)
+    points(unlist(c(x,y)),y=rep(0,sum(m)+sum(n)),pch=rep(c(pch.control,pch.case),c(sum(m),sum(n))))
+    dev.off()
+}
+## par(op)
+
+## 1d. check of formula for theta_12 under location shift, RE model
+## I <- 1e4
+## m1 <- sample(1:max.cluster.size,I,replace=TRUE); n1 <- sample(1:max.cluster.size,I,replace=TRUE)
+## z1 <- rnorm(I,n1-m1)
+## m2 <- sample(1:max.cluster.size,I,replace=TRUE); n2 <- sample(1:max.cluster.size,I,replace=TRUE)
+## z2 <- rnorm(I,n2-m2)
+## mean(m1*n2*(z1-z2 +2*rnorm(I)*0< Delta)) / (mean(m)*mean(n))
+
+
+
+
+
+
+
+
+## 2. figures showing large indiv auc vs small pop auc and vice versa
+## re-doing #1 without random effect. also using Obuchowski '97 method
+## of generating correlated m,n.
+
+
+## 2a. large indiv auc, small pop auc
+
+require(mvtnorm)
+source('../misc.R')
+I <- 10
+max.cluster.size <- 20
+m <- sample(1:max.cluster.size,I,replace=TRUE); n <- sample(1:max.cluster.size,I,replace=TRUE)
+Delta <- .3
+cc <- .99
+## data <- rbinormal(I=I,m=m,n=n,mean.x=0,mean.y=Delta,cov.xx=0,cov.xy=0,cov.yy=0,var.x=1,var.y=1,mean.z=rep(0,I),var.z=var.z,plot=FALSE)
+data <- rbinormal(I=I,m=m,n=n,mean.x=0,mean.y=Delta,cov.xx=cc,cov.xy=cc,cov.yy=cc,var.x=1,var.y=1,plot=FALSE)
+x <- data$x; y <- data$y
+auc.cluster(x,y,get.vcov=FALSE)
+## save.image('211231a.RData')
+
+pch.control <- '|'
+pch.case <- '-'
+plot(0,type='n',xlim=range(unlist(c(x,y))),ylim=c(0,I))
+for(i in 1:I) points(x[[i]],y=rep(i,length(x[[i]])),pch=pch.control)
+for(i in 1:I) points(y[[i]],y=rep(i,length(y[[i]])),pch=pch.case)
+points(unlist(c(x,y)),y=rep(0,sum(m)+sum(n)),pch=rep(c(pch.control,pch.case),c(sum(m),sum(n))))
+
+
+## 2b. large pop auc, small indiv auc
+
+require(mvtnorm)
+source('../misc.R')
+I <- 10
+max.cluster.size <- k <- 10
+## m <- sample(1:max.cluster.size,I,replace=TRUE); n <- sample(1:max.cluster.size,I,replace=TRUE)
+m <- rpois(I,1)+1
+m <- m + rbinom(I,1,1/2)*(20-2*m)
+n <- 20-m
+D.corr <- .99 # controls how u-shaped m,n are
+Sigma <- matrix(D.corr,k,k) + diag(k)*(1-D.corr)
+D.latent <- rmvnorm(I,mean=rep(0,k),Sigma)
+D.idx <- D.latent>0
+m <- pmax(pmin(rowSums(D.idx),k-1),1) # enforce m>0,n>0
+n <- k-m
+Delta <- 0
+## data <- rbinormal(I=I,m=m,n=n,mean.x=0,mean.y=Delta,cov.xx=0,cov.xy=0,cov.yy=0,var.x=1,var.y=1,mean.z=(n*(n>m)-m*(n<=m))/5,var.z=var.z,plot=FALSE)
+mm <- (n*(n>m)-m*(n<=m))/5
+data <- rbinormal(I=I,m=m,n=n,mean.x=mm,mean.y=mm+Delta,cov.xx=0,cov.xy=0,cov.yy=0,var.x=1/2,var.y=1/2,plot=FALSE)
+x <- data$x; y <- data$y
+auc.cluster(x,y,get.vcov=FALSE)
+## save.image('211231b.RData')
+
+pch.control <- '|'
+pch.case <- '-'
+plot(0,type='n',xlim=range(unlist(c(x,y))),ylim=c(0,I))
+for(i in 1:I) points(x[[i]],y=rep(i,length(x[[i]])),pch=pch.control)
+for(i in 1:I) points(y[[i]],y=rep(i,length(y[[i]])),pch=pch.case)
+points(unlist(c(x,y)),y=rep(0,sum(m)+sum(n)),pch=rep(c(pch.control,pch.case),c(sum(m),sum(n))))
+
+
+## 2c. plotting routine after 1a and 1b have been run
+
+## op <- par(mfrow=c(1,2))
+rm(list=ls())
+for(save.file in c('211231a','211231b')) {
+    load(paste0(save.file,'.RData'))
+    pch.control <- '|'
+    pch.case <- '-'
+    png(paste0(save.file,'.png'))
+    plot(0,type='n',xlim=range(unlist(c(x,y))),ylim=c(0,I),xlab='predictor',ylab='clusters',xaxt='n',yaxt='n',mgp=c(1,1,0))   
+    for(i in 1:I) points(x[[i]],y=rep(i,length(x[[i]])),pch=pch.control)
+    for(i in 1:I) points(y[[i]],y=rep(i,length(y[[i]])),pch=pch.case)
+    abline(h=1/2)
+    points(unlist(c(x,y)),y=rep(0,sum(m)+sum(n)),pch=rep(c(pch.control,pch.case),c(sum(m),sum(n))))
+    dev.off()
+}
+## par(op)
+

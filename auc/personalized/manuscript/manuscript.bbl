@@ -1,0 +1,65 @@
+\begin{thebibliography}{10}
+
+\bibitem{emir2000}
+Birol Emir, Sam Wieand, Sin-Ho Jung, and Zhiliang Ying.
+\newblock Comparison of diagnostic markers with repeated measurements: a
+  non-parametric {ROC} curve approach.
+\newblock {\em Statistics in Medicine}, 19(4):511--523, 2000.
+
+\bibitem{goel2016}
+Sharad Goel, Justin~M Rao, and Ravi Shroff.
+\newblock Precinct or prejudice? {U}nderstanding racial disparities in new york
+  city’s stop-and-frisk policy.
+\newblock {\em The Annals of Applied Statistics}, 10(1):365--394, 2016.
+
+\bibitem{hanley1988}
+James~A Hanley.
+\newblock The robustness of the ``binormal'' assumptions used in fitting {ROC}
+  curves.
+\newblock {\em Medical decision making}, 8(3):197--203, 1988.
+
+\bibitem{lee2019}
+A~J Lee.
+\newblock {\em U-statistics: Theory and Practice}.
+\newblock Routledge, 2019.
+
+\bibitem{michael2019}
+Haben Michael, Lu~Tian, and Musie Ghebremichael.
+\newblock The {ROC} curve for regularly measured longitudinal biomarkers.
+\newblock {\em Biostatistics}, 20(3):433--451, 2019.
+
+\bibitem{obuchowski1997}
+Nancy~A Obuchowski.
+\newblock Nonparametric analysis of clustered {ROC} curve data.
+\newblock {\em Biometrics}, pages 567--578, 1997.
+
+\bibitem{pearl2014}
+Judea Pearl.
+\newblock Comment: {U}nderstanding {S}impson’s paradox.
+\newblock {\em The American Statistician}, 68(1):8--13, 2014.
+
+\bibitem{ridgeway2006}
+Greg Ridgeway.
+\newblock Assessing the effect of race bias in post-traffic stop outcomes using
+  propensity scores.
+\newblock {\em Journal of Quantitative Criminology}, 22(1):1--29, 2006.
+
+\bibitem{ridgeway2009}
+Greg Ridgeway and John~M MacDonald.
+\newblock Doubly robust internal benchmarking and false discovery rates for
+  detecting racial bias in police stops.
+\newblock {\em Journal of the American Statistical Association},
+  104(486):661--668, 2009.
+
+\bibitem{sen1960}
+Pranab~Kumar Sen.
+\newblock On some convergence properties of {U}-tatistics.
+\newblock {\em Calcutta Statistical Association Bulletin}, 10(1-2):1--18, 1960.
+
+\bibitem{wu2011}
+Yougui Wu and Xiaofei Wang.
+\newblock Optimal weight in estimating and comparing areas under the receiver
+  operating characteristic curve using longitudinal data.
+\newblock {\em Biometrical journal}, 53(5):764--778, 2011.
+
+\end{thebibliography}

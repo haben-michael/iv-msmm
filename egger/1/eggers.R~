@@ -1,0 +1,235 @@
+## bias of d-l estimator
+tau <- 3
+n <- 20
+ns <- round(seq(20,400,length.out=20))
+by.n <- sapply(ns, function(n) {
+tau2.hats <- replicate(5e3, {
+    theta <- rnorm(n,mean=0,sd=tau)
+    sigma <- rchisq(n,df=10)
+    y <- rnorm(n,mean=theta,sd=sigma)
+    mu.fe <- sum(1/sigma^2 * y) / sum(1/sigma^2)
+    Q <- sum((y-mu.fe)^2/sigma^2)
+    tau.dl <- max(0, (Q - (n-1)) / (sum(1/sigma^2) - sum(1/sigma^4)/sum(1/sigma^2)))
+})
+## hist(tau2.hats); abline(v=c(tau^2,mean(tau2.hats)),col=c('red','blue'))
+(mean(tau2.hats) - tau^2)
+})
+plot(ns,by.n,type='l'); abline(h=0)
+
+
+## level of egger regression
+tau <- 10
+n <- 200
+p.vals <- replicate(1e3, {
+    theta <- rnorm(n,mean=0,sd=tau)
+    sigma <- rchisq(n,df=10)
+    y <- rnorm(n,mean=theta,sd=sigma)
+    mu.fe <- sum(1/sigma^2 * y) / sum(1/sigma^2)
+    Q <- sum((y-mu.fe)^2/sigma^2)
+    tau.dl <- max(0, (Q - (n-1)) / (sum(1/sigma^2) - sum(1/sigma^4)/sum(1/sigma^2)))
+    coef(summary(lm(I(y/sqrt(sigma^2+tau^2)) ~ 1 + I(1/sqrt(sigma^2+tau^2)))))['(Intercept)','Pr(>|t|)']
+})
+plot(ecdf(p.vals));abline(a=0,b=1,col='red')
+
+## level with heterogeneity present
+tau <- 10
+n <- 200
+p.vals <- replicate(1e3, {
+    theta <- rnorm(n,mean=0,sd=tau)
+    sigma <- rchisq(n,df=10)
+    y <- rnorm(n,mean=theta,sd=sigma)
+    coef(summary(lm(I(y/sigma) ~ 1 + I(1/sigma))))['(Intercept)','Pr(>|t|)']
+})
+plot(ecdf(p.vals));abline(a=0,b=1,col='red')
+
+
+n <- 200
+p.vals <- replicate(1e3, {
+    theta <- rnorm(n,mean=300,sd=0)
+    sigma <- 1/runif(n,1,22)#rchisq(n,df=10)
+    y <- rnorm(n,mean=theta,sd=sigma)
+    coef(summary(lm(I(y/sigma) ~ 1 + I(1/sigma))))['(Intercept)','Pr(>|t|)']
+})
+plot(ecdf(p.vals));abline(a=0,b=1,col='red')
+mean(p.vals<.05)
+plot(1/sigma,y/sigma,ylim=c(0,max(y/sigma)),xlim=c(0,max(1/sigma)));abline(lm(I(y/sigma) ~ I(1/sigma)))
+
+## funnel plot
+tau <- 3
+n <- 100
+theta <- rnorm(n,mean=0,sd=tau)
+sigma <- rchisq(n,df=10)
+y <- rnorm(n,mean=theta,sd=sigma)
+mu.fe <- sum(1/sigma^2 * y) / sum(1/sigma^2)
+Q <- sum((y-mu.fe)^2/sigma^2)
+tau.dl <- max(0, (Q - (n-1)) / (sum(1/sigma^2) - sum(1/sigma^4)/sum(1/sigma^2)))
+p.vals <- pnorm(y/sigma,lower.tail=FALSE)
+insig.idx <- p.vals>.1
+## insig.idx <- with(list(p.vals=pnorm(y/sigma,lower.tail=FALSE)), p.vals > quantile(p.vals,.5))
+keep.idx <- c(which(!insig.idx),which(insig.idx)[as.logical(rbinom(length(which(insig.idx)), 1, prob=1))])
+sigma <- sigma[keep.idx]; y <- y[keep.idx]
+plot(I(1/sigma) ~ y)
+abline(v=mu.fe)
+
+
+## power of egger regression
+tau <- 0
+keep.prob <- .8
+n <- 1e2
+keep.probs <- seq(0,1,length.out=10)
+powers <- sapply(keep.probs,function(keep.prob) {
+    p.vals <- replicate(1e3, {
+        theta <- rnorm(n,mean=0,sd=tau)
+        sigma <- rchisq(n,df=10)
+        y <- rnorm(n,mean=theta,sd=sigma)
+        mu.fe <- sum(1/sigma^2 * y) / sum(1/sigma^2)
+        Q <- sum((y-mu.fe)^2/sigma^2)
+        tau.dl <- max(0, (Q - (n-1)) / (sum(1/sigma^2) - sum(1/sigma^4)/sum(1/sigma^2)))    
+        ## insig.idx <- pnorm(y/sigma,lower.tail=FALSE) > .1
+        insig.idx <- with(list(p.vals=pnorm(y/sigma,lower.tail=FALSE)), p.vals > quantile(p.vals,.8))
+        keep.idx <- c(which(!insig.idx),which(insig.idx)[as.logical(rbinom(length(which(insig.idx)), 1, prob=keep.prob))])
+        sigma <- sigma[keep.idx]; y <- y[keep.idx]
+        coef(summary(lm(I(y/sqrt(sigma^2+tau^2)) ~ 1 + I(1/sqrt(sigma^2+tau^2)))))['(Intercept)','Pr(>|t|)']
+    })
+    ## plot(ecdf(p.vals));abline(a=0,b=1,col='red')
+    mean(p.vals<.05)
+})
+plot(keep.probs,powers)
+
+
+
+## checking formulas
+n <- 10
+x <- rnorm(n)
+y <- rnorm(n)
+w <- abs(rnorm(n))
+ans <- 0
+for(j in 1:n)
+    for(k in 1:n)
+        ans <- ans + w[j]*w[k]*(x[j]-x[k])*(y[j]-y[k])
+ans <- ans / sum(w)/2
+ans - sum(w*(x*y - sum(x*w)/sum(w)*sum(y*w)/sum(w)))
+
+n <- 10
+sigma <- rchisq(n,df=10)
+y <- rnorm(n,mean=0,sd=sigma)
+ans <- 0
+for(j in 1:n)
+    for(k in 1:n)
+        ans <- ans + 1/sigma[j]/sigma[k]*(y[j]-y[k])*(1/sigma[j]-1/sigma[k])
+ans <- ans/2
+ans - sum(1/sigma)*sum(1/sigma*(y/sigma - sum(y/sigma)*sum(1/sigma^2)/sum(1/sigma)^2))
+coef(summary(lm(I(y/sigma) ~ 1 + I(1/sigma))))[1] + ans / (n*sum((1/sigma-mean(1/sigma))^2))
+coef(summary(lm(I(y/sigma) ~ 1 + I(1/sigma))))[1] + mean(1/sigma)/((n-1)*var(1/sigma))*sum(1/sigma*(y/sigma - sum(y/sigma)*sum(1/sigma^2)/sum(1/sigma)^2))
+
+tau <- 0
+keep.prob <- .8
+n <- 1e2
+keep.probs <- seq(0,1,length.out=10)
+theta <- rnorm(n,mean=0,sd=tau)
+sigma <- rchisq(n,df=10)
+y <- rnorm(n,mean=theta,sd=sigma)
+egger.lm <- lm(I(y/sqrt(sigma^2+tau^2)) ~ 1 + I(1/sqrt(sigma^2+tau^2)))
+coef(summary(egger.lm))['(Intercept)','Estimate'] - - mean(1/sigma)/((n-1)*var(1/sigma))*sum(1/sigma*(y/sigma - sum(y/sigma)*sum(1/sigma^2)/sum(1/sigma)^2))
+coef(summary(egger.lm))['(Intercept)','Std. Error']^2
+sum(1/sigma^2)/(n*sum(1/sigma^2) - sum(1/sigma)^2)*summary(egger.lm)$sigma^2
+summary(egger.lm)$sigma^2 * sum(1/sigma^2) / (n*(n-1)*var(1/sigma))
+coef(summary(egger.lm))['(Intercept)','t value'] - -mean(1/sigma)/(summary(egger.lm)$sigma*sqrt(mean(1/sigma^2))*sqrt((n-1)*var(1/sigma))) * sum(1/sigma * (y/sigma - sum(y/sigma)*sum(1/sigma^2)/sum(1/sigma)^2))
+
+coef(summary(lm(I(y/sigma) ~ 1 + I(1/sigma))))[2]
+coef(summary(lm(I(y/sigma) ~ 1 + I(1/sigma))))[2]
+(sum(y/sigma^2) - n*mean(1/sigma)*mean(y/sigma)) / ((n-1)*var(1/sigma))
+1/(n*(n-1)*var(1/sigma))*(n*sum(y/sigma^2) - sum(1/sigma)*sum(y/sigma))
+(sum(y/sigma^2) - n*mean(1/sigma)*mean(y/sigma))
+cov(y/sigma,1/sigma)/var(1/sigma)
+summary(lm(I(y/sigma) ~ 1 + I(1/sigma)))
+summary(lm(I(y/sigma) ~ I(1/sigma)-1))
+
+
+
+
+## power of egger regression
+tau <- 0
+keep.prob <- .8
+n <- 1e2
+keep.probs <- seq(0,1,length.out=10)
+powers <- sapply(keep.probs,function(keep.prob) {
+    p.vals <- replicate(1e3, {
+        theta <- rnorm(n,mean=0,sd=tau)
+        sigma <- rchisq(n,df=10)
+        y <- rnorm(n,mean=theta,sd=sigma)
+        mu.fe <- sum(1/sigma^2 * y) / sum(1/sigma^2)
+        Q <- sum((y-mu.fe)^2/sigma^2)
+        tau.dl <- max(0, (Q - (n-1)) / (sum(1/sigma^2) - sum(1/sigma^4)/sum(1/sigma^2)))    
+        ## insig.idx <- pnorm(y/sigma,lower.tail=FALSE) > .1
+        insig.idx <- with(list(p.vals=pnorm(y/sigma,lower.tail=FALSE)), p.vals > quantile(p.vals,.8))
+        keep.idx <- c(which(!insig.idx),which(insig.idx)[as.logical(rbinom(length(which(insig.idx)), 1, prob=keep.prob))])
+        sigma <- sigma[keep.idx]; y <- y[keep.idx]
+        coef(summary(lm(I(y/sqrt(sigma^2+tau^2)) ~ 1 + I(1/sqrt(sigma^2+tau^2)))))['(Intercept)','Pr(>|t|)']
+    })
+    ## plot(ecdf(p.vals));abline(a=0,b=1,col='red')
+    mean(p.vals<.05)
+})
+plot(keep.probs,powers)
+
+
+
+## egger regression for p-value bias, no small sample effect, using
+## y/s picks nothing
+tau <- 0
+keep.prob <- .8
+n <- 4e3
+keep.probs <- seq(0,1,length.out=10)
+keep.prob <- 0#keep.probs[4]
+## powers <- sapply(keep.probs,function(keep.prob) {
+## p.vals <- replicate(1e3, {
+theta <- rnorm(n,mean=0,sd=tau)
+## sigma <- rchisq(n,df=1e2)
+sigma <- 1/runif(n,5,25)
+y <- rnorm(n,mean=theta,sd=sigma)
+mu.fe <- sum(1/sigma^2 * y) / sum(1/sigma^2)
+study.p <- pnorm(y/sigma,lower.tail=FALSE)
+plot(y, 1/sigma)
+abline(v=mu.fe)
+points(1/sigma[study.p>.8] ~ y[study.p>.8], col='red')
+
+plot( y/sigma,1/sigma)
+abline(v=mu.fe)
+with(list(cutoff=.5),points((y/sigma)[study.p>cutoff], 1/sigma[study.p>cutoff], col='red'))
+
+insig.idx <- study.p > quantile(study.p,.8)
+keep.idx <- c(which(!insig.idx),which(insig.idx)[as.logical(rbinom(length(which(insig.idx)), 1, prob=keep.prob))])
+sigma <- sigma[keep.idx]; y <- y[keep.idx]
+## coef(summary(lm(I(y/sqrt(sigma^2+tau^2)) ~ 1 + I(1/sqrt(sigma^2+tau^2)))))['(Intercept)','Pr(>|t|)']
+egger.lm <- lm(I(y/sigma) ~ 1 + I(1/sigma))
+## plot(y/sigma ~ 1/sigma)
+## })
+## plot(ecdf(p.vals));abline(a=0,b=1,col='red')
+##     mean(p.vals<.05)
+## })
+## plot(keep.probs,powers)
+
+
+
+## level with heterogeneity present--finding source of type 1 errors
+tau <- 10
+n <- 20
+taus <- seq(0,30,length.out = 30)
+by.tau <- sapply(taus, function(tau) {
+    t.stat <- replicate(4e2, {
+        theta <- rnorm(n,mean=0,sd=tau)
+        sigma <- rchisq(n,df=40)
+        y <- rnorm(n,mean=theta,sd=sigma)
+        ## coef(summary(lm(I(y/sigma) ~ 1 + I(1/sigma))))['(Intercept)','Pr(>|t|)']
+        ## abs(-mean(1/sigma)/(summary(egger.lm)$sigma*sqrt(mean(1/sigma^2))*sqrt((n-1)*var(1/sigma))) * sum(1/sigma * (y/sigma - sum(y/sigma)*sum(1/sigma^2)/sum(1/sigma)^2)))
+        abs(sum(1/sigma * (y/sigma - sum(y/sigma)*sum(1/sigma^2)/sum(1/sigma)^2)))
+        ## abs(mean(1/sigma)/(summary(egger.lm)$sigma*sqrt(mean(1/sigma^2))*sqrt((n-1)*var(1/sigma))))
+        ## abs(sum(1/sigma * (y/sigma - sum(y/sigma)*sum(1/sigma^2)/sum(1/sigma)^2)) *         mean(1/sigma)/(summary(egger.lm)$sigma*sqrt(mean(1/sigma^2))*sqrt((n-1)*var(1/sigma))))
+    })    
+})
+matplot(t(by.tau),pch='.',cex=3,col='gray')
+lines(taus, colMeans(by.tau))
+## lines(taus, apply(by.tau,2,median))
+
+
+plot(ecdf(p.vals));abline(a=0,b=1,col='red')

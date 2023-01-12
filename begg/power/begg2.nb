@@ -1,0 +1,3144 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 12.2' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[    116070,       3136]
+NotebookOptionsPosition[    114345,       3098]
+NotebookOutlinePosition[    114748,       3114]
+CellTagsIndexPosition[    114705,       3111]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[
+ RowBox[{" ", 
+  RowBox[{
+   RowBox[{"Assuming", "[", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"c0", "\[LessEqual]", "z1", "\[LessEqual]", 
+       RowBox[{"1", "/", "2"}]}], " ", "&&", " ", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"-", "1"}], "/", "2"}], "\[LessEqual]", "c0", "\[LessEqual]", 
+       RowBox[{"1", "/", "2"}]}], " ", "&&", " ", 
+      RowBox[{"0", "\[LessEqual]", "s1", "\[LessEqual]", "1"}], "&&", 
+      RowBox[{"0", "\[LessEqual]", "s", "\[LessEqual]", "1"}]}], ",", " ", 
+     RowBox[{"FullSimplify", "@", 
+      RowBox[{"Integrate", "[", 
+       RowBox[{
+        RowBox[{"Boole", "[", 
+         RowBox[{"z", ">", 
+          RowBox[{"z1", "-", 
+           RowBox[{"theta", "*", 
+            RowBox[{"(", 
+             RowBox[{"s1", "-", "s"}], ")"}]}]}]}], "]"}], ",", 
+        RowBox[{"{", 
+         RowBox[{"z", ",", "c0", ",", 
+          RowBox[{"1", "/", "2"}]}], "}"}]}], "]"}]}]}], "]"}], 
+   "\[IndentingNewLine]"}]}]], "Input",
+ CellChangeTimes->{{3.8611497327952805`*^9, 3.86114975248403*^9}, {
+   3.861149801564933*^9, 3.861149832773631*^9}, {3.8611499246293592`*^9, 
+   3.861150041256539*^9}, {3.8611500720509763`*^9, 3.861150082264391*^9}, {
+   3.8611501932557354`*^9, 3.8611501945151105`*^9}, {3.8611502638328*^9, 
+   3.86115034464487*^9}, {3.861150437440099*^9, 3.8611504785553436`*^9}, {
+   3.8611505245260067`*^9, 3.861150526884751*^9}, {3.8611506618465004`*^9, 
+   3.8611507221566396`*^9}, {3.861150759748514*^9, 3.8611507767963676`*^9}, 
+   3.861150969040482*^9},
+ CellLabel->"In[34]:=",ExpressionUUID->"1074eb15-1a2f-477b-b64e-7e4c3be1ef6c"],
+
+Cell[BoxData[
+ TagBox[GridBox[{
+    {"\[Piecewise]", GridBox[{
+       {"1", 
+        RowBox[{
+         RowBox[{"c0", "\[Equal]", 
+          RowBox[{"-", 
+           FractionBox["1", "2"]}]}], "&&", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{
+             RowBox[{"s", "\[Equal]", "0"}], "&&", 
+             RowBox[{"(", 
+              RowBox[{
+               RowBox[{"(", 
+                RowBox[{
+                 RowBox[{"s1", "\[Equal]", "0"}], "&&", 
+                 RowBox[{"z1", "\[LessEqual]", 
+                  RowBox[{"-", 
+                   FractionBox["1", "2"]}]}]}], ")"}], "||", 
+               RowBox[{
+                RowBox[{
+                 FractionBox["1", "2"], "+", "z1"}], "<", 
+                RowBox[{"s1", " ", "theta"}]}]}], ")"}]}], ")"}], "||", 
+           RowBox[{"(", 
+            RowBox[{
+             RowBox[{"s", ">", "0"}], "&&", 
+             RowBox[{
+              RowBox[{
+               FractionBox["1", "2"], "+", 
+               RowBox[{"s", " ", "theta"}], "+", "z1"}], "<", 
+              RowBox[{"s1", " ", "theta"}]}]}], ")"}]}], ")"}]}]},
+       {
+        RowBox[{
+         FractionBox["1", "2"], "-", "c0"}], 
+        RowBox[{
+         RowBox[{
+          RowBox[{"-", 
+           FractionBox["1", "2"]}], "<", "c0", "<", 
+          FractionBox["1", "2"]}], "&&", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"s", " ", "theta"}], "+", "z1"}], "<", 
+          RowBox[{"c0", "+", 
+           RowBox[{"s1", " ", "theta"}]}]}]}]},
+       {
+        RowBox[{
+         FractionBox["1", "2"], "-", "z1"}], 
+        RowBox[{
+         RowBox[{"c0", "\[Equal]", 
+          RowBox[{"-", 
+           FractionBox["1", "2"]}]}], "&&", 
+         RowBox[{"s", "\[Equal]", "0"}], "&&", 
+         RowBox[{"s1", "\[Equal]", "0"}], "&&", 
+         RowBox[{
+          RowBox[{"-", 
+           FractionBox["1", "2"]}], "<", "z1", "<", 
+          FractionBox["1", "2"]}]}]},
+       {
+        RowBox[{
+         FractionBox["1", "2"], "+", 
+         RowBox[{"s1", " ", "theta"}], "-", "z1"}], 
+        RowBox[{
+         RowBox[{"c0", "\[Equal]", 
+          RowBox[{"-", 
+           FractionBox["1", "2"]}]}], "&&", 
+         RowBox[{"s", "\[Equal]", "0"}], "&&", 
+         RowBox[{"s1", ">", "0"}], "&&", 
+         RowBox[{
+          RowBox[{"-", 
+           FractionBox["1", "2"]}], "<", 
+          RowBox[{
+           RowBox[{"s1", " ", "theta"}], "-", "z1"}], "\[LessEqual]", 
+          FractionBox["1", "2"]}]}]},
+       {
+        RowBox[{
+         FractionBox["1", "2"], "-", 
+         RowBox[{"s", " ", "theta"}], "+", 
+         RowBox[{"s1", " ", "theta"}], "-", "z1"}], 
+        RowBox[{
+         RowBox[{
+          RowBox[{
+           RowBox[{"s", " ", "theta"}], "+", "z1"}], "<", 
+          RowBox[{
+           FractionBox["1", "2"], "+", 
+           RowBox[{"s1", " ", "theta"}]}]}], "&&", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{
+             RowBox[{
+              RowBox[{"1", "+", 
+               RowBox[{"2", " ", "c0"}]}], "\[Equal]", "0"}], "&&", 
+             RowBox[{"s", ">", "0"}], "&&", 
+             RowBox[{
+              RowBox[{
+               FractionBox["1", "2"], "+", 
+               RowBox[{"s", " ", "theta"}], "+", "z1"}], "\[GreaterEqual]", 
+              RowBox[{"s1", " ", "theta"}]}]}], ")"}], "||", 
+           RowBox[{"(", 
+            RowBox[{
+             RowBox[{
+              RowBox[{"-", 
+               FractionBox["1", "2"]}], "<", "c0", "<", 
+              FractionBox["1", "2"]}], "&&", 
+             RowBox[{
+              RowBox[{"c0", "+", 
+               RowBox[{"s1", " ", "theta"}]}], "\[LessEqual]", 
+              RowBox[{
+               RowBox[{"s", " ", "theta"}], "+", "z1"}]}]}], ")"}]}], ")"}]}]},
+       {"0", 
+        TagBox["True",
+         "PiecewiseDefault",
+         AutoDelete->True]}
+      },
+      AllowedDimensions->{2, Automatic},
+      Editable->True,
+      GridBoxAlignment->{"Columns" -> {{Left}}, "Rows" -> {{Baseline}}},
+      GridBoxItemSize->{"Columns" -> {{Automatic}}, "Rows" -> {{1.}}},
+      GridBoxSpacings->{"Columns" -> {
+          Offset[0.27999999999999997`], {
+           Offset[0.84]}, 
+          Offset[0.27999999999999997`]}, "Rows" -> {
+          Offset[0.2], {
+           Offset[0.4]}, 
+          Offset[0.2]}},
+      Selectable->True]}
+   },
+   GridBoxAlignment->{"Columns" -> {{Left}}, "Rows" -> {{Baseline}}},
+   GridBoxItemSize->{"Columns" -> {{Automatic}}, "Rows" -> {{1.}}},
+   GridBoxSpacings->{"Columns" -> {
+       Offset[0.27999999999999997`], {
+        Offset[0.35]}, 
+       Offset[0.27999999999999997`]}, "Rows" -> {
+       Offset[0.2], {
+        Offset[0.4]}, 
+       Offset[0.2]}}],
+  "Piecewise",
+  DeleteWithContents->True,
+  Editable->False,
+  SelectWithContents->True,
+  Selectable->False,
+  StripWrapperBoxes->True]], "Output",
+ CellChangeTimes->{3.8611507364620667`*^9, 3.8611507857206793`*^9, 
+  3.8611510091324987`*^9},
+ CellLabel->"Out[34]=",ExpressionUUID->"ed059be7-9ac2-4f06-bb40-606c94a3f452"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Assuming", "[", " ", 
+   RowBox[{
+    RowBox[{
+     RowBox[{
+      RowBox[{
+       RowBox[{"-", "1"}], "/", "2"}], "\[LessEqual]", "c0", "\[LessEqual]", 
+      RowBox[{"1", "/", "2"}]}], " ", "&&", 
+     RowBox[{"c0", "\[LessEqual]", "z1", "\[LessEqual]", 
+      RowBox[{"1", "/", "2"}]}], " ", "&&", " ", 
+     RowBox[{"0", "\[LessEqual]", "s1", "\[LessEqual]", "1"}]}], ",", " ", 
+    RowBox[{"FullSimplify", "@", 
+     RowBox[{"Integrate", "[", 
+      RowBox[{
+       RowBox[{"Boole", "[", 
+        RowBox[{"z", ">", 
+         RowBox[{"z1", "-", 
+          RowBox[{"theta", "*", 
+           RowBox[{"(", 
+            RowBox[{"s1", "-", "s"}], ")"}]}]}]}], "]"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"z", ",", "c0", ",", 
+         RowBox[{"1", "/", "2"}]}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"s", ",", "0", ",", "s1"}], "}"}]}], "]"}]}]}], "]"}], 
+  "\[IndentingNewLine]"}]], "Input",
+ CellChangeTimes->{{3.861150875696821*^9, 3.861150914810375*^9}, {
+  3.861151015170673*^9, 3.861151016783586*^9}},
+ CellLabel->"In[32]:=",ExpressionUUID->"1e3f9d34-e13c-4087-8c0e-8fec8f4bb340"],
+
+Cell[BoxData[
+ TagBox[GridBox[{
+    {"\[Piecewise]", GridBox[{
+       {"1", 
+        RowBox[{
+         RowBox[{"c0", "\[Equal]", 
+          RowBox[{"-", 
+           FractionBox["1", "2"]}]}], "&&", 
+         RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+         RowBox[{"theta", ">", "0"}], "&&", 
+         RowBox[{"z1", "\[LessEqual]", 
+          RowBox[{"-", 
+           FractionBox["1", "2"]}]}]}]},
+       {"s1", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"c0", "\[Equal]", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{
+            RowBox[{
+             FractionBox["1", "s1"], "-", "theta"}], "\[LessEqual]", "0"}], "&&", 
+           RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+           RowBox[{"z1", "\[LessEqual]", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"c0", "\[Equal]", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+           RowBox[{"z1", "\[LessEqual]", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{"theta", ">", "0"}]}], ")"}]}]},
+       {
+        RowBox[{
+         FractionBox["1", "2"], " ", 
+         RowBox[{"(", 
+          RowBox[{"1", "-", 
+           RowBox[{"2", " ", "z1"}]}], ")"}]}], 
+        RowBox[{
+         RowBox[{"c0", "\[Equal]", 
+          RowBox[{"-", 
+           FractionBox["1", "2"]}]}], "&&", 
+         RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+         RowBox[{"theta", "\[Equal]", "0"}], "&&", 
+         RowBox[{
+          RowBox[{"-", 
+           FractionBox["1", "2"]}], "\[LessEqual]", "z1", "<", 
+          FractionBox["1", "2"]}]}]},
+       {
+        RowBox[{
+         FractionBox["1", "2"], " ", 
+         RowBox[{"(", 
+          RowBox[{"1", "+", "theta", "-", 
+           RowBox[{"2", " ", "z1"}]}], ")"}]}], 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"c0", "\[Equal]", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+           RowBox[{
+            RowBox[{"-", "1"}], "<", "theta", "<", "0"}], "&&", 
+           RowBox[{
+            RowBox[{"1", "+", 
+             RowBox[{"2", " ", "theta"}], "-", 
+             RowBox[{"2", " ", "z1"}]}], ">", "0"}], "&&", 
+           RowBox[{"z1", "\[GreaterEqual]", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"c0", "\[Equal]", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+           RowBox[{"0", "<", "theta", "<", "1"}], "&&", 
+           RowBox[{
+            RowBox[{"1", "+", 
+             RowBox[{"2", " ", "theta"}], "-", 
+             RowBox[{"2", " ", "z1"}]}], ">", "0"}], "&&", 
+           RowBox[{"z1", "\[GreaterEqual]", 
+            FractionBox["1", "2"]}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"c0", "\[Equal]", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+           RowBox[{"0", "<", "theta", "<", "1"}], "&&", 
+           RowBox[{"z1", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{
+            RowBox[{"theta", "-", "z1"}], "\[LessEqual]", 
+            FractionBox["1", "2"]}]}], ")"}]}]},
+       {
+        RowBox[{
+         FractionBox["1", "2"], " ", "s1", " ", 
+         RowBox[{"(", 
+          RowBox[{"1", "+", 
+           RowBox[{"2", " ", "s1", " ", "theta"}], "-", 
+           RowBox[{"2", " ", "z1"}]}], ")"}]}], 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"c0", "\[Equal]", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{
+            RowBox[{
+             FractionBox["1", "s1"], "+", "theta"}], "\[Equal]", "0"}], "&&", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"s1", " ", "theta"}], "-", "z1"}], "\[Equal]", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{"0", "<", "s1", "<", "1"}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"-", 
+             FractionBox["1", "2"]}], "<", "c0", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "s1"]}], "+", 
+             FractionBox[
+              RowBox[{"2", " ", "c0"}], "s1"], "-", 
+             RowBox[{"2", " ", "theta"}]}], "\[Equal]", "0"}], "&&", 
+           RowBox[{
+            RowBox[{"c0", "+", 
+             RowBox[{"s1", " ", "theta"}], "-", "z1"}], "\[Equal]", "0"}]}], 
+          ")"}]}]},
+       {
+        FractionBox[
+         RowBox[{"theta", "-", "z1"}], "theta"], 
+        RowBox[{
+         RowBox[{"c0", "\[Equal]", 
+          RowBox[{"-", 
+           FractionBox["1", "2"]}]}], "&&", 
+         RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+         RowBox[{"theta", ">", "1"}], "&&", 
+         RowBox[{"z1", "\[GreaterEqual]", 
+          FractionBox["1", "2"]}], "&&", 
+         RowBox[{
+          RowBox[{"theta", "-", "z1"}], ">", 
+          FractionBox["1", "2"]}]}]},
+       {
+        FractionBox[
+         RowBox[{
+          RowBox[{"s1", " ", "theta"}], "-", "z1"}], "theta"], 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"c0", "\[Equal]", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{
+            RowBox[{
+             FractionBox["1", "s1"], "-", "theta"}], "\[Equal]", "0"}], "&&", 
+           RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+           RowBox[{
+            RowBox[{"1", "+", 
+             RowBox[{"2", " ", "s1", " ", "theta"}], "-", 
+             RowBox[{"2", " ", "z1"}]}], ">", "0"}], "&&", 
+           RowBox[{"z1", "\[GreaterEqual]", 
+            FractionBox["1", "2"]}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"c0", "\[Equal]", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{
+            RowBox[{
+             FractionBox["1", "s1"], "-", "theta"}], "<", "0"}], "&&", 
+           RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+           RowBox[{"z1", "\[GreaterEqual]", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"s1", " ", "theta"}], "-", "z1"}], ">", 
+            FractionBox["1", "2"]}]}], ")"}]}]},
+       {
+        FractionBox["z1", "theta"], 
+        RowBox[{
+         RowBox[{"c0", "\[Equal]", 
+          RowBox[{"-", 
+           FractionBox["1", "2"]}]}], "&&", 
+         RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+         RowBox[{
+          RowBox[{
+           FractionBox["1", "s1"], "+", "theta"}], "<", "0"}], "&&", 
+         RowBox[{
+          RowBox[{"1", "+", 
+           RowBox[{"2", " ", "s1", " ", "theta"}], "-", 
+           RowBox[{"2", " ", "z1"}]}], "\[LessEqual]", "0"}], "&&", 
+         RowBox[{"z1", "\[LessEqual]", 
+          RowBox[{"-", 
+           FractionBox["1", "2"]}]}]}]},
+       {
+        RowBox[{
+         RowBox[{"-", 
+          FractionBox["1", "2"]}], " ", "s1", " ", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"-", "1"}], "+", 
+           RowBox[{"2", " ", "z1"}]}], ")"}]}], 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"c0", "\[Equal]", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{"theta", "\[Equal]", "0"}], "&&", 
+           RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+           RowBox[{
+            RowBox[{"-", 
+             FractionBox["1", "2"]}], "\[LessEqual]", "z1", "<", 
+            FractionBox["1", "2"]}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"-", 
+             FractionBox["1", "2"]}], "<", "c0", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{"theta", "\[Equal]", "0"}], "&&", 
+           RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+           RowBox[{"z1", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{
+            RowBox[{"c0", "-", "z1"}], "\[LessEqual]", "0"}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"-", 
+             FractionBox["1", "2"]}], "<", "c0", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{"theta", ">", "0"}], "&&", 
+           RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+           RowBox[{
+            RowBox[{"c0", "-", "z1"}], "\[Equal]", "0"}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"-", 
+             FractionBox["1", "2"]}], "<", "c0", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+           RowBox[{
+            RowBox[{"c0", "-", "z1"}], "\[Equal]", "0"}], "&&", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "s1"]}], "+", 
+             FractionBox[
+              RowBox[{"2", " ", "c0"}], "s1"], "+", 
+             RowBox[{"2", " ", "theta"}]}], "\[GreaterEqual]", "0"}]}], 
+          ")"}]}]},
+       {
+        FractionBox[
+         RowBox[{"1", "-", 
+          RowBox[{"4", " ", 
+           SuperscriptBox["c0", "2"]}], "+", 
+          RowBox[{"4", " ", "s1", " ", "theta"}], "-", 
+          RowBox[{"8", " ", "c0", " ", "s1", " ", "theta"}], "-", 
+          RowBox[{"4", " ", "z1"}], "+", 
+          RowBox[{"8", " ", "c0", " ", "z1"}]}], 
+         RowBox[{"8", " ", "theta"}]], 
+        RowBox[{
+         RowBox[{
+          RowBox[{"-", 
+           FractionBox["1", "2"]}], "<", "c0", "<", 
+          FractionBox["1", "2"]}], "&&", 
+         RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"-", 
+            FractionBox["1", "s1"]}], "+", 
+           FractionBox[
+            RowBox[{"2", " ", "c0"}], "s1"], "+", 
+           RowBox[{"2", " ", "theta"}]}], ">", "0"}], "&&", 
+         RowBox[{"z1", "\[GreaterEqual]", 
+          FractionBox["1", "2"]}], "&&", 
+         RowBox[{
+          RowBox[{"c0", "+", 
+           RowBox[{"s1", " ", "theta"}], "-", "z1"}], ">", "0"}]}]},
+       {
+        RowBox[{
+         FractionBox["1", "2"], " ", 
+         RowBox[{"(", 
+          RowBox[{"s1", "+", 
+           RowBox[{
+            SuperscriptBox["s1", "2"], " ", "theta"}], "-", 
+           RowBox[{"2", " ", "s1", " ", "z1"}]}], ")"}]}], 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"c0", "\[Equal]", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+           RowBox[{"theta", ">", "0"}], "&&", 
+           RowBox[{
+            RowBox[{
+             FractionBox["1", "s1"], "-", "theta"}], ">", "0"}], "&&", 
+           RowBox[{"z1", "\[GreaterEqual]", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{
+            RowBox[{"1", "+", 
+             RowBox[{"2", " ", "s1", " ", "theta"}], "-", 
+             RowBox[{"2", " ", "z1"}]}], ">", "0"}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"c0", "\[Equal]", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+           RowBox[{"theta", ">", "0"}], "&&", 
+           RowBox[{
+            RowBox[{
+             FractionBox["1", "s1"], "-", "theta"}], ">", "0"}], "&&", 
+           RowBox[{"z1", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"s1", " ", "theta"}], "-", "z1"}], "\[LessEqual]", 
+            FractionBox["1", "2"]}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"c0", "\[Equal]", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+           RowBox[{"theta", "<", "0"}], "&&", 
+           RowBox[{"z1", "\[GreaterEqual]", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{
+            RowBox[{"1", "+", 
+             RowBox[{"2", " ", "s1", " ", "theta"}], "-", 
+             RowBox[{"2", " ", "z1"}]}], ">", "0"}], "&&", 
+           RowBox[{
+            RowBox[{
+             FractionBox["1", "s1"], "+", "theta"}], ">", "0"}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"-", 
+             FractionBox["1", "2"]}], "<", "c0", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+           RowBox[{"theta", ">", "0"}], "&&", 
+           RowBox[{"z1", "\[GreaterEqual]", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{
+            RowBox[{"1", "+", 
+             RowBox[{"2", " ", "s1", " ", "theta"}], "-", 
+             RowBox[{"2", " ", "z1"}]}], ">", "0"}], "&&", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "s1"]}], "+", 
+             FractionBox[
+              RowBox[{"2", " ", "c0"}], "s1"], "+", 
+             RowBox[{"2", " ", "theta"}]}], "<", "0"}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"-", 
+             FractionBox["1", "2"]}], "<", "c0", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+           RowBox[{"theta", ">", "0"}], "&&", 
+           RowBox[{"z1", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "s1"]}], "+", 
+             FractionBox[
+              RowBox[{"2", " ", "c0"}], "s1"], "+", 
+             RowBox[{"2", " ", "theta"}]}], "<", "0"}], "&&", 
+           RowBox[{
+            RowBox[{"c0", "+", 
+             RowBox[{"s1", " ", "theta"}], "-", "z1"}], "\[LessEqual]", 
+            "0"}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"-", 
+             FractionBox["1", "2"]}], "<", "c0", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+           RowBox[{"theta", "<", "0"}], "&&", 
+           RowBox[{
+            RowBox[{"1", "+", 
+             RowBox[{"2", " ", "s1", " ", "theta"}], "-", 
+             RowBox[{"2", " ", "z1"}]}], ">", "0"}], "&&", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "s1"]}], "+", 
+             FractionBox[
+              RowBox[{"2", " ", "c0"}], "s1"], "-", 
+             RowBox[{"2", " ", "theta"}]}], "<", "0"}], "&&", 
+           RowBox[{
+            RowBox[{"c0", "-", "z1"}], "\[LessEqual]", "0"}]}], ")"}]}]},
+       {
+        FractionBox[
+         RowBox[{"1", "-", 
+          RowBox[{"4", " ", 
+           SuperscriptBox["c0", "2"]}], "+", 
+          RowBox[{"8", " ", 
+           SuperscriptBox["s1", "2"], " ", 
+           SuperscriptBox["theta", "2"]}], "-", 
+          RowBox[{"8", " ", "s1", " ", "theta", " ", "z1"}]}], 
+         RowBox[{"8", " ", "theta"}]], 
+        RowBox[{
+         RowBox[{
+          RowBox[{"-", 
+           FractionBox["1", "2"]}], "<", "c0", "<", 
+          FractionBox["1", "2"]}], "&&", 
+         RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"-", 
+            FractionBox["1", "s1"]}], "+", 
+           FractionBox[
+            RowBox[{"2", " ", "c0"}], "s1"], "+", 
+           RowBox[{"2", " ", "theta"}]}], "\[Equal]", "0"}], "&&", 
+         RowBox[{"z1", "\[GreaterEqual]", 
+          FractionBox["1", "2"]}], "&&", 
+         RowBox[{
+          RowBox[{"1", "+", 
+           RowBox[{"2", " ", "s1", " ", "theta"}], "-", 
+           RowBox[{"2", " ", "z1"}]}], ">", "0"}]}]},
+       {
+        RowBox[{
+         FractionBox["1", "8"], " ", 
+         RowBox[{"(", 
+          RowBox[{"7", "-", 
+           RowBox[{"4", " ", "z1"}], "-", 
+           RowBox[{"4", " ", 
+            SuperscriptBox["z1", "2"]}]}], ")"}]}], 
+        RowBox[{
+         RowBox[{"c0", "\[Equal]", 
+          RowBox[{"-", 
+           FractionBox["1", "2"]}]}], "&&", 
+         RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+         RowBox[{"theta", "\[Equal]", "1"}], "&&", 
+         RowBox[{
+          RowBox[{"-", 
+           FractionBox["1", "2"]}], "<", "z1", "<", 
+          FractionBox["1", "2"]}]}]},
+       {
+        FractionBox[
+         RowBox[{
+          RowBox[{"-", "1"}], "+", 
+          RowBox[{"8", " ", "theta"}], "-", 
+          RowBox[{"4", " ", "z1"}], "-", 
+          RowBox[{"4", " ", 
+           SuperscriptBox["z1", "2"]}]}], 
+         RowBox[{"8", " ", "theta"}]], 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"c0", "\[Equal]", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+           RowBox[{
+            RowBox[{"-", 
+             FractionBox["1", "2"]}], "<", "z1", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{"theta", ">", "1"}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"c0", "\[Equal]", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+           RowBox[{"z1", ">", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{"0", "<", "theta", "<", "1"}], "&&", 
+           RowBox[{
+            RowBox[{"theta", "-", "z1"}], ">", 
+            FractionBox["1", "2"]}]}], ")"}]}]},
+       {
+        FractionBox[
+         RowBox[{
+          RowBox[{"-", "1"}], "+", 
+          RowBox[{"8", " ", "s1", " ", "theta"}], "-", 
+          RowBox[{"4", " ", "z1"}], "-", 
+          RowBox[{"4", " ", 
+           SuperscriptBox["z1", "2"]}]}], 
+         RowBox[{"8", " ", "theta"}]], 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"c0", "\[Equal]", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{
+            RowBox[{
+             FractionBox["1", "s1"], "-", "theta"}], "\[LessEqual]", "0"}], "&&", 
+           RowBox[{
+            RowBox[{"-", 
+             FractionBox["1", "2"]}], "<", "z1", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{"0", "<", "s1", "<", "1"}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"c0", "\[Equal]", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{
+            RowBox[{
+             FractionBox["1", "s1"], "-", "theta"}], ">", "0"}], "&&", 
+           RowBox[{"z1", ">", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+           RowBox[{"theta", ">", "0"}], "&&", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"s1", " ", "theta"}], "-", "z1"}], ">", 
+            FractionBox["1", "2"]}]}], ")"}]}]},
+       {
+        FractionBox[
+         RowBox[{
+          RowBox[{"-", "1"}], "+", 
+          RowBox[{"4", " ", "z1"}], "-", 
+          RowBox[{"4", " ", 
+           SuperscriptBox["z1", "2"]}]}], 
+         RowBox[{"8", " ", "theta"}]], 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"c0", "\[Equal]", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+           RowBox[{"theta", "<", "0"}], "&&", 
+           RowBox[{"z1", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{
+            RowBox[{
+             FractionBox["1", "s1"], "+", "theta"}], "\[GreaterEqual]", "0"}],
+            "&&", 
+           RowBox[{
+            RowBox[{"1", "+", 
+             RowBox[{"2", " ", "s1", " ", "theta"}], "-", 
+             RowBox[{"2", " ", "z1"}]}], "\[LessEqual]", "0"}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"c0", "\[Equal]", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+           RowBox[{
+            RowBox[{"-", 
+             FractionBox["1", "2"]}], "<", "z1", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{
+            RowBox[{
+             FractionBox["1", "s1"], "+", "theta"}], "<", "0"}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"c0", "\[Equal]", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+           RowBox[{"z1", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{
+            RowBox[{
+             FractionBox["1", "s1"], "+", "theta"}], "\[Equal]", "0"}], "&&", 
+           RowBox[{
+            RowBox[{"1", "+", 
+             RowBox[{"2", " ", "s1", " ", "theta"}], "-", 
+             RowBox[{"2", " ", "z1"}]}], "\[LessEqual]", "0"}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"c0", "\[Equal]", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+           RowBox[{
+            RowBox[{"-", "1"}], "<", "theta", "<", "0"}], "&&", 
+           RowBox[{"z1", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{
+            RowBox[{"1", "+", 
+             RowBox[{"2", " ", "theta"}], "-", 
+             RowBox[{"2", " ", "z1"}]}], "\[LessEqual]", "0"}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"c0", "\[Equal]", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+           RowBox[{"theta", "<", 
+            RowBox[{"-", "1"}]}], "&&", 
+           RowBox[{
+            RowBox[{"-", 
+             FractionBox["1", "2"]}], "\[LessEqual]", "z1", "<", 
+            FractionBox["1", "2"]}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"-", 
+             FractionBox["1", "2"]}], "<", "c0", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+           RowBox[{"theta", "<", "0"}], "&&", 
+           RowBox[{"z1", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{
+            RowBox[{"1", "+", 
+             RowBox[{"2", " ", "s1", " ", "theta"}], "-", 
+             RowBox[{"2", " ", "z1"}]}], "\[LessEqual]", "0"}], "&&", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "s1"]}], "+", 
+             FractionBox[
+              RowBox[{"2", " ", "c0"}], "s1"], "-", 
+             RowBox[{"2", " ", "theta"}]}], "\[LessEqual]", "0"}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"-", 
+             FractionBox["1", "2"]}], "<", "c0", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+           RowBox[{"z1", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{
+            RowBox[{"1", "+", 
+             RowBox[{"2", " ", "s1", " ", "theta"}], "-", 
+             RowBox[{"2", " ", "z1"}]}], "\[LessEqual]", "0"}], "&&", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "s1"]}], "+", 
+             FractionBox[
+              RowBox[{"2", " ", "c0"}], "s1"], "-", 
+             RowBox[{"2", " ", "theta"}]}], "\[Equal]", "0"}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"-", 
+             FractionBox["1", "2"]}], "<", "c0", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+           RowBox[{"z1", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "s1"]}], "+", 
+             FractionBox[
+              RowBox[{"2", " ", "c0"}], "s1"], "-", 
+             RowBox[{"2", " ", "theta"}]}], ">", "0"}], "&&", 
+           RowBox[{
+            RowBox[{"c0", "-", "z1"}], "\[LessEqual]", "0"}]}], ")"}]}]},
+       {
+        FractionBox[
+         RowBox[{
+          RowBox[{"-", 
+           SuperscriptBox["c0", "2"]}], "+", 
+          RowBox[{"s1", " ", "theta"}], "-", 
+          RowBox[{"2", " ", "c0", " ", "s1", " ", "theta"}], "+", 
+          RowBox[{"2", " ", "c0", " ", "z1"}], "-", 
+          SuperscriptBox["z1", "2"]}], 
+         RowBox[{"2", " ", "theta"}]], 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "s1"]}], "+", 
+             FractionBox[
+              RowBox[{"2", " ", "c0"}], "s1"], "+", 
+             RowBox[{"2", " ", "theta"}]}], "\[GreaterEqual]", "0"}], "&&", 
+           RowBox[{
+            RowBox[{"-", 
+             FractionBox["1", "2"]}], "<", "c0", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+           RowBox[{
+            RowBox[{"c0", "-", "z1"}], "<", "0"}], "&&", 
+           RowBox[{"z1", "<", 
+            FractionBox["1", "2"]}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "s1"]}], "+", 
+             FractionBox[
+              RowBox[{"2", " ", "c0"}], "s1"], "+", 
+             RowBox[{"2", " ", "theta"}]}], "<", "0"}], "&&", 
+           RowBox[{
+            RowBox[{"-", 
+             FractionBox["1", "2"]}], "<", "c0", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+           RowBox[{
+            RowBox[{"c0", "-", "z1"}], "<", "0"}], "&&", 
+           RowBox[{"theta", ">", "0"}], "&&", 
+           RowBox[{
+            RowBox[{"c0", "+", 
+             RowBox[{"s1", " ", "theta"}], "-", "z1"}], ">", "0"}]}], ")"}]}]},
+       {
+        RowBox[{
+         FractionBox["1", "8"], " ", 
+         RowBox[{"(", 
+          RowBox[{"9", "-", 
+           RowBox[{"12", " ", "z1"}], "+", 
+           RowBox[{"4", " ", 
+            SuperscriptBox["z1", "2"]}]}], ")"}]}], 
+        RowBox[{
+         RowBox[{"c0", "\[Equal]", 
+          RowBox[{"-", 
+           FractionBox["1", "2"]}]}], "&&", 
+         RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+         RowBox[{"theta", "\[Equal]", "1"}], "&&", 
+         RowBox[{
+          FractionBox["1", "2"], "\[LessEqual]", "z1", "<", 
+          FractionBox["3", "2"]}]}]},
+       {
+        RowBox[{
+         FractionBox["1", "8"], " ", 
+         RowBox[{"(", 
+          RowBox[{"1", "-", 
+           RowBox[{"4", " ", "z1"}], "+", 
+           RowBox[{"4", " ", 
+            SuperscriptBox["z1", "2"]}]}], ")"}]}], 
+        RowBox[{
+         RowBox[{"c0", "\[Equal]", 
+          RowBox[{"-", 
+           FractionBox["1", "2"]}]}], "&&", 
+         RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+         RowBox[{"theta", "\[Equal]", 
+          RowBox[{"-", "1"}]}], "&&", 
+         RowBox[{
+          RowBox[{"-", 
+           FractionBox["1", "2"]}], "\[LessEqual]", "z1", "<", 
+          FractionBox["1", "2"]}]}]},
+       {"0", 
+        RowBox[{
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+            RowBox[{"theta", "\[Equal]", 
+             RowBox[{"-", "1"}]}], "&&", 
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "\[LessEqual]", "z1", "<", 
+             FractionBox["1", "2"]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+            RowBox[{"theta", "\[Equal]", "0"}], "&&", 
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "\[LessEqual]", "z1", "<", 
+             FractionBox["1", "2"]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+            RowBox[{"theta", "\[Equal]", "1"}], "&&", 
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "z1", "<", 
+             FractionBox["1", "2"]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+            RowBox[{"theta", "\[Equal]", "1"}], "&&", 
+            RowBox[{
+             FractionBox["1", "2"], "\[LessEqual]", "z1", "<", 
+             FractionBox["3", "2"]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+            RowBox[{"theta", "\[Equal]", "1"}], "&&", 
+            RowBox[{"z1", "\[LessEqual]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+            RowBox[{"theta", ">", "1"}], "&&", 
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "z1", "<", 
+             FractionBox["1", "2"]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+            RowBox[{"theta", ">", "1"}], "&&", 
+            RowBox[{
+             FractionBox["1", "2"], "\[LessEqual]", "z1", "<", 
+             RowBox[{
+              RowBox[{"-", 
+               FractionBox["1", "2"]}], "+", "theta"}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+            RowBox[{"theta", ">", "1"}], "&&", 
+            RowBox[{
+             RowBox[{
+              RowBox[{"-", 
+               FractionBox["1", "2"]}], "+", "theta"}], "\[LessEqual]", "z1", 
+             "<", 
+             RowBox[{
+              FractionBox["1", "2"], " ", 
+              RowBox[{"(", 
+               RowBox[{"1", "+", 
+                RowBox[{"2", " ", "theta"}]}], ")"}]}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+            RowBox[{"theta", ">", "1"}], "&&", 
+            RowBox[{"z1", "\[LessEqual]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+            RowBox[{
+             RowBox[{"-", "1"}], "<", "theta", "<", "0"}], "&&", 
+            RowBox[{"z1", "\[Equal]", 
+             RowBox[{
+              RowBox[{"-", 
+               FractionBox["1", "2"]}], "+", "theta"}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+            RowBox[{
+             RowBox[{"-", "1"}], "<", "theta", "<", "0"}], "&&", 
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "\[LessEqual]", "z1", "<", 
+             RowBox[{
+              FractionBox["1", "2"], " ", 
+              RowBox[{"(", 
+               RowBox[{"1", "+", 
+                RowBox[{"2", " ", "theta"}]}], ")"}]}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+            RowBox[{
+             RowBox[{"-", "1"}], "<", "theta", "<", "0"}], "&&", 
+            RowBox[{
+             RowBox[{
+              FractionBox["1", "2"], " ", 
+              RowBox[{"(", 
+               RowBox[{"1", "+", 
+                RowBox[{"2", " ", "theta"}]}], ")"}]}], "\[LessEqual]", "z1", 
+             "<", 
+             FractionBox["1", "2"]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+            RowBox[{
+             RowBox[{"-", "1"}], "<", "theta", "<", "0"}], "&&", 
+            RowBox[{"z1", "<", 
+             RowBox[{
+              RowBox[{"-", 
+               FractionBox["1", "2"]}], "+", "theta"}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+            RowBox[{"0", "<", "theta", "<", "1"}], "&&", 
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "z1", "<", 
+             RowBox[{
+              RowBox[{"-", 
+               FractionBox["1", "2"]}], "+", "theta"}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+            RowBox[{"0", "<", "theta", "<", "1"}], "&&", 
+            RowBox[{
+             FractionBox["1", "2"], "\[LessEqual]", "z1", "<", 
+             RowBox[{
+              FractionBox["1", "2"], " ", 
+              RowBox[{"(", 
+               RowBox[{"1", "+", 
+                RowBox[{"2", " ", "theta"}]}], ")"}]}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+            RowBox[{"0", "<", "theta", "<", "1"}], "&&", 
+            RowBox[{
+             RowBox[{
+              RowBox[{"-", 
+               FractionBox["1", "2"]}], "+", "theta"}], "\[LessEqual]", "z1", 
+             "<", 
+             FractionBox["1", "2"]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+            RowBox[{"0", "<", "theta", "<", "1"}], "&&", 
+            RowBox[{"z1", "\[LessEqual]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+            RowBox[{"theta", "<", 
+             RowBox[{"-", "1"}]}], "&&", 
+            RowBox[{"z1", "\[Equal]", 
+             RowBox[{
+              RowBox[{"-", 
+               FractionBox["1", "2"]}], "+", "theta"}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+            RowBox[{"theta", "<", 
+             RowBox[{"-", "1"}]}], "&&", 
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "\[LessEqual]", "z1", "<", 
+             FractionBox["1", "2"]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+            RowBox[{"theta", "<", 
+             RowBox[{"-", "1"}]}], "&&", 
+            RowBox[{
+             RowBox[{
+              RowBox[{"-", 
+               FractionBox["1", "2"]}], "+", "theta"}], "<", "z1", "<", 
+             RowBox[{
+              FractionBox["1", "2"], " ", 
+              RowBox[{"(", 
+               RowBox[{"1", "+", 
+                RowBox[{"2", " ", "theta"}]}], ")"}]}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+            RowBox[{"theta", "<", 
+             RowBox[{"-", "1"}]}], "&&", 
+            RowBox[{"z1", "<", 
+             RowBox[{
+              RowBox[{"-", 
+               FractionBox["1", "2"]}], "+", "theta"}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+            RowBox[{"theta", "\[Equal]", "0"}], "&&", 
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "\[LessEqual]", "z1", "<", 
+             FractionBox["1", "2"]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+            RowBox[{"theta", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "s1"]}]}], "&&", 
+            RowBox[{"z1", "\[Equal]", 
+             RowBox[{
+              RowBox[{"-", 
+               FractionBox["1", "2"]}], "+", 
+              RowBox[{"s1", " ", "theta"}]}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+            RowBox[{"theta", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "s1"]}]}], "&&", 
+            RowBox[{
+             RowBox[{
+              RowBox[{"-", 
+               FractionBox["1", "2"]}], "+", 
+              RowBox[{"s1", " ", "theta"}]}], "<", "z1", "<", 
+             RowBox[{
+              FractionBox["1", "2"], " ", 
+              RowBox[{"(", 
+               RowBox[{"1", "+", 
+                RowBox[{"2", " ", "s1", " ", "theta"}]}], ")"}]}]}]}], 
+           ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+            RowBox[{"theta", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "s1"]}]}], "&&", 
+            RowBox[{
+             RowBox[{
+              FractionBox["1", "2"], " ", 
+              RowBox[{"(", 
+               RowBox[{"1", "+", 
+                RowBox[{"2", " ", "s1", " ", "theta"}]}], ")"}]}], 
+             "\[LessEqual]", "z1", "<", 
+             FractionBox["1", "2"]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+            RowBox[{"theta", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "s1"]}]}], "&&", 
+            RowBox[{"z1", "<", 
+             RowBox[{
+              RowBox[{"-", 
+               FractionBox["1", "2"]}], "+", 
+              RowBox[{"s1", " ", "theta"}]}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+            RowBox[{"theta", "\[Equal]", 
+             FractionBox["1", "s1"]}], "&&", 
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "z1", "<", 
+             FractionBox["1", "2"]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+            RowBox[{"theta", "\[Equal]", 
+             FractionBox["1", "s1"]}], "&&", 
+            RowBox[{
+             FractionBox["1", "2"], "\[LessEqual]", "z1", "<", 
+             RowBox[{
+              FractionBox["1", "2"], " ", 
+              RowBox[{"(", 
+               RowBox[{"1", "+", 
+                RowBox[{"2", " ", "s1", " ", "theta"}]}], ")"}]}]}]}], 
+           ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+            RowBox[{"theta", "\[Equal]", 
+             FractionBox["1", "s1"]}], "&&", 
+            RowBox[{"z1", "\[LessEqual]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+            RowBox[{"theta", ">", 
+             FractionBox["1", "s1"]}], "&&", 
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "z1", "<", 
+             FractionBox["1", "2"]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+            RowBox[{"theta", ">", 
+             FractionBox["1", "s1"]}], "&&", 
+            RowBox[{
+             FractionBox["1", "2"], "\[LessEqual]", "z1", "<", 
+             RowBox[{
+              RowBox[{"-", 
+               FractionBox["1", "2"]}], "+", 
+              RowBox[{"s1", " ", "theta"}]}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+            RowBox[{"theta", ">", 
+             FractionBox["1", "s1"]}], "&&", 
+            RowBox[{
+             RowBox[{
+              RowBox[{"-", 
+               FractionBox["1", "2"]}], "+", 
+              RowBox[{"s1", " ", "theta"}]}], "\[LessEqual]", "z1", "<", 
+             RowBox[{
+              FractionBox["1", "2"], " ", 
+              RowBox[{"(", 
+               RowBox[{"1", "+", 
+                RowBox[{"2", " ", "s1", " ", "theta"}]}], ")"}]}]}]}], 
+           ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+            RowBox[{"theta", ">", 
+             FractionBox["1", "s1"]}], "&&", 
+            RowBox[{"z1", "\[LessEqual]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+            RowBox[{"0", "<", "theta", "<", 
+             FractionBox["1", "s1"]}], "&&", 
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "z1", "<", 
+             RowBox[{
+              RowBox[{"-", 
+               FractionBox["1", "2"]}], "+", 
+              RowBox[{"s1", " ", "theta"}]}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+            RowBox[{"0", "<", "theta", "<", 
+             FractionBox["1", "s1"]}], "&&", 
+            RowBox[{
+             FractionBox["1", "2"], "\[LessEqual]", "z1", "<", 
+             RowBox[{
+              FractionBox["1", "2"], " ", 
+              RowBox[{"(", 
+               RowBox[{"1", "+", 
+                RowBox[{"2", " ", "s1", " ", "theta"}]}], ")"}]}]}]}], 
+           ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+            RowBox[{"0", "<", "theta", "<", 
+             FractionBox["1", "s1"]}], "&&", 
+            RowBox[{
+             RowBox[{
+              RowBox[{"-", 
+               FractionBox["1", "2"]}], "+", 
+              RowBox[{"s1", " ", "theta"}]}], "\[LessEqual]", "z1", "<", 
+             FractionBox["1", "2"]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+            RowBox[{"0", "<", "theta", "<", 
+             FractionBox["1", "s1"]}], "&&", 
+            RowBox[{"z1", "\[LessEqual]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "s1"]}], "<", "theta", "<", "0"}], "&&", 
+            RowBox[{"z1", "\[Equal]", 
+             RowBox[{
+              RowBox[{"-", 
+               FractionBox["1", "2"]}], "+", 
+              RowBox[{"s1", " ", "theta"}]}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "s1"]}], "<", "theta", "<", "0"}], "&&", 
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "\[LessEqual]", "z1", "<", 
+             RowBox[{
+              FractionBox["1", "2"], " ", 
+              RowBox[{"(", 
+               RowBox[{"1", "+", 
+                RowBox[{"2", " ", "s1", " ", "theta"}]}], ")"}]}]}]}], 
+           ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "s1"]}], "<", "theta", "<", "0"}], "&&", 
+            RowBox[{
+             RowBox[{
+              FractionBox["1", "2"], " ", 
+              RowBox[{"(", 
+               RowBox[{"1", "+", 
+                RowBox[{"2", " ", "s1", " ", "theta"}]}], ")"}]}], 
+             "\[LessEqual]", "z1", "<", 
+             FractionBox["1", "2"]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "s1"]}], "<", "theta", "<", "0"}], "&&", 
+            RowBox[{"z1", "<", 
+             RowBox[{
+              RowBox[{"-", 
+               FractionBox["1", "2"]}], "+", 
+              RowBox[{"s1", " ", "theta"}]}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+            RowBox[{"theta", "<", 
+             RowBox[{"-", 
+              FractionBox["1", "s1"]}]}], "&&", 
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "z1", "<", 
+             FractionBox["1", "2"]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+            RowBox[{"theta", "<", 
+             RowBox[{"-", 
+              FractionBox["1", "s1"]}]}], "&&", 
+            RowBox[{
+             RowBox[{
+              RowBox[{"-", 
+               FractionBox["1", "2"]}], "+", 
+              RowBox[{"s1", " ", "theta"}]}], "<", "z1", "<", 
+             RowBox[{
+              FractionBox["1", "2"], " ", 
+              RowBox[{"(", 
+               RowBox[{"1", "+", 
+                RowBox[{"2", " ", "s1", " ", "theta"}]}], ")"}]}]}]}], 
+           ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+            RowBox[{"theta", "<", 
+             RowBox[{"-", 
+              FractionBox["1", "s1"]}]}], "&&", 
+            RowBox[{
+             RowBox[{
+              FractionBox["1", "2"], " ", 
+              RowBox[{"(", 
+               RowBox[{"1", "+", 
+                RowBox[{"2", " ", "s1", " ", "theta"}]}], ")"}]}], 
+             "\[LessEqual]", "z1", "\[LessEqual]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"c0", "\[Equal]", 
+             RowBox[{"-", 
+              FractionBox["1", "2"]}]}], "&&", 
+            RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+            RowBox[{"theta", "<", 
+             RowBox[{"-", 
+              FractionBox["1", "s1"]}]}], "&&", 
+            RowBox[{"z1", "\[LessEqual]", 
+             RowBox[{
+              RowBox[{"-", 
+               FractionBox["1", "2"]}], "+", 
+              RowBox[{"s1", " ", "theta"}]}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "c0", "<", 
+             FractionBox["1", "2"]}], "&&", 
+            RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+            RowBox[{"theta", "\[Equal]", "0"}], "&&", 
+            RowBox[{"c0", "\[LessEqual]", "z1", "<", 
+             FractionBox["1", "2"]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "c0", "<", 
+             FractionBox["1", "2"]}], "&&", 
+            RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+            RowBox[{"theta", "\[Equal]", 
+             FractionBox[
+              RowBox[{"1", "-", 
+               RowBox[{"2", " ", "c0"}]}], 
+              RowBox[{"2", " ", "s1"}]]}], "&&", 
+            RowBox[{"z1", "\[Equal]", "c0"}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "c0", "<", 
+             FractionBox["1", "2"]}], "&&", 
+            RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+            RowBox[{"theta", "\[Equal]", 
+             FractionBox[
+              RowBox[{"1", "-", 
+               RowBox[{"2", " ", "c0"}]}], 
+              RowBox[{"2", " ", "s1"}]]}], "&&", 
+            RowBox[{
+             FractionBox["1", "2"], "\[LessEqual]", "z1", "<", 
+             RowBox[{
+              FractionBox["1", "2"], " ", 
+              RowBox[{"(", 
+               RowBox[{"1", "+", 
+                RowBox[{"2", " ", "s1", " ", "theta"}]}], ")"}]}]}]}], 
+           ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "c0", "<", 
+             FractionBox["1", "2"]}], "&&", 
+            RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+            RowBox[{"theta", "\[Equal]", 
+             FractionBox[
+              RowBox[{"1", "-", 
+               RowBox[{"2", " ", "c0"}]}], 
+              RowBox[{"2", " ", "s1"}]]}], "&&", 
+            RowBox[{"c0", "<", "z1", "<", 
+             FractionBox["1", "2"]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "c0", "<", 
+             FractionBox["1", "2"]}], "&&", 
+            RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+            RowBox[{"theta", "\[Equal]", 
+             FractionBox[
+              RowBox[{
+               RowBox[{"-", "1"}], "+", 
+               RowBox[{"2", " ", "c0"}]}], 
+              RowBox[{"2", " ", "s1"}]]}], "&&", 
+            RowBox[{"z1", "\[Equal]", 
+             RowBox[{"c0", "+", 
+              RowBox[{"s1", " ", "theta"}]}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "c0", "<", 
+             FractionBox["1", "2"]}], "&&", 
+            RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+            RowBox[{"theta", "\[Equal]", 
+             FractionBox[
+              RowBox[{
+               RowBox[{"-", "1"}], "+", 
+               RowBox[{"2", " ", "c0"}]}], 
+              RowBox[{"2", " ", "s1"}]]}], "&&", 
+            RowBox[{
+             RowBox[{"c0", "+", 
+              RowBox[{"s1", " ", "theta"}]}], "<", "z1", "<", 
+             RowBox[{
+              FractionBox["1", "2"], " ", 
+              RowBox[{"(", 
+               RowBox[{"1", "+", 
+                RowBox[{"2", " ", "s1", " ", "theta"}]}], ")"}]}]}]}], 
+           ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "c0", "<", 
+             FractionBox["1", "2"]}], "&&", 
+            RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+            RowBox[{"theta", "\[Equal]", 
+             FractionBox[
+              RowBox[{
+               RowBox[{"-", "1"}], "+", 
+               RowBox[{"2", " ", "c0"}]}], 
+              RowBox[{"2", " ", "s1"}]]}], "&&", 
+            RowBox[{
+             RowBox[{
+              FractionBox["1", "2"], " ", 
+              RowBox[{"(", 
+               RowBox[{"1", "+", 
+                RowBox[{"2", " ", "s1", " ", "theta"}]}], ")"}]}], 
+             "\[LessEqual]", "z1", "<", 
+             FractionBox["1", "2"]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "c0", "<", 
+             FractionBox["1", "2"]}], "&&", 
+            RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+            RowBox[{"theta", "\[Equal]", 
+             FractionBox[
+              RowBox[{
+               RowBox[{"-", "1"}], "+", 
+               RowBox[{"2", " ", "c0"}]}], 
+              RowBox[{"2", " ", "s1"}]]}], "&&", 
+            RowBox[{"z1", "<", 
+             RowBox[{"c0", "+", 
+              RowBox[{"s1", " ", "theta"}]}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "c0", "<", 
+             FractionBox["1", "2"]}], "&&", 
+            RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+            RowBox[{"theta", ">", 
+             FractionBox[
+              RowBox[{"1", "-", 
+               RowBox[{"2", " ", "c0"}]}], 
+              RowBox[{"2", " ", "s1"}]]}], "&&", 
+            RowBox[{"z1", "\[Equal]", "c0"}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "c0", "<", 
+             FractionBox["1", "2"]}], "&&", 
+            RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+            RowBox[{"theta", ">", 
+             FractionBox[
+              RowBox[{"1", "-", 
+               RowBox[{"2", " ", "c0"}]}], 
+              RowBox[{"2", " ", "s1"}]]}], "&&", 
+            RowBox[{
+             FractionBox["1", "2"], "\[LessEqual]", "z1", "<", 
+             RowBox[{"c0", "+", 
+              RowBox[{"s1", " ", "theta"}]}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "c0", "<", 
+             FractionBox["1", "2"]}], "&&", 
+            RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+            RowBox[{"theta", ">", 
+             FractionBox[
+              RowBox[{"1", "-", 
+               RowBox[{"2", " ", "c0"}]}], 
+              RowBox[{"2", " ", "s1"}]]}], "&&", 
+            RowBox[{"c0", "<", "z1", "<", 
+             FractionBox["1", "2"]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "c0", "<", 
+             FractionBox["1", "2"]}], "&&", 
+            RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+            RowBox[{"theta", ">", 
+             FractionBox[
+              RowBox[{"1", "-", 
+               RowBox[{"2", " ", "c0"}]}], 
+              RowBox[{"2", " ", "s1"}]]}], "&&", 
+            RowBox[{
+             RowBox[{"c0", "+", 
+              RowBox[{"s1", " ", "theta"}]}], "\[LessEqual]", "z1", "<", 
+             RowBox[{
+              FractionBox["1", "2"], " ", 
+              RowBox[{"(", 
+               RowBox[{"1", "+", 
+                RowBox[{"2", " ", "s1", " ", "theta"}]}], ")"}]}]}]}], 
+           ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "c0", "<", 
+             FractionBox["1", "2"]}], "&&", 
+            RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+            RowBox[{"0", "<", "theta", "<", 
+             FractionBox[
+              RowBox[{"1", "-", 
+               RowBox[{"2", " ", "c0"}]}], 
+              RowBox[{"2", " ", "s1"}]]}], "&&", 
+            RowBox[{"z1", "\[Equal]", "c0"}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "c0", "<", 
+             FractionBox["1", "2"]}], "&&", 
+            RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+            RowBox[{"0", "<", "theta", "<", 
+             FractionBox[
+              RowBox[{"1", "-", 
+               RowBox[{"2", " ", "c0"}]}], 
+              RowBox[{"2", " ", "s1"}]]}], "&&", 
+            RowBox[{
+             FractionBox["1", "2"], "\[LessEqual]", "z1", "<", 
+             RowBox[{
+              FractionBox["1", "2"], " ", 
+              RowBox[{"(", 
+               RowBox[{"1", "+", 
+                RowBox[{"2", " ", "s1", " ", "theta"}]}], ")"}]}]}]}], 
+           ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "c0", "<", 
+             FractionBox["1", "2"]}], "&&", 
+            RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+            RowBox[{"0", "<", "theta", "<", 
+             FractionBox[
+              RowBox[{"1", "-", 
+               RowBox[{"2", " ", "c0"}]}], 
+              RowBox[{"2", " ", "s1"}]]}], "&&", 
+            RowBox[{"c0", "<", "z1", "<", 
+             RowBox[{"c0", "+", 
+              RowBox[{"s1", " ", "theta"}]}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "c0", "<", 
+             FractionBox["1", "2"]}], "&&", 
+            RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+            RowBox[{"0", "<", "theta", "<", 
+             FractionBox[
+              RowBox[{"1", "-", 
+               RowBox[{"2", " ", "c0"}]}], 
+              RowBox[{"2", " ", "s1"}]]}], "&&", 
+            RowBox[{
+             RowBox[{"c0", "+", 
+              RowBox[{"s1", " ", "theta"}]}], "\[LessEqual]", "z1", "<", 
+             FractionBox["1", "2"]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "c0", "<", 
+             FractionBox["1", "2"]}], "&&", 
+            RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+            RowBox[{
+             FractionBox[
+              RowBox[{
+               RowBox[{"-", "1"}], "+", 
+               RowBox[{"2", " ", "c0"}]}], 
+              RowBox[{"2", " ", "s1"}]], "<", "theta", "<", "0"}], "&&", 
+            RowBox[{"z1", "\[Equal]", 
+             RowBox[{"c0", "+", 
+              RowBox[{"s1", " ", "theta"}]}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "c0", "<", 
+             FractionBox["1", "2"]}], "&&", 
+            RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+            RowBox[{
+             FractionBox[
+              RowBox[{
+               RowBox[{"-", "1"}], "+", 
+               RowBox[{"2", " ", "c0"}]}], 
+              RowBox[{"2", " ", "s1"}]], "<", "theta", "<", "0"}], "&&", 
+            RowBox[{"c0", "\[LessEqual]", "z1", "<", 
+             RowBox[{
+              FractionBox["1", "2"], " ", 
+              RowBox[{"(", 
+               RowBox[{"1", "+", 
+                RowBox[{"2", " ", "s1", " ", "theta"}]}], ")"}]}]}]}], 
+           ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "c0", "<", 
+             FractionBox["1", "2"]}], "&&", 
+            RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+            RowBox[{
+             FractionBox[
+              RowBox[{
+               RowBox[{"-", "1"}], "+", 
+               RowBox[{"2", " ", "c0"}]}], 
+              RowBox[{"2", " ", "s1"}]], "<", "theta", "<", "0"}], "&&", 
+            RowBox[{
+             RowBox[{
+              FractionBox["1", "2"], " ", 
+              RowBox[{"(", 
+               RowBox[{"1", "+", 
+                RowBox[{"2", " ", "s1", " ", "theta"}]}], ")"}]}], 
+             "\[LessEqual]", "z1", "<", 
+             FractionBox["1", "2"]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "c0", "<", 
+             FractionBox["1", "2"]}], "&&", 
+            RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+            RowBox[{
+             FractionBox[
+              RowBox[{
+               RowBox[{"-", "1"}], "+", 
+               RowBox[{"2", " ", "c0"}]}], 
+              RowBox[{"2", " ", "s1"}]], "<", "theta", "<", "0"}], "&&", 
+            RowBox[{"z1", "<", 
+             RowBox[{"c0", "+", 
+              RowBox[{"s1", " ", "theta"}]}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "c0", "<", 
+             FractionBox["1", "2"]}], "&&", 
+            RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+            RowBox[{"theta", "<", 
+             FractionBox[
+              RowBox[{
+               RowBox[{"-", "1"}], "+", 
+               RowBox[{"2", " ", "c0"}]}], 
+              RowBox[{"2", " ", "s1"}]]}], "&&", 
+            RowBox[{"z1", "\[Equal]", 
+             RowBox[{"c0", "+", 
+              RowBox[{"s1", " ", "theta"}]}]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "c0", "<", 
+             FractionBox["1", "2"]}], "&&", 
+            RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+            RowBox[{"theta", "<", 
+             FractionBox[
+              RowBox[{
+               RowBox[{"-", "1"}], "+", 
+               RowBox[{"2", " ", "c0"}]}], 
+              RowBox[{"2", " ", "s1"}]]}], "&&", 
+            RowBox[{"c0", "\[LessEqual]", "z1", "<", 
+             FractionBox["1", "2"]}]}], ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "c0", "<", 
+             FractionBox["1", "2"]}], "&&", 
+            RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+            RowBox[{"theta", "<", 
+             FractionBox[
+              RowBox[{
+               RowBox[{"-", "1"}], "+", 
+               RowBox[{"2", " ", "c0"}]}], 
+              RowBox[{"2", " ", "s1"}]]}], "&&", 
+            RowBox[{
+             RowBox[{"c0", "+", 
+              RowBox[{"s1", " ", "theta"}]}], "<", "z1", "<", 
+             RowBox[{
+              FractionBox["1", "2"], " ", 
+              RowBox[{"(", 
+               RowBox[{"1", "+", 
+                RowBox[{"2", " ", "s1", " ", "theta"}]}], ")"}]}]}]}], 
+           ")"}]}], "&&", 
+         RowBox[{"!", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "<", "c0", "<", 
+             FractionBox["1", "2"]}], "&&", 
+            RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+            RowBox[{"theta", "<", 
+             FractionBox[
+              RowBox[{
+               RowBox[{"-", "1"}], "+", 
+               RowBox[{"2", " ", "c0"}]}], 
+              RowBox[{"2", " ", "s1"}]]}], "&&", 
+            RowBox[{"z1", "<", 
+             RowBox[{"c0", "+", 
+              RowBox[{"s1", " ", "theta"}]}]}]}], ")"}]}]}]},
+       {
+        RowBox[{"Integrate", "[", 
+         RowBox[{
+          RowBox[{"Boole", "[", 
+           RowBox[{"z", ">", 
+            RowBox[{
+             RowBox[{"-", 
+              RowBox[{"(", 
+               RowBox[{
+                RowBox[{"(", 
+                 RowBox[{
+                  RowBox[{"-", "s"}], "+", "s1"}], ")"}], " ", "theta"}], 
+               ")"}]}], "+", "z1"}]}], "]"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"z", ",", "c0", ",", 
+            FractionBox["1", "2"]}], "}"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"s", ",", "0", ",", "s1"}], "}"}], ",", 
+          RowBox[{"Assumptions", "\[Rule]", 
+           RowBox[{
+            RowBox[{"(", 
+             RowBox[{
+              RowBox[{
+               RowBox[{"theta", "-", "z1"}], ">", 
+               RowBox[{"-", 
+                FractionBox["1", "2"]}]}], "&&", 
+              RowBox[{"c0", "\[Equal]", 
+               RowBox[{"-", 
+                FractionBox["1", "2"]}]}], "&&", 
+              RowBox[{
+               RowBox[{"c0", "-", "z1"}], "\[LessEqual]", "0"}], "&&", 
+              RowBox[{"z1", "\[LessEqual]", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+              RowBox[{"theta", "<", 
+               RowBox[{"-", "1"}]}]}], ")"}], "||", 
+            RowBox[{"(", 
+             RowBox[{
+              RowBox[{
+               RowBox[{"theta", "-", "z1"}], "\[GreaterEqual]", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{"c0", "\[Equal]", 
+               RowBox[{"-", 
+                FractionBox["1", "2"]}]}], "&&", 
+              RowBox[{
+               RowBox[{"c0", "-", "z1"}], "\[LessEqual]", "0"}], "&&", 
+              RowBox[{"z1", "\[LessEqual]", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+              RowBox[{
+               RowBox[{"-", "1"}], "<", "theta", "<", "0"}]}], ")"}], "||", 
+            RowBox[{"(", 
+             RowBox[{
+              RowBox[{
+               RowBox[{"-", 
+                FractionBox["1", "2"]}], "<", 
+               RowBox[{"theta", "-", "z1"}], "\[LessEqual]", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{"c0", "\[Equal]", 
+               RowBox[{"-", 
+                FractionBox["1", "2"]}]}], "&&", 
+              RowBox[{
+               RowBox[{"c0", "-", "z1"}], "\[LessEqual]", "0"}], "&&", 
+              RowBox[{"z1", "\[LessEqual]", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{"s1", "\[Equal]", "1"}], "&&", 
+              RowBox[{"theta", ">", "1"}]}], ")"}], "||", 
+            RowBox[{"(", 
+             RowBox[{
+              RowBox[{"c0", "\[Equal]", 
+               RowBox[{"-", 
+                FractionBox["1", "2"]}]}], "&&", 
+              RowBox[{
+               RowBox[{"c0", "-", "z1"}], "\[LessEqual]", "0"}], "&&", 
+              RowBox[{"z1", "\[LessEqual]", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+              RowBox[{
+               RowBox[{
+                RowBox[{"s1", " ", "theta"}], "-", "z1"}], ">", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{
+               RowBox[{
+                FractionBox["1", "s1"], "+", "theta"}], "\[Equal]", "0"}]}], 
+             ")"}], "||", 
+            RowBox[{"(", 
+             RowBox[{
+              RowBox[{"c0", "\[Equal]", 
+               RowBox[{"-", 
+                FractionBox["1", "2"]}]}], "&&", 
+              RowBox[{
+               RowBox[{"c0", "-", "z1"}], "\[LessEqual]", "0"}], "&&", 
+              RowBox[{"z1", "\[LessEqual]", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+              RowBox[{
+               RowBox[{
+                RowBox[{"s1", " ", "theta"}], "-", "z1"}], ">", 
+               RowBox[{"-", 
+                FractionBox["1", "2"]}]}], "&&", 
+              RowBox[{
+               RowBox[{
+                FractionBox["1", "s1"], "+", "theta"}], "<", "0"}]}], ")"}], "||", 
+            RowBox[{"(", 
+             RowBox[{
+              RowBox[{
+               RowBox[{"-", 
+                FractionBox["1", "2"]}], "<", "c0", "<", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{
+               RowBox[{"c0", "-", "z1"}], "\[LessEqual]", "0"}], "&&", 
+              RowBox[{"z1", "\[LessEqual]", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+              RowBox[{
+               RowBox[{"c0", "+", 
+                RowBox[{"s1", " ", "theta"}], "-", "z1"}], ">", "0"}], "&&", 
+              RowBox[{
+               RowBox[{
+                RowBox[{"-", 
+                 FractionBox["1", "s1"]}], "+", 
+                FractionBox[
+                 RowBox[{"2", " ", "c0"}], "s1"], "-", 
+                RowBox[{"2", " ", "theta"}]}], "\[GreaterEqual]", "0"}]}], 
+             ")"}], "||", 
+            RowBox[{"(", 
+             RowBox[{
+              RowBox[{
+               RowBox[{"-", 
+                FractionBox["1", "2"]}], "<", "c0", "<", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{
+               RowBox[{"c0", "-", "z1"}], "\[LessEqual]", "0"}], "&&", 
+              RowBox[{"z1", "\[LessEqual]", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+              RowBox[{
+               RowBox[{"c0", "+", 
+                RowBox[{"s1", " ", "theta"}], "-", "z1"}], "\[Equal]", "0"}], 
+              "&&", 
+              RowBox[{
+               RowBox[{
+                RowBox[{"-", 
+                 FractionBox["1", "s1"]}], "+", 
+                FractionBox[
+                 RowBox[{"2", " ", "c0"}], "s1"], "-", 
+                RowBox[{"2", " ", "theta"}]}], ">", "0"}]}], ")"}], "||", 
+            RowBox[{"(", 
+             RowBox[{
+              RowBox[{"c0", "\[Equal]", 
+               RowBox[{"-", 
+                FractionBox["1", "2"]}]}], "&&", 
+              RowBox[{
+               RowBox[{"c0", "-", "z1"}], "\[LessEqual]", "0"}], "&&", 
+              RowBox[{"z1", "\[LessEqual]", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+              RowBox[{"theta", "<", "0"}], "&&", 
+              RowBox[{
+               RowBox[{
+                RowBox[{"s1", " ", "theta"}], "-", "z1"}], ">", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{
+               RowBox[{
+                FractionBox["1", "s1"], "+", "theta"}], "\[GreaterEqual]", 
+               "0"}]}], ")"}], "||", 
+            RowBox[{"(", 
+             RowBox[{
+              RowBox[{"c0", "\[Equal]", 
+               RowBox[{"-", 
+                FractionBox["1", "2"]}]}], "&&", 
+              RowBox[{
+               RowBox[{"c0", "-", "z1"}], "\[LessEqual]", "0"}], "&&", 
+              RowBox[{"z1", "\[LessEqual]", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+              RowBox[{"theta", "<", "0"}], "&&", 
+              RowBox[{
+               RowBox[{
+                RowBox[{"s1", " ", "theta"}], "-", "z1"}], "\[Equal]", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{
+               RowBox[{
+                FractionBox["1", "s1"], "+", "theta"}], ">", "0"}]}], ")"}], "||", 
+            RowBox[{"(", 
+             RowBox[{
+              RowBox[{"c0", "\[Equal]", 
+               RowBox[{"-", 
+                FractionBox["1", "2"]}]}], "&&", 
+              RowBox[{
+               RowBox[{"c0", "-", "z1"}], "\[LessEqual]", "0"}], "&&", 
+              RowBox[{"z1", "\[LessEqual]", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+              RowBox[{
+               RowBox[{"-", 
+                FractionBox["1", "2"]}], "<", 
+               RowBox[{
+                RowBox[{"s1", " ", "theta"}], "-", "z1"}], "<", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{
+               RowBox[{
+                FractionBox["1", "s1"], "+", "theta"}], "\[Equal]", "0"}]}], 
+             ")"}], "||", 
+            RowBox[{"(", 
+             RowBox[{
+              RowBox[{"c0", "\[Equal]", 
+               RowBox[{"-", 
+                FractionBox["1", "2"]}]}], "&&", 
+              RowBox[{
+               RowBox[{"c0", "-", "z1"}], "\[LessEqual]", "0"}], "&&", 
+              RowBox[{"z1", "\[LessEqual]", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{"0", "<", "s1", "<", "1"}], "&&", 
+              RowBox[{
+               RowBox[{"-", 
+                FractionBox["1", "2"]}], "<", 
+               RowBox[{
+                RowBox[{"s1", " ", "theta"}], "-", "z1"}], "\[LessEqual]", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{
+               RowBox[{
+                FractionBox["1", "s1"], "-", "theta"}], "<", "0"}]}], ")"}], "||", 
+            RowBox[{"(", 
+             RowBox[{
+              RowBox[{
+               RowBox[{"-", 
+                FractionBox["1", "2"]}], "<", "c0", "<", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{
+               RowBox[{"c0", "-", "z1"}], "\[LessEqual]", "0"}], "&&", 
+              RowBox[{"z1", "\[LessEqual]", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+              RowBox[{"theta", "<", "0"}], "&&", 
+              RowBox[{
+               RowBox[{"c0", "+", 
+                RowBox[{"s1", " ", "theta"}], "-", "z1"}], ">", "0"}]}], 
+             ")"}], "||", 
+            RowBox[{"(", 
+             RowBox[{
+              RowBox[{
+               RowBox[{"-", 
+                FractionBox["1", "2"]}], "<", "c0", "<", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{
+               RowBox[{"c0", "-", "z1"}], "\[LessEqual]", "0"}], "&&", 
+              RowBox[{"z1", "\[LessEqual]", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+              RowBox[{"theta", "<", "0"}], "&&", 
+              RowBox[{
+               RowBox[{"c0", "+", 
+                RowBox[{"s1", " ", "theta"}], "-", "z1"}], "\[GreaterEqual]", 
+               "0"}], "&&", 
+              RowBox[{
+               RowBox[{
+                RowBox[{"-", 
+                 FractionBox["1", "s1"]}], "+", 
+                FractionBox[
+                 RowBox[{"2", " ", "c0"}], "s1"], "-", 
+                RowBox[{"2", " ", "theta"}]}], "<", "0"}]}], ")"}], "||", 
+            RowBox[{"(", 
+             RowBox[{
+              RowBox[{
+               RowBox[{"-", 
+                FractionBox["1", "2"]}], "<", "c0", "<", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{
+               RowBox[{"c0", "-", "z1"}], "\[LessEqual]", "0"}], "&&", 
+              RowBox[{"z1", "\[LessEqual]", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+              RowBox[{
+               RowBox[{
+                RowBox[{"s1", " ", "theta"}], "-", "z1"}], ">", 
+               RowBox[{"-", 
+                FractionBox["1", "2"]}]}], "&&", 
+              RowBox[{
+               RowBox[{"c0", "+", 
+                RowBox[{"s1", " ", "theta"}], "-", "z1"}], "\[LessEqual]", 
+               "0"}], "&&", 
+              RowBox[{
+               RowBox[{
+                RowBox[{"-", 
+                 FractionBox["1", "s1"]}], "+", 
+                FractionBox[
+                 RowBox[{"2", " ", "c0"}], "s1"], "-", 
+                RowBox[{"2", " ", "theta"}]}], ">", "0"}]}], ")"}], "||", 
+            RowBox[{"(", 
+             RowBox[{
+              RowBox[{
+               RowBox[{"-", 
+                FractionBox["1", "2"]}], "<", "c0", "<", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{
+               RowBox[{"c0", "-", "z1"}], "\[LessEqual]", "0"}], "&&", 
+              RowBox[{"z1", "\[LessEqual]", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+              RowBox[{
+               RowBox[{
+                RowBox[{"s1", " ", "theta"}], "-", "z1"}], ">", 
+               RowBox[{"-", 
+                FractionBox["1", "2"]}]}], "&&", 
+              RowBox[{
+               RowBox[{"c0", "+", 
+                RowBox[{"s1", " ", "theta"}], "-", "z1"}], "<", "0"}], "&&", 
+              RowBox[{
+               RowBox[{
+                RowBox[{"-", 
+                 FractionBox["1", "s1"]}], "+", 
+                FractionBox[
+                 RowBox[{"2", " ", "c0"}], "s1"], "-", 
+                RowBox[{"2", " ", "theta"}]}], "\[Equal]", "0"}]}], ")"}], "||", 
+            RowBox[{"(", 
+             RowBox[{
+              RowBox[{
+               RowBox[{"-", 
+                FractionBox["1", "2"]}], "<", "c0", "<", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{
+               RowBox[{"c0", "-", "z1"}], "\[LessEqual]", "0"}], "&&", 
+              RowBox[{"z1", "\[LessEqual]", 
+               FractionBox["1", "2"]}], "&&", 
+              RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+              RowBox[{
+               RowBox[{
+                RowBox[{"s1", " ", "theta"}], "-", "z1"}], ">", 
+               RowBox[{"-", 
+                FractionBox["1", "2"]}]}], "&&", 
+              RowBox[{
+               RowBox[{"c0", "+", 
+                RowBox[{"s1", " ", "theta"}], "-", "z1"}], "\[LessEqual]", 
+               "0"}], "&&", 
+              RowBox[{
+               RowBox[{
+                RowBox[{"-", 
+                 FractionBox["1", "s1"]}], "+", 
+                FractionBox[
+                 RowBox[{"2", " ", "c0"}], "s1"], "+", 
+                RowBox[{"2", " ", "theta"}]}], ">", "0"}]}], ")"}]}]}]}], 
+         "]"}], 
+        TagBox["True",
+         "PiecewiseDefault",
+         AutoDelete->True]}
+      },
+      AllowedDimensions->{2, Automatic},
+      Editable->True,
+      GridBoxAlignment->{"Columns" -> {{Left}}, "Rows" -> {{Baseline}}},
+      GridBoxItemSize->{"Columns" -> {{Automatic}}, "Rows" -> {{1.}}},
+      GridBoxSpacings->{"Columns" -> {
+          Offset[0.27999999999999997`], {
+           Offset[0.84]}, 
+          Offset[0.27999999999999997`]}, "Rows" -> {
+          Offset[0.2], {
+           Offset[0.4]}, 
+          Offset[0.2]}},
+      Selectable->True]}
+   },
+   GridBoxAlignment->{"Columns" -> {{Left}}, "Rows" -> {{Baseline}}},
+   GridBoxItemSize->{"Columns" -> {{Automatic}}, "Rows" -> {{1.}}},
+   GridBoxSpacings->{"Columns" -> {
+       Offset[0.27999999999999997`], {
+        Offset[0.35]}, 
+       Offset[0.27999999999999997`]}, "Rows" -> {
+       Offset[0.2], {
+        Offset[0.4]}, 
+       Offset[0.2]}}],
+  "Piecewise",
+  DeleteWithContents->True,
+  Editable->False,
+  SelectWithContents->True,
+  Selectable->False,
+  StripWrapperBoxes->True]], "Output",
+ CellChangeTimes->{3.8611509976769853`*^9, 3.861151112156843*^9},
+ CellLabel->"Out[35]=",ExpressionUUID->"83b41eba-a30f-40ff-bdff-48574bd150b5"]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Assuming", "[", " ", 
+  RowBox[{
+   RowBox[{
+    RowBox[{
+     RowBox[{
+      RowBox[{"-", "1"}], "/", "2"}], "\[LessEqual]", "c0", "\[LessEqual]", 
+     RowBox[{"1", "/", "2"}]}], " ", "&&", 
+    RowBox[{"c0", "\[LessEqual]", "z1", "\[LessEqual]", 
+     RowBox[{"1", "/", "2"}]}], " ", "&&", " ", 
+    RowBox[{"0", "\[LessEqual]", "s1", "\[LessEqual]", "1"}]}], ",", " ", 
+   RowBox[{"FullSimplify", "@", 
+    RowBox[{"Integrate", "[", 
+     RowBox[{
+      RowBox[{"Boole", "[", 
+       RowBox[{"z", ">", 
+        RowBox[{"z1", "-", 
+         RowBox[{"theta", "*", 
+          RowBox[{"(", 
+           RowBox[{"s1", "-", "s"}], ")"}]}]}]}], "]"}], ",", 
+      RowBox[{"{", 
+       RowBox[{"z", ",", 
+        RowBox[{
+         RowBox[{"-", "1"}], "/", "2"}], ",", 
+        RowBox[{"1", "/", "2"}]}], "}"}], ",", 
+      RowBox[{"{", 
+       RowBox[{"s", ",", "0", ",", "s1"}], "}"}]}], "]"}]}]}], "]"}]], "Input",
+ CellChangeTimes->{{3.8611531772226906`*^9, 3.8611531791309648`*^9}},
+ CellLabel->"In[1]:=",ExpressionUUID->"5a117a4a-bc5b-40c6-9ad4-542d3b519949"],
+
+Cell[BoxData[
+ TagBox[GridBox[{
+    {"\[Piecewise]", GridBox[{
+       {"s1", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"theta", "\[GreaterEqual]", "0"}], "&&", 
+           RowBox[{"0", "<", "s1"}], "&&", 
+           RowBox[{"z1", "\[LessEqual]", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"0", "<", "s1"}], "&&", 
+           RowBox[{"z1", "\[LessEqual]", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{
+            RowBox[{
+             FractionBox["1", "s1"], "-", "theta"}], "\[LessEqual]", "0"}]}], 
+          ")"}]}]},
+       {
+        FractionBox[
+         RowBox[{
+          RowBox[{"-", "1"}], "+", 
+          RowBox[{"2", " ", "s1", " ", "theta"}]}], 
+         RowBox[{"2", " ", "theta"}]], 
+        RowBox[{
+         RowBox[{"0", "<", "s1"}], "&&", 
+         RowBox[{
+          RowBox[{
+           FractionBox["1", "s1"], "-", "theta"}], "\[Equal]", "0"}], "&&", 
+         RowBox[{"z1", "\[Equal]", 
+          FractionBox["1", "2"]}]}]},
+       {
+        FractionBox[
+         RowBox[{
+          RowBox[{"s1", " ", "theta"}], "-", "z1"}], "theta"], 
+        RowBox[{
+         RowBox[{"0", "<", "s1"}], "&&", 
+         RowBox[{
+          RowBox[{
+           FractionBox["1", "s1"], "-", "theta"}], "<", "0"}], "&&", 
+         RowBox[{"z1", "\[GreaterEqual]", 
+          FractionBox["1", "2"]}], "&&", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"-", "1"}], "+", 
+           RowBox[{"2", " ", "s1", " ", "theta"}], "-", 
+           RowBox[{"2", " ", "z1"}]}], "\[GreaterEqual]", "0"}]}]},
+       {
+        FractionBox["z1", "theta"], 
+        RowBox[{
+         RowBox[{"0", "<", "s1"}], "&&", 
+         RowBox[{
+          RowBox[{
+           FractionBox["1", "s1"], "+", "theta"}], "<", "0"}], "&&", 
+         RowBox[{
+          RowBox[{"1", "+", 
+           RowBox[{"2", " ", "s1", " ", "theta"}], "-", 
+           RowBox[{"2", " ", "z1"}]}], "\[LessEqual]", "0"}], "&&", 
+         RowBox[{"z1", "\[LessEqual]", 
+          RowBox[{"-", 
+           FractionBox["1", "2"]}]}]}]},
+       {
+        RowBox[{
+         FractionBox["1", "2"], " ", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            SuperscriptBox["s1", "2"], " ", "theta"}], "-", 
+           RowBox[{"4", " ", "s1", " ", "z1"}]}], ")"}]}], 
+        RowBox[{
+         RowBox[{"0", "<", "s1"}], "&&", 
+         RowBox[{
+          RowBox[{
+           FractionBox["1", "s1"], "+", "theta"}], ">", "0"}], "&&", 
+         RowBox[{"theta", "<", "0"}], "&&", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"-", "1"}], "+", 
+           RowBox[{"2", " ", "s1", " ", "theta"}], "-", 
+           RowBox[{"2", " ", "z1"}]}], "<", "0"}], "&&", 
+         RowBox[{"z1", "\[LessEqual]", 
+          RowBox[{"-", 
+           FractionBox["1", "2"]}]}]}]},
+       {
+        RowBox[{
+         FractionBox["1", "2"], " ", 
+         RowBox[{"(", 
+          RowBox[{"s1", "-", 
+           RowBox[{"2", " ", "s1", " ", "z1"}]}], ")"}]}], 
+        RowBox[{
+         RowBox[{"0", "<", "s1"}], "&&", 
+         RowBox[{"theta", "\[Equal]", "0"}], "&&", 
+         RowBox[{
+          RowBox[{"-", 
+           FractionBox["1", "2"]}], "<", "z1", "<", 
+          FractionBox["1", "2"]}]}]},
+       {
+        RowBox[{
+         FractionBox["1", "2"], " ", 
+         RowBox[{"(", 
+          RowBox[{"s1", "+", 
+           RowBox[{
+            SuperscriptBox["s1", "2"], " ", "theta"}], "-", 
+           RowBox[{"2", " ", "s1", " ", "z1"}]}], ")"}]}], 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"z1", ">", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{"0", "<", "s1"}], "&&", 
+           RowBox[{
+            RowBox[{
+             FractionBox["1", "s1"], "+", "theta"}], ">", "0"}], "&&", 
+           RowBox[{"theta", "<", "0"}], "&&", 
+           RowBox[{
+            RowBox[{"1", "+", 
+             RowBox[{"2", " ", "s1", " ", "theta"}], "-", 
+             RowBox[{"2", " ", "z1"}]}], ">", "0"}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"z1", "\[GreaterEqual]", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{"0", "<", "s1"}], "&&", 
+           RowBox[{"theta", ">", "0"}], "&&", 
+           RowBox[{
+            RowBox[{"1", "+", 
+             RowBox[{"2", " ", "s1", " ", "theta"}], "-", 
+             RowBox[{"2", " ", "z1"}]}], ">", "0"}], "&&", 
+           RowBox[{
+            RowBox[{
+             FractionBox["1", "s1"], "-", "theta"}], ">", "0"}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"z1", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{"0", "<", "s1"}], "&&", 
+           RowBox[{"theta", ">", "0"}], "&&", 
+           RowBox[{
+            RowBox[{
+             FractionBox["1", "s1"], "-", "theta"}], ">", "0"}], "&&", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", "1"}], "+", 
+             RowBox[{"2", " ", "s1", " ", "theta"}], "-", 
+             RowBox[{"2", " ", "z1"}]}], "<", "0"}]}], ")"}]}]},
+       {
+        FractionBox[
+         RowBox[{
+          RowBox[{"-", "1"}], "+", 
+          RowBox[{"8", " ", "s1", " ", "theta"}], "-", 
+          RowBox[{"4", " ", "z1"}], "-", 
+          RowBox[{"4", " ", 
+           SuperscriptBox["z1", "2"]}]}], 
+         RowBox[{"8", " ", "theta"}]], 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{
+             FractionBox["1", "s1"], "-", "theta"}], "\[LessEqual]", "0"}], "&&", 
+           RowBox[{
+            RowBox[{"-", 
+             FractionBox["1", "2"]}], "<", "z1", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{"0", "<", "s1"}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{
+             FractionBox["1", "s1"], "-", "theta"}], ">", "0"}], "&&", 
+           RowBox[{"z1", ">", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}]}], "&&", 
+           RowBox[{"0", "<", "s1"}], "&&", 
+           RowBox[{"theta", ">", "0"}], "&&", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", "1"}], "+", 
+             RowBox[{"2", " ", "s1", " ", "theta"}], "-", 
+             RowBox[{"2", " ", "z1"}]}], "\[GreaterEqual]", "0"}]}], ")"}]}]},
+       {
+        FractionBox[
+         RowBox[{
+          RowBox[{"-", "1"}], "+", 
+          RowBox[{"4", " ", "z1"}], "-", 
+          RowBox[{"4", " ", 
+           SuperscriptBox["z1", "2"]}]}], 
+         RowBox[{"8", " ", "theta"}]], 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{
+             FractionBox["1", "s1"], "+", "theta"}], "\[Equal]", "0"}], "&&", 
+           RowBox[{"0", "<", "s1"}], "&&", 
+           RowBox[{"z1", "<", 
+            FractionBox["1", "2"]}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{
+             FractionBox["1", "s1"], "+", "theta"}], ">", "0"}], "&&", 
+           RowBox[{"0", "<", "s1"}], "&&", 
+           RowBox[{"z1", "<", 
+            FractionBox["1", "2"]}], "&&", 
+           RowBox[{"theta", "<", "0"}], "&&", 
+           RowBox[{
+            RowBox[{"1", "+", 
+             RowBox[{"2", " ", "s1", " ", "theta"}], "-", 
+             RowBox[{"2", " ", "z1"}]}], "\[LessEqual]", "0"}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{
+             FractionBox["1", "s1"], "+", "theta"}], "<", "0"}], "&&", 
+           RowBox[{"0", "<", "s1"}], "&&", 
+           RowBox[{
+            RowBox[{"-", 
+             FractionBox["1", "2"]}], "<", "z1", "<", 
+            FractionBox["1", "2"]}]}], ")"}]}]},
+       {
+        RowBox[{"Integrate", "[", 
+         RowBox[{
+          RowBox[{"Boole", "[", 
+           RowBox[{"z", ">", 
+            RowBox[{
+             RowBox[{"-", 
+              RowBox[{"(", 
+               RowBox[{
+                RowBox[{"(", 
+                 RowBox[{
+                  RowBox[{"-", "s"}], "+", "s1"}], ")"}], " ", "theta"}], 
+               ")"}]}], "+", "z1"}]}], "]"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"z", ",", 
+            RowBox[{"-", 
+             FractionBox["1", "2"]}], ",", 
+            FractionBox["1", "2"]}], "}"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"s", ",", "0", ",", "s1"}], "}"}], ",", 
+          RowBox[{"Assumptions", "\[Rule]", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", 
+              FractionBox["1", "2"]}], "\[LessEqual]", "c0", "\[LessEqual]", 
+             FractionBox["1", "2"]}], "&&", 
+            RowBox[{"0", "\[LessEqual]", "s1", "\[LessEqual]", "1"}], "&&", 
+            RowBox[{"c0", "\[LessEqual]", "z1", "\[LessEqual]", 
+             FractionBox["1", "2"]}], "&&", 
+            RowBox[{"(", 
+             RowBox[{
+              RowBox[{"(", 
+               RowBox[{
+                RowBox[{
+                 RowBox[{
+                  FractionBox["1", "s1"], "+", "theta"}], "\[LessEqual]", 
+                 "0"}], "&&", 
+                RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+                RowBox[{
+                 RowBox[{
+                  RowBox[{"s1", " ", "theta"}], "-", "z1"}], 
+                 "\[GreaterEqual]", 
+                 FractionBox["1", "2"]}], "&&", 
+                RowBox[{
+                 RowBox[{"-", 
+                  FractionBox["1", "2"]}], "\[LessEqual]", "c0", 
+                 "\[LessEqual]", 
+                 FractionBox["1", "2"]}], "&&", 
+                RowBox[{
+                 RowBox[{"c0", "-", "z1"}], "\[LessEqual]", "0"}], "&&", 
+                RowBox[{"z1", "\[LessEqual]", 
+                 FractionBox["1", "2"]}]}], ")"}], "||", 
+              RowBox[{"(", 
+               RowBox[{
+                RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+                RowBox[{
+                 RowBox[{
+                  RowBox[{"s1", " ", "theta"}], "-", "z1"}], 
+                 "\[GreaterEqual]", 
+                 FractionBox["1", "2"]}], "&&", 
+                RowBox[{
+                 RowBox[{"-", 
+                  FractionBox["1", "2"]}], "\[LessEqual]", "c0", 
+                 "\[LessEqual]", 
+                 FractionBox["1", "2"]}], "&&", 
+                RowBox[{
+                 RowBox[{"c0", "-", "z1"}], "\[LessEqual]", "0"}], "&&", 
+                RowBox[{"z1", "\[LessEqual]", 
+                 FractionBox["1", "2"]}], "&&", 
+                RowBox[{"theta", "<", "0"}]}], ")"}], "||", 
+              RowBox[{"(", 
+               RowBox[{
+                RowBox[{
+                 RowBox[{
+                  FractionBox["1", "s1"], "+", "theta"}], "<", "0"}], "&&", 
+                RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+                RowBox[{
+                 RowBox[{
+                  RowBox[{"s1", " ", "theta"}], "-", "z1"}], ">", 
+                 RowBox[{"-", 
+                  FractionBox["1", "2"]}]}], "&&", 
+                RowBox[{
+                 RowBox[{"-", 
+                  FractionBox["1", "2"]}], "\[LessEqual]", "c0", 
+                 "\[LessEqual]", 
+                 FractionBox["1", "2"]}], "&&", 
+                RowBox[{
+                 RowBox[{"c0", "-", "z1"}], "\[LessEqual]", "0"}], "&&", 
+                RowBox[{"z1", "\[LessEqual]", 
+                 FractionBox["1", "2"]}]}], ")"}], "||", 
+              RowBox[{"(", 
+               RowBox[{
+                RowBox[{"0", "<", "s1", "\[LessEqual]", "1"}], "&&", 
+                RowBox[{
+                 RowBox[{"-", 
+                  FractionBox["1", "2"]}], "<", 
+                 RowBox[{
+                  RowBox[{"s1", " ", "theta"}], "-", "z1"}], "<", 
+                 FractionBox["1", "2"]}], "&&", 
+                RowBox[{
+                 RowBox[{"-", 
+                  FractionBox["1", "2"]}], "\[LessEqual]", "c0", 
+                 "\[LessEqual]", 
+                 FractionBox["1", "2"]}], "&&", 
+                RowBox[{
+                 RowBox[{"c0", "-", "z1"}], "\[LessEqual]", "0"}], "&&", 
+                RowBox[{"z1", "\[LessEqual]", 
+                 FractionBox["1", "2"]}], "&&", 
+                RowBox[{
+                 RowBox[{
+                  FractionBox["1", "s1"], "-", "theta"}], "<", "0"}]}], 
+               ")"}]}], ")"}]}]}]}], "]"}], 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"0", "<", "s1"}], "&&", 
+           RowBox[{
+            RowBox[{
+             FractionBox["1", "s1"], "+", "theta"}], "\[Equal]", "0"}], "&&", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", "1"}], "+", 
+             RowBox[{"2", " ", "s1", " ", "theta"}], "-", 
+             RowBox[{"2", " ", "z1"}]}], "\[GreaterEqual]", "0"}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"0", "<", "s1"}], "&&", 
+           RowBox[{
+            RowBox[{
+             FractionBox["1", "s1"], "+", "theta"}], "<", "0"}], "&&", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", "1"}], "+", 
+             RowBox[{"2", " ", "s1", " ", "theta"}], "-", 
+             RowBox[{"2", " ", "z1"}]}], "\[GreaterEqual]", "0"}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"0", "<", "s1"}], "&&", 
+           RowBox[{
+            RowBox[{
+             FractionBox["1", "s1"], "+", "theta"}], ">", "0"}], "&&", 
+           RowBox[{"theta", "<", "0"}], "&&", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", "1"}], "+", 
+             RowBox[{"2", " ", "s1", " ", "theta"}], "-", 
+             RowBox[{"2", " ", "z1"}]}], "\[GreaterEqual]", "0"}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"0", "<", "s1"}], "&&", 
+           RowBox[{
+            RowBox[{
+             FractionBox["1", "s1"], "-", "theta"}], "<", "0"}], "&&", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", "1"}], "+", 
+             RowBox[{"2", " ", "s1", " ", "theta"}], "-", 
+             RowBox[{"2", " ", "z1"}]}], "<", "0"}], "&&", 
+           RowBox[{
+            RowBox[{"1", "+", 
+             RowBox[{"2", " ", "s1", " ", "theta"}], "-", 
+             RowBox[{"2", " ", "z1"}]}], ">", "0"}]}], ")"}], "||", 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"0", "<", "s1"}], "&&", 
+           RowBox[{
+            RowBox[{
+             FractionBox["1", "s1"], "+", "theta"}], "<", "0"}], "&&", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", "1"}], "+", 
+             RowBox[{"2", " ", "s1", " ", "theta"}], "-", 
+             RowBox[{"2", " ", "z1"}]}], "<", "0"}], "&&", 
+           RowBox[{
+            RowBox[{"1", "+", 
+             RowBox[{"2", " ", "s1", " ", "theta"}], "-", 
+             RowBox[{"2", " ", "z1"}]}], ">", "0"}]}], ")"}]}]},
+       {"0", 
+        TagBox["True",
+         "PiecewiseDefault",
+         AutoDelete->True]}
+      },
+      AllowedDimensions->{2, Automatic},
+      Editable->True,
+      GridBoxAlignment->{"Columns" -> {{Left}}, "Rows" -> {{Baseline}}},
+      GridBoxItemSize->{"Columns" -> {{Automatic}}, "Rows" -> {{1.}}},
+      GridBoxSpacings->{"Columns" -> {
+          Offset[0.27999999999999997`], {
+           Offset[0.84]}, 
+          Offset[0.27999999999999997`]}, "Rows" -> {
+          Offset[0.2], {
+           Offset[0.4]}, 
+          Offset[0.2]}},
+      Selectable->True]}
+   },
+   GridBoxAlignment->{"Columns" -> {{Left}}, "Rows" -> {{Baseline}}},
+   GridBoxItemSize->{"Columns" -> {{Automatic}}, "Rows" -> {{1.}}},
+   GridBoxSpacings->{"Columns" -> {
+       Offset[0.27999999999999997`], {
+        Offset[0.35]}, 
+       Offset[0.27999999999999997`]}, "Rows" -> {
+       Offset[0.2], {
+        Offset[0.4]}, 
+       Offset[0.2]}}],
+  "Piecewise",
+  DeleteWithContents->True,
+  Editable->False,
+  SelectWithContents->True,
+  Selectable->False,
+  StripWrapperBoxes->True]], "Output",
+ CellChangeTimes->{3.8611532113246946`*^9},
+ CellLabel->"Out[1]=",ExpressionUUID->"1291432c-8462-4bf3-b663-a0a2571cd133"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"Roots", "[", 
+    RowBox[{
+     RowBox[{
+      RowBox[{
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"2", "*", "x"}], "+", "3"}], ")"}], "*", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{"x", "+", "1"}], ")"}], "^", "2"}]}], "-", 
+       RowBox[{"2", "*", 
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"2", "*", "x"}], "+", "1"}], ")"}], "*", 
+        RowBox[{"(", 
+         RowBox[{"x", "+", "3"}], ")"}]}]}], "\[Equal]", "0"}], ",", "x"}], 
+    "]"}], "[", 
+   RowBox[{"[", "3", "]"}], "]"}], "//", "Simplify"}]], "Input",
+ CellChangeTimes->{{3.86190814866162*^9, 3.8619081852223024`*^9}, {
+  3.861908227215124*^9, 3.8619083493346*^9}, {3.8619083926355896`*^9, 
+  3.8619084013284073`*^9}, {3.861908611355589*^9, 3.8619086558354254`*^9}},
+ CellLabel->"In[18]:=",ExpressionUUID->"a57bd374-fd92-4640-89ed-7102d0711ada"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    FractionBox["1", "4"], " ", 
+    RowBox[{"(", 
+     RowBox[{"2", "+", 
+      FractionBox[
+       RowBox[{"5", "-", 
+        RowBox[{"5", " ", "\[ImaginaryI]", " ", 
+         SqrtBox["3"]}]}], 
+       SuperscriptBox[
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"-", "1"}], "+", 
+          RowBox[{"2", " ", "\[ImaginaryI]", " ", 
+           SqrtBox["31"]}]}], ")"}], 
+        RowBox[{"1", "/", "3"}]]], "+", 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{"1", "+", 
+         RowBox[{"\[ImaginaryI]", " ", 
+          SqrtBox["3"]}]}], ")"}], " ", 
+       SuperscriptBox[
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"-", "1"}], "+", 
+          RowBox[{"2", " ", "\[ImaginaryI]", " ", 
+           SqrtBox["31"]}]}], ")"}], 
+        RowBox[{"1", "/", "3"}]]}]}], ")"}]}], "+", "x"}], "\[Equal]", 
+  "0"}]], "Output",
+ CellChangeTimes->{
+  3.861908401749854*^9, {3.861908612412191*^9, 3.8619086561833744`*^9}},
+ CellLabel->"Out[18]=",ExpressionUUID->"da774713-9edf-44c0-976d-f13f8243c1c2"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Factor", "[", 
+  RowBox[{
+   RowBox[{"2", "*", 
+    RowBox[{"x", "^", "3"}]}], "+", 
+   RowBox[{"3", "*", 
+    RowBox[{"x", "^", "2"}]}], "-", 
+   RowBox[{"6", "*", "x"}], "-", "3"}], "]"}]], "Input",
+ CellChangeTimes->{{3.8619085258688917`*^9, 3.861908537392209*^9}},
+ CellLabel->"In[13]:=",ExpressionUUID->"47ee25dd-6a84-4ad9-bf4a-d45f1592c272"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"-", "3"}], "-", 
+  RowBox[{"6", " ", "x"}], "+", 
+  RowBox[{"3", " ", 
+   SuperscriptBox["x", "2"]}], "+", 
+  RowBox[{"2", " ", 
+   SuperscriptBox["x", "3"]}]}]], "Output",
+ CellChangeTimes->{3.861908537795124*^9},
+ CellLabel->"Out[13]=",ExpressionUUID->"2e4c8655-3b37-48a4-99e2-8dafd9aa25ee"]
+}, Open  ]],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.861908695440725*^9, 
+  3.8619086963719206`*^9}},ExpressionUUID->"7ac9bb30-add3-48c8-ab1f-\
+9cf511fba106"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"FullSimplify", "[", 
+  RowBox[{
+   FractionBox["1", "4"], " ", 
+   RowBox[{"(", 
+    RowBox[{"2", "+", 
+     FractionBox[
+      RowBox[{"5", "-", 
+       RowBox[{"5", " ", "\[ImaginaryI]", " ", 
+        SqrtBox["3"]}]}], 
+      SuperscriptBox[
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{"-", "1"}], "+", 
+         RowBox[{"2", " ", "\[ImaginaryI]", " ", 
+          SqrtBox["31"]}]}], ")"}], 
+       RowBox[{"1", "/", "3"}]]], "+", 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{"1", "+", 
+        RowBox[{"\[ImaginaryI]", " ", 
+         SqrtBox["3"]}]}], ")"}], " ", 
+      SuperscriptBox[
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{"-", "1"}], "+", 
+         RowBox[{"2", " ", "\[ImaginaryI]", " ", 
+          SqrtBox["31"]}]}], ")"}], 
+       RowBox[{"1", "/", "3"}]]}]}], ")"}]}], "]"}]], "Input",
+ CellChangeTimes->{{3.861908684843848*^9, 3.861908700203*^9}},
+ CellLabel->"In[20]:=",ExpressionUUID->"e8b628aa-f879-478b-9db1-4e9b0762b448"],
+
+Cell[BoxData[
+ InterpretationBox[
+  TemplateBox[{"Root", 
+    InterpretationBox[
+     StyleBox[
+      TemplateBox[{"\"0.433\"", 
+        DynamicBox[
+         FEPrivate`FrontEndResource[
+         "FEExpressions", "NumericalApproximationElider"]]}, "RowDefault"], 
+      ShowStringCharacters -> False], 
+     0.43325403871576273484578223360585980117`15.954589770191003, Editable -> 
+     False], 
+    TagBox[
+     RowBox[{"Root", "[", 
+       RowBox[{
+         RowBox[{
+           RowBox[{"3", "-", 
+             RowBox[{"6", " ", "#1"}], "-", 
+             RowBox[{"3", " ", 
+               SuperscriptBox["#1", "2"]}], "+", 
+             RowBox[{"2", " ", 
+               SuperscriptBox["#1", "3"]}]}], "&"}], ",", "2"}], "]"}], 
+     Short[#, 7]& ], 0.43325403871576273`},
+   "NumericalApproximation"],
+  Root[3 - 6 # - 3 #^2 + 2 #^3& , 2, 0]]], "Output",
+ CellChangeTimes->{{3.8619086892643266`*^9, 3.8619087005659666`*^9}},
+ CellLabel->"Out[20]=",ExpressionUUID->"df58a047-b38b-430e-a8bd-e5d6c486fbf6"]
+}, Open  ]]
+},
+WindowSize->{1280, 677},
+WindowMargins->{{-8, Automatic}, {Automatic, -8}},
+FrontEndVersion->"12.2 for Microsoft Windows (64-bit) (December 12, 2020)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"8b53d120-b03c-45d0-b8ba-9e0e87c9c4fc"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 1602, 35, 48, "Input",ExpressionUUID->"1074eb15-1a2f-477b-b64e-7e4c3be1ef6c"],
+Cell[2185, 59, 5046, 146, 161, "Output",ExpressionUUID->"ed059be7-9ac2-4f06-bb40-606c94a3f452"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[7268, 210, 1138, 29, 48, "Input",ExpressionUUID->"1e3f9d34-e13c-4087-8c0e-8fec8f4bb340"],
+Cell[8409, 241, 83695, 2225, 7121, "Output",ExpressionUUID->"83b41eba-a30f-40ff-bdff-48574bd150b5"]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[92141, 2471, 1083, 28, 24, "Input",ExpressionUUID->"5a117a4a-bc5b-40c6-9ad4-542d3b519949"],
+Cell[93227, 2501, 16139, 436, 589, "Output",ExpressionUUID->"1291432c-8462-4bf3-b663-a0a2571cd133"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[109403, 2942, 921, 25, 28, "Input",ExpressionUUID->"a57bd374-fd92-4640-89ed-7102d0711ada"],
+Cell[110327, 2969, 1068, 33, 61, "Output",ExpressionUUID->"da774713-9edf-44c0-976d-f13f8243c1c2"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[111432, 3007, 371, 9, 28, "Input",ExpressionUUID->"47ee25dd-6a84-4ad9-bf4a-d45f1592c272"],
+Cell[111806, 3018, 328, 9, 32, "Output",ExpressionUUID->"2e4c8655-3b37-48a4-99e2-8dafd9aa25ee"]
+}, Open  ]],
+Cell[112149, 3030, 154, 3, 28, "Input",ExpressionUUID->"7ac9bb30-add3-48c8-ab1f-9cf511fba106"],
+Cell[CellGroupData[{
+Cell[112328, 3037, 993, 30, 59, "Input",ExpressionUUID->"e8b628aa-f879-478b-9db1-4e9b0762b448"],
+Cell[113324, 3069, 1005, 26, 41, "Output",ExpressionUUID->"df58a047-b38b-430e-a8bd-e5d6c486fbf6"]
+}, Open  ]]
+}
+]
+*)
+

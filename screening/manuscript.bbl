@@ -1,0 +1,120 @@
+ \newcommand{\noop}[1]{}
+\begin{thebibliography}{}
+
+\bibitem[\protect\citeauthoryear{Begg}{Begg}{1994}]{begg:94b}
+Begg, C. (1994).
+\newblock Publication bias.
+\newblock In H.~Cooper and L.~Hedges (Eds.), {\em The Handbook of Research
+  Synthesis}, pp.\  399--409. New York: Russel Sage Foundation.
+
+\bibitem[\protect\citeauthoryear{Begg and Mazumdar}{Begg and
+  Mazumdar}{1994}]{begg:94a}
+Begg, C. and M.~Mazumdar (1994).
+\newblock Operating characteristics of a rank correlation test for publication
+  bias.
+\newblock {\em Biometrics\/}, 1088--1101.
+
+\bibitem[\protect\citeauthoryear{Davey, Turner, Clarke, and Higgins}{Davey
+  et~al.}{2011}]{davey:11}
+Davey, J., R.~M. Turner, M.~J. Clarke, and J.~Higgins (2011).
+\newblock Characteristics of meta-analyses and their component studies in the
+  cochrane database of systematic reviews: a cross-sectional, descriptive
+  analysis.
+\newblock {\em BMC Medical Research Methodology\/}~{\em 11\/}(1), 1--11.
+
+\bibitem[\protect\citeauthoryear{Dembo}{Dembo}{2016}]{dembo:16}
+Dembo, A. (2016, September).
+\newblock {Probability Theory: STAT310/MATH230}.
+
+\bibitem[\protect\citeauthoryear{Egger, Smith, Schneider, and Minder}{Egger
+  et~al.}{1997}]{egger:97}
+Egger, M., G.~D. Smith, M.~Schneider, and C.~Minder (1997).
+\newblock Bias in meta-analysis detected by a simple, graphical test.
+\newblock {\em {BMJ}\/}~{\em 315\/}(7109), 629--634.
+
+\bibitem[\protect\citeauthoryear{Konstantopoulos and Hedges}{Konstantopoulos
+  and Hedges}{2019}]{konstantopoulos:19}
+Konstantopoulos, S. and L.~V. Hedges (2019).
+\newblock Statistically analyzing effect sizes: Fixed- and random-effects
+  models.
+\newblock In H.~Cooper, L.~V. Hedges, and J.~C. Valentine (Eds.), {\em The
+  handbook of research synthesis and meta-analysis}, pp.\  245--280. New York,
+  NY: Russell Sage Foundation.
+
+\bibitem[\protect\citeauthoryear{Lin and Chu}{Lin and Chu}{2018}]{lin:18}
+Lin, L. and H.~Chu (2018).
+\newblock Quantifying publication bias in meta-analysis.
+\newblock {\em Biometrics\/}~{\em 74\/}(3), 785--794.
+
+\bibitem[\protect\citeauthoryear{Macaskill, Walter, and Irwig}{Macaskill
+  et~al.}{2001}]{macaskill:01}
+Macaskill, P., S.~D. Walter, and L.~Irwig (2001).
+\newblock A comparison of methods to detect publication bias in meta-analysis.
+\newblock {\em Statistics in Medicine\/}~{\em 20\/}(4), 641--654.
+
+\bibitem[\protect\citeauthoryear{Michael and Ghebremichael}{Michael and
+  Ghebremichael}{a}]{michael:inpress-b}
+Michael, H. and M.~Ghebremichael.
+\newblock Comparison of the powers of begg's and egger's tests for publication
+  bias.
+\newblock forthcoming.
+
+\bibitem[\protect\citeauthoryear{Michael and Ghebremichael}{Michael and
+  Ghebremichael}{b}]{michael:inpress-a}
+Michael, H. and M.~Ghebremichael.
+\newblock A correction to begg’s test for publication bias.
+\newblock forthcoming.
+
+\bibitem[\protect\citeauthoryear{Nolan and Pollard}{Nolan and
+  Pollard}{1988}]{nolan:88}
+Nolan, D. and D.~Pollard (1988).
+\newblock Functional limit theorems for $ u $-processes.
+\newblock {\em The Annals of Probability\/}~{\em 16\/}(3), 1291--1298.
+
+\bibitem[\protect\citeauthoryear{Olshen}{Olshen}{1973}]{olshen:73}
+Olshen, R.~A. (1973).
+\newblock The conditional level of the {F-Test}.
+\newblock {\em Journal of the American Statistical Association\/}~{\em
+  68\/}(343), 692--698.
+
+\bibitem[\protect\citeauthoryear{Rao}{Rao}{1973}]{Rao:73}
+Rao, C.~R. (1973).
+\newblock {\em Linear Statistical Inference and Its Applications}.
+\newblock John Wiley \& Sons.
+
+\bibitem[\protect\citeauthoryear{Rochon, Gondan, and Kieser}{Rochon
+  et~al.}{2012}]{rochon:12}
+Rochon, J., M.~Gondan, and M.~Kieser (2012).
+\newblock To test or not to test: Preliminary assessment of normality when
+  comparing two independent samples.
+\newblock {\em BMC medical research methodology\/}~{\em 12\/}(1), 1--11.
+
+\bibitem[\protect\citeauthoryear{Rothstein, Sutton, and Borenstein}{Rothstein
+  et~al.}{2005}]{rothstein:05}
+Rothstein, H.~R., A.~J. Sutton, and M.~Borenstein (2005).
+\newblock {\em Publication Bias in Meta-Analysis: Prevention, Assessment and
+  Adjustments}.
+\newblock West Sussex, England: John Wiley \& Sons.
+
+\bibitem[\protect\citeauthoryear{Schucany and Tony~Ng}{Schucany and
+  Tony~Ng}{2006}]{schucany:06}
+Schucany, W.~R. and H.~Tony~Ng (2006).
+\newblock Preliminary goodness-of-fit tests for normality do not validate the
+  one-sample student t.
+\newblock {\em Communications in Statistics-Theory and Methods\/}~{\em
+  35\/}(12), 2275--2286.
+
+\bibitem[\protect\citeauthoryear{Taylor and Tibshirani}{Taylor and
+  Tibshirani}{2015}]{taylor:15}
+Taylor, J. and R.~J. Tibshirani (2015).
+\newblock Statistical learning and selective inference.
+\newblock {\em Proceedings of the National Academy of Sciences\/}~{\em
+  112\/}(25), 7629--7634.
+
+\bibitem[\protect\citeauthoryear{Van~der Vaart}{Van~der
+  Vaart}{2000}]{vandervaart:00}
+Van~der Vaart, A.~W. (2000).
+\newblock {\em Asymptotic Statistics}.
+\newblock Cambridge University Press.
+
+\end{thebibliography}

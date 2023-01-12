@@ -1,0 +1,22 @@
+\begin{table}
+    \begin{tabular}{l c c}
+    distribution of $S$ & $\biasratio$ & max asymptotic bias \\
+    \hline\\
+    uniform  & $\frac{(b-a)^2}{3(a^2+b^2+ab)}$  & .11\\
+    beta & $\left(\frac{4B(a+b,a+b)}{B(a,a)B(b+b)}\right)^2\frac{a+b+1}{a(a^2+ab+a+b)}$ & .21\\
+    % exponential & 1/2 & .16\\
+    gamma & $\frac{16a}{a+1}(B(1/2,a,a+1)-1/2)^2$ & .18\\
+    pareto & $\frac{4a(a-2)}{((2a-1)(a-1))^2}$ & .04\\
+  \end{tabular}
+  \caption{Shape families of some nonnegative RVs, $\rho=\text{bias}\times\pi=(\E|S_1-S_2|)^2/E(S^2)$ in
+    terms of the shape parameters, and the maximum bias of the
+    asymptotic variance over the shape family.}
+  \label{table:biasratio}
+\end{table}
+\efloatseparator
+ 
+\begin{table}
+  \input{210313_table.tex}
+  \caption{False positive rates for standard Begg's test, after debiasing using true asymptotic bias, and after debiasing using estimated asymptotic bias.}
+  \label{table:fpr}
+\end{table}

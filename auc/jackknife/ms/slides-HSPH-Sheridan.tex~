@@ -1,0 +1,88 @@
+
+peaktoggle}
+\togglefalse{speaktoggle}
+\newcommand{\speak}[1]{
+  \iftoggle{speaktoggle}{
+    {\tiny{\textcolor{red}{speak: #1}}\normalsize}
+  }
+  {}
+}
+\setbeamertemplate{footline}[frame number]
+
+\title{Identification and Estimation of Marginal Structural Mean
+  Models with Instrumental Variables}
+\author{Haben Michael, Yifan Cui, Eric Tchetgen Tchetgen}
+\date{February 2019}
+
+\AtBeginSection[]  % "Beamer, do the following at the start of every section"
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline} % make a frame titled "Outline"
+    \tableofcontents[currentsection]  % show TOC and highlight current section
+  \end{frame}
+}
+
+\begin{document}
+
+
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+
+
+\section{Introduction}
+\subsection{Potential outcome framework}
+
+\begin{frame}
+
+  \textbf{A motivating example}
+  \medskip
+  \begin{columns}
+    \begin{column}{.7\textwidth}
+      \textbf{Sports argument:} Bill Belichick is a great coach: When average players come
+      to play for him, their performance jumps up; when they leave, they
+      become average again.
+    \end{column}
+    \begin{column}{.3\textwidth}
+      \includegraphics[width=\textwidth]{belichik.jpg}
+    \end{column}
+  \end{columns}
+  \textbf{Causal framework:} Players have a potential outcome, their performance
+  under Belichick and not under Belichick. This pre/post comparison
+  approximates the difference between the potential outcomes.
+
+  \textbf{Sports counter-argument:} It's not Belichick. He's just been
+  fortunate . . .
+
+  \textbf{Causal framework:} The association between Belichick (treatment) and
+  player performance (outcome) is spurious; it exists due to a
+  confounder. Is there some variable associated with treatment and outcome?
+
+  \speak{  The potential outcome allows us to formulate causal
+    questions. Sometimes these questions can be answered using
+    associational measures like regression (e.g., randomization) but
+    other times there is a difference between the association and the
+    causal relationship. The reason is that something might }
+
+\end{frame}
+
+\begin{frame}
+  \begin{columns}
+    \begin{column}{.7\textwidth}
+      \textbf{Sports counter-counter-argument:} But there was one year when the
+      quarterback was injured, and new players that year also performed better than usual.
+    \end{column}
+    \begin{column}{.3\textwidth}
+      \includegraphics[width=\textwidth]{brady.jpg}
+    \end{column}
+  \end{columns}
+  \medskip
+
+  \textbf{Causal framework:} There are no unmeasured confounders; we can obtain
+  the causal effect by controlling for the known confounder.
+
+\end{frame}
+
+\end{document}

@@ -1,0 +1,41 @@
+\begin{figure}
+  \includegraphics[width=\linewidth]{selection.png}
+  \caption{  The effect of a simple hard thresholding selection model on the
+  study means. Overlaid on the joint density of $\y$ and $\sigma$, indicated by grayscale, is the mean $\theta=0$ of $\y|\sigma$
+  before selection and exhibiting no
+  trend (solid line), a threshold line corresponding to rejecting studies with a one-sided p-value
+  $>.3$ (dashed line), and the mean of the studies
+  after selection, exhibiting a trend that Begg's test can pick up (dotted line).
+}
+  \label{fig:selection}
+\end{figure}
+\efloatseparator
+ 
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth/2]{neg_bias_students.png}
+  \caption{The observed Type I error rate of Begg's test compared to a
+    nominal rate of .1 when the distribution of the response $Z$ is
+    based on a standardized Student's t distribution, i.e.,
+    $Z=T/\sqrt{df/(df-2)}$ where $T$ follows a Student's t with $df$
+    degrees of freedom. The error rate slightly exceeds the nominal
+    rate, particularly as $df$ decreases to the boundary case at
+    $2$. In contrast, when $Z$ is gaussian, the error rate falls below
+    the nominal rate.}
+  \label{fig:negative bias}
+\end{figure}
+\efloatseparator
+ 
+\begin{figure}
+  \includegraphics[width=\linewidth]{power_curves.png}
+  % \includegraphics[scale=.5]{ms/210314a.png}
+  \caption{Power curves of standard Begg's test, after debiasing using true asymptotic bias, and after debiasing using estimated asymptotic bias. The alternatives are parameterized by the proportion of studies selected. The estimator debiased using an estimate of the true bias and the true bias itself overlap.\comment{increase size of plot}}
+  \label{fig:power}
+\end{figure}
+\efloatseparator
+ 
+\begin{figure}
+  \includegraphics[width=\linewidth]{funnel_plots.png}
+  \caption{Funnel plots of the three meta-analyses described in Section \ref{section:data analysis}. These were interpreted as suggesting lower, moderate, and higher possibilities of publication bias, going from left to right.}
+  \label{fig:funnel}
+\end{figure}

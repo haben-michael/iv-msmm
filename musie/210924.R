@@ -1,0 +1,184 @@
+## ## Musie email 9/21 re mle of auc under lehmann model
+
+## ## 1. check max of log likelihood--looks OK
+## auc <- .6
+## scale.0 <- 1
+## scale.1 <- scale.0*(auc/(1-auc))^(1/shape)
+## m <- n <- 10
+## shape <- 2
+## shape.mles <- replicate(50, {
+##     y.0 <- rweibull(m,shape=shape,scale=scale.0^(1/shape))
+##     y.1 <- rweibull(n,shape=shape,scale=scale.1^(1/shape))
+##     y <- c(y.0,y.1)
+##     objective <- function(shapes,y.0,y.1) {
+##         m <- length(y.0); n <- length(y.1)
+##         y <- c(y.0,y.1)
+##         sapply(shapes, function(shape) 
+##             ## sum(log(dweibull(y.0,shape=shape,scale=scale.0^(1/shape)))) + sum(log(dweibull(y.1,shape=shape,scale=scale.1^(1/shape))))) ## wikipedia parametrization of scale parameter
+##         (m+n)*log(shape)+(shape-1)*sum(log(y))-1/scale.0*sum(y.0^shape)-1/scale.1*sum(y.1^shape)-m*log(scale.0)-n*log(scale.1) ## musie parametrization
+##         )
+##     }
+##     optimize(objective,c(.1,5),y.0=y.0,y.1=y.1,maximum=TRUE)$maximum
+## })
+## hist(shape.mles)
+## abline(v=shape,col=2)
+
+
+## gen.data <- function(m,n,auc,shape=1,scale.0=1) {
+##     scale.1 <- scale.0*(auc/(1-auc))^(1/shape)
+##     y.0 <- rweibull(m,shape=shape,scale=scale.0^(1/shape))
+##     y.1 <- rweibull(n,shape=shape,scale=scale.1^(1/shape))
+##     return(list(y.0=y.0,y.1=y.1))
+## }
+
+
+## auc.mle <- function(y.0,y.1) {
+##     objective <- function(shapes,y.0,y.1) {
+##         m <- length(y.0); n <- length(y.1)
+##         y <- c(y.0,y.1)
+##         sapply(shapes, function(shape) 
+##         (m+n)/shape + sum(log(y)) - m*sum(y.0^shape*log(y.0))/sum(y.0^shape) - n*sum(y.1^shape*log(y.1))/sum(y.1^shape)
+##         )
+##     }
+##     shape.mle <- uniroot(objective,c(0.1,2),extendInt='yes',y.0=y.0,y.1=y.1)$root
+##     mean(y.1^shape.mle) / (mean(y.0^shape.mle) + mean(y.1^shape.mle))
+## }
+
+## ## 2. shape MLE--fixing Musie's formula
+## m <- n <- 50
+## shape <- 1
+## shape.mles <- replicate(50, {
+##     y <- gen.data(n,n,auc)
+##     y.0 <- y$y.0; y.1 <- y$y.1
+##     y <- unlist(y)
+##     objective <- function(shapes,y.0,y.1) {
+##         m <- length(y.0); n <- length(y.1)
+##         y <- c(y.0,y.1)
+##         sapply(shapes, function(shape) 
+##             ## (length(y)+sum(y^shape)) / (m*sum(y.0^shape*log(y.0))/sum(y.0^shape) +  n*sum(y.1^shape*log(y.1))/sum(y.1^shape)  )
+##         (m+n)/shape + sum(log(y)) - m*sum(y.0^shape*log(y.0))/sum(y.0^shape) - n*sum(y.1^shape*log(y.1))/sum(y.1^shape)
+##         )
+##     }
+##     ## objective <- Vectorize(objective,'shape')
+##     shape.mle <- uniroot(objective,c(0.1,2),extendInt='yes',y.0=y.0,y.1=y.1)$root
+##     ## optimize(objective,c(.1,2),y.0=y.0,y.1=y.1,maximum=TRUE)$maximum
+## })
+## hist(shape.mles)
+## abline(v=shape,col=2)
+
+## ## 3. auc MLE
+## m <- n <- 50
+## shape <- 1
+## auc.mles <- replicate(50, {
+##     y <- gen.data(n,n,auc)
+##     y.0 <- y$y.0; y.1 <- y$y.1
+##     y <- unlist(y)
+##     ## objective <- function(shapes,y.0,y.1) {
+##     ##     m <- length(y.0); n <- length(y.1)
+##     ##     y <- c(y.0,y.1)
+##     ##     sapply(shapes, function(shape) 
+##     ##         ## (length(y)+sum(y^shape)) / (m*sum(y.0^shape*log(y.0))/sum(y.0^shape) +  n*sum(y.1^shape*log(y.1))/sum(y.1^shape)  )
+##     ##     (m+n)/shape + sum(log(y)) - m*sum(y.0^shape*log(y.0))/sum(y.0^shape) - n*sum(y.1^shape*log(y.1))/sum(y.1^shape)
+##     ##     )
+##     ## }
+##     ## ## objective <- Vectorize(objective,'shape')
+##     ## shape.mle <- uniroot(objective,c(0.1,2),extendInt='yes',y.0=y.0,y.1=y.1)$root
+##     ## auc.mle <- mean(y.1^shape.mle) / (mean(y.0^shape.mle) + mean(y.1^shape.mle))
+##     ## ## optimize(objective,c(.1,2),y.0=y.0,y.1=y.1,maximum=TRUE)$maximum
+##     auc.mle(y.0,y.1)
+## })
+## hist(auc.mles)
+## abline(v=auc,col=2)
+
+
+
+
+
+
+
+## 4. simulation tables
+require(survival)
+require(parallel)
+require(xtable)
+options(scipen=999)
+
+
+reps <- 1e3
+ns <- c(5,10,15,30,60,100,200)#seq(10,40,by=10)
+aucs <- AUCs <- c(.55,.7,.9)#seq(.5,.9,by=.1)
+
+gen.data.weibull <- function(m,n,auc,shape=1,scale.0=1) {
+    scale.1 <- scale.0*(auc/(1-auc))^(1/shape)
+    y.0 <- rweibull(m,shape=shape,scale=scale.0)#^(1/shape))
+    y.1 <- rweibull(n,shape=shape,scale=scale.1)#^(1/shape))
+    return(list(y.0=y.0,y.1=y.1))
+}
+
+## gen.data.normal <- function(m,n,auc,mu.0=0,sd=c(1,1)) {
+##     mu.1 <- mu.0 + sd[2]*qnorm(auc)*sqrt(1+(sd[1]/sd[2])^2)
+##     y.0 <- rnorm(n,mu.0,sd[1])#rweibull(n,shape=shape,scale=scale.0)
+##     y.1 <- rnorm(n,mu.1,sd[2])#rweibull(n,shape=shape,scale=scale.1)
+##     return(list(y.0=y.0,y.1=y.1))
+## }
+    
+auc.mle <- function(y.0,y.1) {
+    objective <- function(shapes,y.0,y.1) {
+        m <- length(y.0); n <- length(y.1)
+        y <- c(y.0,y.1)
+        sapply(shapes, function(shape) 
+        (m+n)/shape + sum(log(y)) - m*sum(y.0^shape*log(y.0))/sum(y.0^shape) - n*sum(y.1^shape*log(y.1))/sum(y.1^shape)
+        )
+    }
+    shape.mle <- uniroot(objective,c(0.1,2),extendInt='yes',y.0=y.0,y.1=y.1)$root
+    mean(y.1^shape.mle) / (mean(y.0^shape.mle) + mean(y.1^shape.mle))
+}
+
+auc.cox <- function(y.0,y.1,alpha=.05) {
+    y <- c(y.0,y.1)
+    d <- rep(c(0,1),c(length(y.0),length(y.1)))
+    fit <-         coxph(Surv(y) ~ d)
+    log.theta.hat <- unname(coef(fit))
+    se.hat <- sqrt(vcov(fit))
+    q <- qnorm(1-alpha/2)
+    CI.lower <- log.theta.hat-q*se.hat
+    CI.upper <- log.theta.hat+q*se.hat
+    auc.hat <- 1/(exp(log.theta.hat)+1)
+    ## est.cox <- c(auc.hat=auc.hat,se.hat=se.hat,CI.lower=1/(exp(CI.upper)+1),CI.upper=1/(exp(CI.lower)+1))
+}
+
+
+by.aucs <- lapply(list(function(m,n,auc)gen.data.weibull(n,n,auc,shape=1,scale.0=1),
+                       function(m,n,auc)gen.data.weibull(n,n,auc,shape=3.5,scale.0=1),
+                       function(m,n,auc)gen.data.weibull(n,n,auc,shape=20,scale.0=1)), function(gen.data) {
+                by.auc <- lapply(aucs, function(auc) {
+                    ## by.n <- mclapply(ns, mc.cores=detectCores()-4, function(n) {
+                    by.n <- lapply(ns, function(n) {
+                        auc.hats <- replicate(reps, {
+                            y <- gen.data(n,n,auc)
+                            y.0 <- y$y.0; y.1 <- y$y.1
+                            y <- unlist(y)
+                            c(mle=auc.mle(y.0,y.1),cox=auc.cox(y.0,y.1))
+                        })
+                        bias <- rowMeans(auc.hats)-auc
+                        rbind(bias=bias, mse=bias^2+apply(auc.hats,1,var))
+                    })
+                    by.n <- simplify2array(by.n)
+                })
+                by.auc <- simplify2array(by.auc)
+                dimnames(by.auc)[[3]] <- ns
+                dimnames(by.auc)[[4]] <- aucs
+                by.auc
+})
+
+## sink('tables.tex')
+lapply(by.aucs, function(by.auc) {
+    ftbl <- ftable(by.auc,row.vars=c(3,1),col.vars=c(4,2))
+    ftbl <- round(ftbl,4)
+    xftbl <- xtableFtable(ftbl,method='compact',digits=3)
+    print.xtableFtable(xftbl, booktabs = TRUE)    
+})
+sink()
+
+## save.image('211221.RData')
+
+

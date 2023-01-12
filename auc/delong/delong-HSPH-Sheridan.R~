@@ -1,0 +1,404 @@
+require(MASS)
+p <- 1
+n <- 1e1
+x <- matrix(rnorm(n*p),nrow=n)
+g <- sample(0:1,n,replace=TRUE)
+g <- rep(0:1,each=n/2)
+## compute LDA
+x.demeaned <- scale(x,scale=FALSE)#t(t(x) - colMeans(x))
+x.grouped <- split.data.frame(x,g)
+W.i <- lapply(x.grouped, function(x.i) {
+    x.i.demeaned <- scale(x.i,scale=FALSE)#t(t(x.i)-colMeans(x.i))
+    t(x.i.demeaned)%*%x.i.demeaned
+})
+group.means <- do.call(cbind,lapply(split.data.frame(x,g), colMeans))
+d <- apply(group.means,1,diff)
+W <- Reduce(`+`,W.i)
+ns <- sapply(x.grouped,nrow)
+## (group.means - colMeans(x))
+a <- solve(W)%*%d
+proj <- t(a) %*% (t(x) - rowMeans(group.means))
+g.hat <- as.numeric(proj < 0)
+lda(x,g,method='mle')
+S.i <- lapply(x.grouped,cov)
+S <- (S.i[['0']]*ns['0'] + S.i[['1']]*ns['1']) / (n-2)
+## Sigma <- cov(x)
+w <- solve(S)%*%d
+c <- w%*%rowMeans(group.means)
+w
+
+
+
+
+
+
+
+
+
+
+
+
+lda.dbg <-
+    function(x, grouping, prior = proportions, tol = 1.0e-4,
+             method = c("moment", "mle", "mve", "t"),
+             CV = FALSE, nu = 5, ...)
+{
+    browser()
+    if(is.null(dim(x))) stop("'x' is not a matrix")
+    x <- as.matrix(x)
+    if(any(!is.finite(x)))
+        stop("infinite, NA or NaN values in 'x'")
+    n <- nrow(x)
+    p <- ncol(x)
+    if(n != length(grouping))
+        stop("nrow(x) and length(grouping) are different")
+    g <- as.factor(grouping)
+    lev <- lev1 <- levels(g)
+    counts <- as.vector(table(g))
+    if(!missing(prior)) {
+        if(any(prior < 0) || round(sum(prior), 5) != 1) stop("invalid 'prior'")
+        if(length(prior) != nlevels(g)) stop("'prior' is of incorrect length")
+        prior <- prior[counts > 0L]
+    }
+    if(any(counts == 0L)) {
+        empty <- lev[counts == 0L]
+        warning(sprintf(ngettext(length(empty),
+                                 "group %s is empty",
+                                 "groups %s are empty"),
+                        paste(empty, collapse = " ")), domain = NA)
+        lev1 <- lev[counts > 0L]
+        g <- factor(g, levels = lev1)
+        counts <- as.vector(table(g))
+    }
+    proportions <- counts/n
+    ng <- length(proportions)
+    names(prior) <- names(counts) <- lev1
+    method <- match.arg(method)
+    if(CV && !(method == "moment" || method == "mle"))
+        stop(gettext("cannot use leave-one-out CV with method %s",
+                     sQuote(method)), domain = NA)
+    ## drop attributes to avoid e.g. matrix() methods
+    group.means <- tapply(c(x), list(rep(g, p), col(x)), mean)
+    f1 <- sqrt(diag(var(x - group.means[g,  ])))
+    if(any(f1 < tol)) {
+        const <- format((1L:p)[f1 < tol])
+        stop(sprintf(ngettext(length(const),
+                              "variable %s appears to be constant within groups",
+                              "variables %s appear to be constant within groups"),
+                     paste(const, collapse = " ")),
+             domain = NA)
+    }
+                                        # scale columns to unit variance before checking for collinearity
+    scaling <- diag(1/f1, , p)
+    if(method == "mve") {
+                                        # adjust to "unbiased" scaling of covariance matrix
+        cov <- n/(n - ng) * cov.rob((x - group.means[g,  ]) %*% scaling)$cov
+        sX <- svd(cov, nu = 0L)
+        rank <- sum(sX$d > tol^2)
+        if(rank == 0L) stop("rank = 0: variables are numerically constant")
+        if(rank < p) warning("variables are collinear")
+        scaling <- scaling %*% sX$v[, 1L:rank] %*%
+            diag(sqrt(1/sX$d[1L:rank]),,rank)
+    } else if(method == "t") {
+        if(nu <= 2) stop("'nu' must exceed 2")
+        w <- rep(1, n)
+        repeat {
+            w0 <- w
+            X <- x - group.means[g, ]
+            sX <- svd(sqrt((1 + p/nu)*w/n) * X, nu = 0L)
+            X <- X %*% sX$v %*% diag(1/sX$d,, p)
+            w <- 1/(1 + drop(X^2 %*% rep(1, p))/nu)
+            print(summary(w))
+            group.means <- tapply(w*x, list(rep(g, p), col(x)), sum)/
+                rep.int(tapply(w, g, sum), p)
+            if(all(abs(w - w0) < 1e-2)) break
+        }
+        X <-  sqrt(nu/(nu-2)*(1 + p/nu)/n * w) * (x - group.means[g,  ]) %*% scaling
+        X.s <- svd(X, nu = 0L)
+        rank <- sum(X.s$d > tol)
+        if(rank == 0L) stop("rank = 0: variables are numerically constant")
+        if(rank < p) warning("variables are collinear")
+        scaling <- scaling %*% X.s$v[, 1L:rank] %*% diag(1/X.s$d[1L:rank],,rank)
+    } else {
+        fac <- if(method == "moment") 1/(n-ng) else 1/n
+        X <- sqrt(fac) * (x - group.means[g,  ]) %*% scaling
+        X.s <- svd(X, nu = 0L)
+        rank <- sum(X.s$d > tol)
+        if(rank == 0L) stop("rank = 0: variables are numerically constant")
+        if(rank < p) warning("variables are collinear")
+        scaling <- scaling %*% X.s$v[, 1L:rank] %*% diag(1/X.s$d[1L:rank],,rank)
+    }
+                                        # now have variables scaled so that W is the identity
+    if(CV) {
+        x <- x %*% scaling
+        dm <- group.means %*% scaling
+        K <- if(method == "moment") ng else 0L
+        dist <- matrix(0, n, ng)
+        for(i in 1L:ng) {
+            dev <- x - matrix(dm[i,  ], n, rank, byrow = TRUE)
+            dist[, i] <- rowSums(dev^2)
+        }
+        ind <- cbind(1L:n, g)
+        nc <- counts[g]
+        cc <- nc/((nc-1)*(n-K))
+        dist2 <- dist
+        for(i in 1L:ng) {
+            dev <- x - matrix(dm[i,  ], n, rank, byrow = TRUE)
+            dev2 <- x - dm[g, ]
+            tmp <- rowSums(dev*dev2)
+            dist[, i] <- (n-1L-K)/(n-K) * (dist2[, i] +  cc*tmp^2/(1 - cc*dist2[ind]))
+        }
+        dist[ind] <- dist2[ind] * (n-1L-K)/(n-K) * (nc/(nc-1))^2 /
+            (1 - cc*dist2[ind])
+        dist <- 0.5 * dist - matrix(log(prior), n, ng, byrow = TRUE)
+        dist <- exp(-(dist - min(dist, na.rm = TRUE)))
+        cl <- factor(lev1[max.col(dist)], levels = lev)
+        ##  convert to posterior probabilities
+        posterior <- dist/drop(dist %*% rep(1, length(prior)))
+        dimnames(posterior) <- list(rownames(x), lev1)
+        return(list(class = cl, posterior = posterior))
+    }
+    xbar <- colSums(prior %*% group.means)
+    fac <- if(method == "mle") 1/ng else 1/(ng - 1)
+    X <- sqrt((n * prior)*fac) * scale(group.means, center = xbar, scale = FALSE) %*% scaling
+    X.s <- svd(X, nu = 0L)
+    rank <- sum(X.s$d > tol * X.s$d[1L])
+    if(rank == 0L) stop("group means are numerically identical")
+    scaling <- scaling %*% X.s$v[, 1L:rank]
+    if(is.null(dimnames(x)))
+        dimnames(scaling) <- list(NULL, paste("LD", 1L:rank, sep = ""))
+    else {
+        dimnames(scaling) <- list(colnames(x), paste("LD", 1L:rank, sep = ""))
+        dimnames(group.means)[[2L]] <- colnames(x)
+    }
+    cl <- match.call()
+    cl[[1L]] <- as.name("lda")
+    structure(list(prior = prior, counts = counts, means = group.means,
+                   scaling = scaling, lev = lev, svd = X.s$d[1L:rank],
+                   N = n, call = cl),
+              class = "lda")
+}
+lda.dbg(x,g)
+
+
+
+
+
+
+## replicate pROC's delong test
+require(pROC)
+set.seed(123)
+df <- data.frame(disease.status = rbinom(n=100, size=1, prob=0.20),
+                 test1 = rnorm(100, mean=15, sd=4),
+                 test2 = rnorm(100, mean=30, sd=2),
+                 test3 = rnorm(100, mean=50, sd=3))
+                                        #create roc object for test1, test2, test3roc.out <- test1.roc(df$disease.status, df$test1, plot=TRUE, smooth = FALSE)
+roc.out.test1<-roc(df$disease.status, df$test1, plot=TRUE, smooth = FALSE)
+roc.out.test2 <- roc(df$disease.status, df$test2, plot=TRUE, smooth = FALSE)
+roc.out.test3 <- roc(df$disease.status, df$test3, plot=TRUE, smooth = FALSE)
+                                        #compare the AUC of test1 and test 2
+roc.test(roc.out.test1, roc.out.test2, reuse.auc=TRUE, method="delong", na.rm=TRUE)
+
+x <- df[df$disease.status==0,c('test1','test2')]
+y <- df[df$disease.status==1,c('test1','test2')]
+m <- nrow(x); n <- nrow(y)
+theta.hats <- sapply(1:2, function(i) mean(outer(x[,i],y[,i],'<')))
+V.10.1 <- sapply(x[,1], function(x.i)mean(x.i<y[,1]))
+V.10.2 <- sapply(x[,2], function(x.i)mean(x.i<y[,2]))
+V.01.1 <- sapply(y[,1], function(y.i)mean(x[,1]<y.i))
+V.01.2 <- sapply(y[,2], function(y.i)mean(x[,2]<y.i))
+S.10 <- cov(cbind(V.10.1,V.10.2))
+S.01 <- cov(cbind(V.01.1,V.01.2))
+S <- S.10/m + S.01/n
+contrast <- matrix(c(1,-1),ncol=1)
+z.stat <- diff(rev(theta.hats)) / sqrt(t(contrast)%*%S%*%contrast)
+
+## check performance on null data--looks good
+delong.test <- function(x,y) {
+    m <- nrow(x); n <- nrow(y)
+    theta.hats <- sapply(1:2, function(i) mean(outer(x[,i],y[,i],'<')))
+    V.10.1 <- sapply(x[,1], function(x.i)mean(x.i<y[,1]))
+    V.10.2 <- sapply(x[,2], function(x.i)mean(x.i<y[,2]))
+    V.01.1 <- sapply(y[,1], function(y.i)mean(x[,1]<y.i))
+    V.01.2 <- sapply(y[,2], function(y.i)mean(x[,2]<y.i))
+    S.10 <- cov(cbind(V.10.1,V.10.2))
+    S.01 <- cov(cbind(V.01.1,V.01.2))
+    S <- S.10/m + S.01/n
+    contrast <- matrix(c(1,-1),ncol=1)
+    z.stat <- diff(rev(theta.hats)) / sqrt(t(contrast)%*%S%*%contrast)
+    return(z.stat)
+}
+
+m <- 15
+n <- 20
+z.stats <- replicate(1e2, {
+    x <- matrix(rnorm(2*m),ncol=2)
+    y <- matrix(rnorm(2*n),ncol=2)
+    delong.test(x,y)
+})
+alpha <- .05
+mean(abs(z.stats)>qnorm(1-alpha/2))
+
+p.vals <- replicate(1e3, {
+    x <- matrix(rnorm(2*m),ncol=2)
+    y <- matrix(runif(2*n),ncol=2)
+    z.stat <- delong.test(x,y)
+    1-pnorm(z.stat)
+})
+plot(ecdf(p.vals))
+abline(0,1)
+
+
+
+## version of routine accepting df input
+delong.test.old <- function(x,y) {
+    m <- nrow(x); n <- nrow(y)
+    theta.hats <- sapply(1:2, function(i) mean(outer(x[,i],y[,i],'<')))
+    V.10.1 <- sapply(x[,1], function(x.i)mean(x.i<y[,1]))
+    V.10.2 <- sapply(x[,2], function(x.i)mean(x.i<y[,2]))
+    V.01.1 <- sapply(y[,1], function(y.i)mean(x[,1]<y.i))
+    V.01.2 <- sapply(y[,2], function(y.i)mean(x[,2]<y.i))
+    S.10 <- cov(cbind(V.10.1,V.10.2))
+    S.01 <- cov(cbind(V.01.1,V.01.2))
+    S <- S.10/m + S.01/n
+    contrast <- matrix(c(1,-1),ncol=1)
+    z.stat <- diff(rev(theta.hats)) / sqrt(t(contrast)%*%S%*%contrast)
+    return(z.stat)
+}
+delong.test <- function(xy,g) {
+    g <- factor(g,labels=0:1)
+    x <- xy[g==0,]; y <- xy[g==1,]
+    m <- nrow(x); n <- nrow(y)
+    theta.hats <- sapply(1:2, function(i) mean(outer(x[,i],y[,i],'<')))
+    V.10.1 <- sapply(x[,1], function(x.i)mean(x.i<y[,1]))
+    V.10.2 <- sapply(x[,2], function(x.i)mean(x.i<y[,2]))
+    V.01.1 <- sapply(y[,1], function(y.i)mean(x[,1]<y.i))
+    V.01.2 <- sapply(y[,2], function(y.i)mean(x[,2]<y.i))
+    S.10 <- cov(cbind(V.10.1,V.10.2))
+    S.01 <- cov(cbind(V.01.1,V.01.2))
+    S <- S.10/m + S.01/n
+    contrast <- matrix(c(1,-1),ncol=1)
+    z.stat <- diff(rev(theta.hats)) / sqrt(t(contrast)%*%S%*%contrast)
+    return(z.stat)
+}
+p.vals <- replicate(1e3, {
+    x <- matrix(rnorm(2*m),ncol=2)
+    y <- matrix(runif(2*n),ncol=2)
+    xy <- rbind(x,y)
+    g <- rep(0:1,c(nrow(x),nrow(y)))
+    z.stat <- delong.test(xy,g)
+    stopifnot(z.stat==delong.test.old(x,y))
+    1-pnorm(z.stat)
+})
+plot(ecdf(p.vals))
+abline(0,1)
+
+
+## now with x's and y's from scores
+require(MASS)
+delong.test <- function(xy,g) {
+    g <- factor(g,labels=0:1)
+    x <- xy[g==0,]; y <- xy[g==1,]
+    m <- nrow(x); n <- nrow(y)
+    theta.hats <- sapply(1:2, function(i) mean(outer(x[,i],y[,i],'<')))
+    V.10.1 <- sapply(x[,1], function(x.i)mean(x.i<y[,1]))
+    V.10.2 <- sapply(x[,2], function(x.i)mean(x.i<y[,2]))
+    V.01.1 <- sapply(y[,1], function(y.i)mean(x[,1]<y.i))
+    V.01.2 <- sapply(y[,2], function(y.i)mean(x[,2]<y.i))
+    S.10 <- cov(cbind(V.10.1,V.10.2))
+    S.01 <- cov(cbind(V.01.1,V.01.2))
+    S <- S.10/m + S.01/n
+    contrast <- matrix(c(1,-1),ncol=1)
+    z.stat <- diff(rev(theta.hats)) / sqrt(t(contrast)%*%S%*%contrast)
+    return(z.stat)
+}
+## p <- 4
+## n <- 1e2
+## beta <- rep(1,p)
+## p.vals <- replicate(1e3, {
+##     c <- matrix(rnorm(n*p),ncol=p)
+##     true.probs <- plogis(c%*%beta)
+##     g <- rbinom(n,1,prob=true.probs)
+##     ## x.1 <- predict(lda(c[,1:2],g))$x
+##     x.1 <- predict(lda(c[,1:4],g))$x
+##     x.2 <- predict(lda(c[,3:4],g))$x
+##     xy <- cbind(x.1,x.2)
+##     z.stat <- delong.test(xy,g)
+##     1-pnorm(z.stat)
+## })
+## plot(ecdf(p.vals))
+## abline(0,1)
+
+require(mvtnorm)
+n <- 1e3
+p <- 2
+beta <- c(rep(.1,p),0)
+p.vals <- replicate(1e2, {
+    Sigma <- matrix(rnorm((p+1)^2),nrow=p+1)
+    Sigma <- Sigma%*%t(Sigma)
+    ## Sigma.0 <- Sigma.1[1:p,1:p]
+    ## mu.0 <- rep(0,p)
+    ## mu.1 <- c(mu.0+1,0)
+    ## x <- rmvnorm(n,mean=mu.0,sigma=Sigma.0)
+    ## y <- rmvnorm(n,mean=mu.1,sigma=Sigma.1)
+    x <- rmvnorm(n,sigma=Sigma)
+    true.probs <- plogis(x%*%beta)
+    g <- rbinom(n,1,prob=true.probs)
+    Sigma.full <- Sigma
+    x.bar.full <- sapply(split.data.frame(x,g),colMeans)
+    d.full <- apply(x.bar.full,1,diff)
+    a.full <- solve(Sigma.full)%*%d.full
+    ## g.hat.full <- as.numeric(t(t(x) - rowMeans(x.bar.full))%*%a.full > 0)
+    Sigma.small <- Sigma[1:p,1:p]
+    x.bar.small <- x.bar.full[1:p,]
+    d.small <- apply(x.bar.small,1,diff)
+    a.small <- solve(Sigma.small)%*%d.small
+    ## g.hat.small <- as.numeric(t(t(x[,1:p]) - rowMeans(x.bar.small))%*%a.small > 0)
+    ## mean(g.hat.full==g.hat.small)
+    x.hat.small <- x[,1:p]%*%a.small
+    x.hat.full <- x%*%a.full
+    ## plot(x.hat.small,x.hat.full,xlim=c(-1,1),ylim=c(-1,1)); abline(0,1)
+    z.stat <- delong.test(xy=cbind(x.hat.small,x.hat.full),g=g)
+    1-pnorm(z.stat)
+})
+hist(p.vals)
+
+
+## separately estimated betahat
+require(mvtnorm)
+n <- 1e3
+p <- 3
+beta <- c(rep(.1,p),0)
+p.vals <- replicate(1e2, {
+    Sigma <- matrix(rnorm((p+1)^2),nrow=p+1)
+    Sigma <- Sigma%*%t(Sigma)
+    ## Sigma.0 <- Sigma.1[1:p,1:p]
+    ## mu.0 <- rep(0,p)
+    ## mu.1 <- c(mu.0+1,0)
+    ## x <- rmvnorm(n,mean=mu.0,sigma=Sigma.0)
+    ## y <- rmvnorm(n,mean=mu.1,sigma=Sigma.1)
+    x <- rmvnorm(n,sigma=Sigma)
+    true.probs <- plogis(x%*%beta)
+    g <- rbinom(n,1,prob=true.probs)
+    x.holdout <- rmvnorm(n,sigma=Sigma)
+    true.probs <- plogis(x.holdout%*%beta)
+    g.holdout <- rbinom(n,1,prob=true.probs)
+    Sigma.full <- Sigma
+    ## x.bar.full <- sapply(split.data.frame(x,g),colMeans)
+    x.bar.full<- sapply(split.data.frame(x.holdout,g.holdout),colMeans)
+    d.full <- apply(x.bar.full,1,diff)
+    a.full <- solve(Sigma.full)%*%d.full
+    ## g.hat.full <- as.numeric(t(t(x) - rowMeans(x.bar.full))%*%a.full > 0)
+    Sigma.small <- Sigma[1:p,1:p]
+    x.bar.small <- x.bar.full[1:p,]
+    d.small <- apply(x.bar.small,1,diff)
+    a.small <- solve(Sigma.small)%*%d.small
+    ## g.hat.small <- as.numeric(t(t(x[,1:p]) - rowMeans(x.bar.small))%*%a.small > 0)
+    ## mean(g.hat.full==g.hat.small)
+    x.hat.small <- x[,1:p]%*%a.small
+    x.hat.full <- x%*%a.full
+    ## plot(x.hat.small,x.hat.full,xlim=c(-1,1),ylim=c(-1,1)); abline(0,1)
+    z.stat <- delong.test(xy=cbind(x.hat.small,x.hat.full),g=g)
+    1-pnorm(z.stat)
+})
+hist(p.vals)

@@ -1,0 +1,46 @@
+\begin{thebibliography}{1}
+
+\bibitem{dorfman1969}
+Donald~D Dorfman and Edward Alf~Jr.
+\newblock Maximum-likelihood estimation of parameters of signal-detection
+  theory and determination of confidence intervals—rating-method data.
+\newblock {\em Journal of mathematical psychology}, 6(3):487--496, 1969.
+
+\bibitem{emir2000}
+Birol Emir, Sam Wieand, Sin-Ho Jung, and Zhiliang Ying.
+\newblock Comparison of diagnostic markers with repeated measurements: a
+  non-parametric roc curve approach.
+\newblock {\em Statistics in Medicine}, 19(4):511--523, 2000.
+
+\bibitem{lee2019}
+A~J Lee.
+\newblock {\em U-statistics: Theory and Practice}.
+\newblock Routledge, 2019.
+
+\bibitem{lindley1981}
+Dennis~V Lindley and Melvin~R Novick.
+\newblock The role of exchangeability in inference.
+\newblock {\em The annals of statistics}, pages 45--58, 1981.
+
+\bibitem{michael2019}
+Haben Michael, Lu~Tian, and Musie Ghebremichael.
+\newblock The roc curve for regularly measured longitudinal biomarkers.
+\newblock {\em Biostatistics}, 20(3):433--451, 2019.
+
+\bibitem{obuchowski1997}
+Nancy~A Obuchowski.
+\newblock Nonparametric analysis of clustered roc curve data.
+\newblock {\em Biometrics}, pages 567--578, 1997.
+
+\bibitem{pearl2014}
+Judea Pearl.
+\newblock Comment: understanding simpson’s paradox.
+\newblock {\em The American Statistician}, 68(1):8--13, 2014.
+
+\bibitem{wu2011}
+Yougui Wu and Xiaofei Wang.
+\newblock Optimal weight in estimating and comparing areas under the receiver
+  operating characteristic curve using longitudinal data.
+\newblock {\em Biometrical journal}, 53(5):764--778, 2011.
+
+\end{thebibliography}

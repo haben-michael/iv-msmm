@@ -1,0 +1,567 @@
+\documentclass{article}
+\usepackage{amsthm}
+\usepackage{bbm}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\renewcommand{\t}[1]{\tilde{#1}}
+\newcommand{\partiall}[1]{\frac{\partial}{\partial #1}}
+\newcommand{\gm}{\theta}
+\newcommand{\E}{E}
+\renewcommand{\P}{P}
+\newcommand{\V}{V}
+\newcommand{\Cov}{Cov}
+\newcommand{\Corr}{Corr}
+\newcommand{\mean}[1]{\overline{#1}}
+\newcommand{\sel}[1]{#1^*}
+\DeclareMathOperator{\supp}{supp}
+\mathtoolsset{showonlyrefs=true}
+
+\begin{document}
+
+\textbf{Title: Power analysis of common selection bias tests}
+
+\begin{enumerate}
+
+\item \emph{background}
+  \begin{enumerate}
+
+  \item \emph{background on meta-analysis, basic model}
+    Meta-analysis is a ...[[copy from biometrics paper]]
+
+    Pairs usually assumed independent, though need not be iid. key
+    assumption is a common mean, the ``grand mean'' $\theta$. 
+    \begin{align}
+      (y_1,\sigma_1),\ldots,(y_n,\sigma_n)\\
+      \E(y_j)=\theta\in\mathbbm{R}, V(y_j)=\sigma_j^2,\hspace{10px}j=1,\ldots,n
+    \end{align}
+    [maybe mention fixed vs random effects, we are assuming adjustment
+    by between-study variance has been made and $\sigma_j^2$
+    represents the unconditional variance of study $y_j$.]
+
+  \item\emph{issue of selection, publication bias, funnel plots, formal tests: egger and begg} [maybe clarification of small sample bias defn should be here]
+
+    [introduce two tests here]
+
+    mention selection mechanisms here, selection on standardized statistic, on raw statistic, randomness added in.
+
+    natural way to look for an association is a correlation between the test statsitics and $\sigma_j$, and begg's test is of this type. [define]. Egger's test a little different...
+
+    selection on the statistic of interest can induce selection on the sigmas also.
+
+    for selection on $y$ such as $zs>c$ one expects both $z$ and $s$ to be stochastically larger postselection and negatively dependent.
+
+    \emph{definitions/selection on p-value seems not to be a small study effect.}
+  1. term ``small study bias'' may be ambiguous. No study size bias in selecting according to the unstandardized effect, $\{y>c\}$, is a small study bias when viewed as selection wrt p-value, $\{z>c\sigma\}$. No bias in selecting according to p-value, $\{z>c\}$, is a bias against larger studies when viewed as selection on the raw value, $\{y>c/\sigma\}$, the opposite of a small study effect.
+
+\item \emph{justification for power analysis} If selection is present
+  and $\mu=0$ (true null) then a type 2 error on the selection test
+  may lead to a type 1 error on the meta-analysis. If selection is
+  present and $\mu\neq 0$ (true non-null), then a type 2 error on the
+  selection test may lead to exaggeration of the true non-null
+  meta-analysis effect. Either way, for practical purposes roles of
+  type 1 and type 2 error of the selection test are reversed. The
+  conservative analyst would want to bound the probability of a type 2
+  error of the selection test, though there is little hope of doing so
+  with such a complex alternative as ``selection bias''.  [sense to
+  use the roles borrowed from usual t-tests.]  [similar issue
+  encountered when using other tests for screening, e.g., meeting a
+  normality assumption using a K-S test with null of normality.]
+  \end{enumerate}
+
+\item If $0<x_1<\ldots<x_n$ then there is no monotonic $v\in
+  C(X)^{\perp}$. $\sum v_j=0$, let
+  $v_1<\ldots<v_k<0<v_{k+1}<\ldots<v_n$, divide through by
+  $\sum_{k+1}^nv_j$ so $\sum_1^k-v_j=sum_{k+1}^nv_j=1$. then $(v,x)=0$
+  implies $-\sum_1^kv_jx_j=sum_{k+1}^nv_jx_j$ but the lhs is $\in
+  (x_1,x_k)$ whereas rhs is $in (x_{k+1},x_n)$. Same proof works if
+  there is some $k$ such that $v_j<0$ iff $j\le k$.
+
+  But what vectors $v$ are in fact orthogonal to the columns space? not
+  monontonic vectors, but maybe other permutations. ortho complement is
+  dimension $n-2$ so any of the components other than 2 can be ordered
+  arbitrarily. (11/6) Tried to show that given any $v_1,\ldots,v_n$ with
+  $\sum v_j=0$ and there is no $k$ with $v_1,\ldots,v_k$ all $<0$,
+  $v_{k+1},\ldots,v_n$ all $>0$ its orthogonal complement contains some
+  $0<x_1<\ldots<x_n$. But counterexample: $v=(-1/2,1/2,-1/2,1/2)$, let
+  $x=(a,a+b,a+b+c,a+b+c+d)$, then
+  $(v,x)=-(2a+b+c)/2 + (2a+2b+c+d)/2=(b+d)/2>0$.
+
+
+
+\item \emph{model} 
+  Data are independent random pairs
+  $(y_j,\sigma_j),\sigma_j>0,E(y_j\mid\sigma_j)=\mu,
+  var(y_j\mid\sigma_j)=\sigma_j^2, j=1,\ldots,n$. Independence implies
+  the distribution of $(y_1,\ldots,y_n)\mid (\sigma_1,\ldots,\sigma_n)$
+  is the same as the distribution of
+  $(y_1\mid\sigma_1,\ldots,y_n\mid\sigma_n)$ (implied by bayes rule in
+  case densities exist, and if not, how to define conditional
+  distribution anyway?) The actual property we need. allows us to
+  replace the conditional test statistic of a meta-analysis data set say
+  $T((y_1,\sigma_1),\ldots,(y_n,\sigma_n))\mid\sigma_1,\ldots,\sigma_n$
+  with
+  $T((y_1\mid\sigma_1,\sigma_1,\ldots,(y_n\mid\sigma_n,\sigma_n)))$. (this
+  property might be better than independence. e.g. analysists might
+  choose sample sizes hence $\sigma_j$ based off of what other analysts
+  have chosen.)
+
+  Selection on the raw value of the type $\{Z>cS\}$ affects the
+  distribution of the precisions $S$ as well. The class of
+  postselection distributions $\sel S$ is in principle only limited by
+  the support of $Z$.
+  Given $c\in\mathbbm{R}$, mean-zero $Z\sim f_Z$ and a density on
+  $f$ on the nonnegative reals, such that $F_Z(cs)<1$ for any $s$ in
+  the support of $f$. Then $f$ is a distribution for $\sel S$ given
+  $\{Z>cS\}$ under the scale model [ref], when the unconditional distributional of $S$ is given by $g(s)=f(s)/(1-F_Z(cs))$. 
+  \begin{proof}
+    Since in that case,
+    \begin{align}
+      f_{\sel Z, \sel S}(a,b) &\propto f_{Z,S}(a,b)\{a>cb\}\\
+                              &=f_Z(a)f_S(b)\{a>cb\}\\
+                              &=f_Z(a)\{a>cb\}\frac{f(b)}{1-F_Z(cb)}
+    \end{align}
+    and integrating out $a$ gives $f_{\sel S}(b)=f(s)$.
+  \end{proof}
+
+  [may combine these small facts inone place. most are related to scale family]
+
+  The conditional density of $\sel Y$ given $\sel S$ given a selection event $A\in\sigma(Y,S)$ is related to the conditional density of $Y$ given $S$ as
+  \begin{align}
+    f_{\sel Y\mid \sel S=b}(a) \propto f_{Y,S}(a,b)\mathbbm{1}_A(a,b)/\P(A) &\propto f_{Y\mid S=b}(a)\mathbbm{1}_A(a,b)/\P(A) \text{  i.e.,}\\
+        \sel Y\mid (\sel S=\sel s) &\sim Y\mid (S=\sel s) \bigg| A
+  \end{align}
+  Ie, the two types of conditioning commute, as one can take select on
+  $A$ then take the conditional density of $Y$ given $S$, or one can
+  take the conditional density and then select on $A$. For example, if
+  the observed data $(\sel Z,\sel S)$ comes from selection on the raw value, $\{Z>cS\}$, then one can compute the density of $\sel Z$ as $Z\mid Z>c\sel S$.
+  
+\item \emph{test intuition} Four testing scenarios: $\gm=0,\gm\neq 0$ and null/alt ie selection/no
+  selection. The observations are $(y_j,\sigma_j)$, not necessarily iid [cite above display].
+
+  \begin{enumerate}
+  \item \emph{null/no selection} If no selection, i.e., null, and $y\sim (\gm,\sigma_j)$. Egger's
+  test is the regression $y_j/\sigma_j\sim (\gm/\sigma_j,1)$ on
+  $1/\sigma$. The linear model
+  $y_j/\sigma = (1,1/\sigma)^T(\beta_0,\beta_1)+\epsilon$ is satisfied
+  with $\beta=(0,\gm)$ and $\epsilon_j=y_j/\sigma_j-\gm/\sigma_j$
+  independent with equal variance $1$. According to usual random
+  design OLS theory, the test is consistent under the null, asymptotic
+  normality valid for inference.[given ols assumptions eg variance
+  must exist][do OLS assumptions hold if (x,y) arent necessarily iid,
+  just meet the moment conditions? check wooldridge. consistency proof
+  prob goes through but maybe not asy normality.]
+
+  Begg's test. % primary study statistics are
+  % $(y_j-\hat{\gm}_F)/\hat{\sigma}_j \sim (0,1) + o_p(1)$. Mean
+  % is asymptotically constant with respect to the $\sigma_j$, any
+  % consistent correlation tests should not pick up any
+  % trend.[formalize. tried using u-stat kernel is mean 0 but actually
+  % its mean is $o_p(1)$ and dont know if it goes away fast enough.]
+  Must first establish that Begg's actual standardized residuals,
+  $(y-\hat{\mu})/\hat{\sigma}$, is asymptotically equivalent to
+  $(y-\mu)/\sigma$, ie $\sqrt{n}$ times the difference tends to
+  $0$. Tried on reverse of p.13, couldnt finish. Once established, can
+  refer to U-statistics asymptotic normality.
+
+  Next, must likely use scale family assumption. Under this
+  assumption, then under the null $\mu=0$, so the mean of the kernel
+  of the U-statistic is just
+  $\P(\{y_1/\sigma_1<y_2/\sigma_2\}\{\sigma_1<\sigma_2\})=\P(\{z_1<z_2\}\{\sigma_1<\sigma_2\})$. Under
+  scale family assumption, $z_j$ indepdendent of $\sigma_j$ so the
+  above is $1/4$, as required for consistency.
+
+  Without the scale family assumption, $z_1$ and $z_2$ though both
+  mean zero may have different distributions. Conssitency requires the
+  median of $z_1-z_2$ be $0$, which does not [?] follow from the mean
+  being zero and independence.
+
+
+
+  
+ \item \emph{alternative/Selection present}, $\gm=0$. preselection, the observations are
+  $y_j\sim (0,\sigma_j)$. If selection is on the p-value/z-stat
+  $y/\sigma\sim (0,1)$. If $y_j/\sigma_j\mid\sigma_j \sim f$ ie in
+  addition to
+  $\E(y_j/\sigma_j\mid\sigma_j)=\gm/\sigma_j,\V(y/\sigma_j\mid\sigma_j)=1$,
+  the entire conditional distribution is specified, ie the conditional
+  distributions $y_j\mid\sigma_j$ are a scale family
+  $f(y/\sigma)/\sigma$. (show can assume any reasonable selection mechanism (ie symmetric in arguments)
+  $g(y_1/\sigma_1,\ldots,y_n/\sigma_n,U)$ can be reduced to a function
+  $g(y_j/\sigma_j,U)$ in this case since the $y_j/\sigma_j$ are
+  iid. then eg hard thresholding is given by..., probabilistic threshold
+  is given by...) Then postselection response is independent of
+  postselection regressor: given $u,v$ and selection mechanism $g_j$,
+  $E(u(g_j(y/\sigma_j))v(1/\sigma_j))=E(E(\ldots\mid\sigma_j))=E(E(u(g_j(y/\sigma_j))\mid\sigma_j)v(1/\sigma_j))=E(u(g_j(z)))E(v(1/\sigma_j))$
+  with $z\sim f$.
+  % then if preselection is iid, so is the
+  % postselection distr, say something like $(\gm(c),\sigma(c))$ if the
+  % same selection mechanism $g(y_j/\sigma_j)$ is used. Even if different
+  % selection mechanisms are used, $g_j(y_j/\sigma_j)$.
+  If all the selection mechanisms are the same say $g$, then
+  $E(g(y_j/\sigma_j)\mid1/\sigma_j)=E(g(z))$ is constant, and as before
+  conditional variance is constant. Again a wellspecified homoskedastic
+  linear model $y_j/\sigma_j \sim (1,1/\sigma_j)^T\beta+\epsilon_j$, now
+  with $\beta=(g(z),0)$. So test is consistent.
+
+  If distributions are different, possibly non-iid postselection
+  distribution. Can lead to inconsistent test. \#23 in egger.R. would be
+  nice to establish analytically, need estimate of t tails.
+
+  If selection mechanisms can vary ...
+
+  If $g(z)=0$ ...[not sure what i meant here]
+
+  analogous analysis for begg?
+  
+  Selection present, $\mu\neq 0$. egger regression response is then
+  $\sim (\mu_j/\sigma_j,1)$. selection will induce larger $\mu_j$ and
+  smaller $\sigma_j$. what can be said about postselection response?
+  at least in normal case, and simple thresholding as selection
+  mechanism? will set this case aside.
+\end{enumerate}
+
+
+
+\item\emph{criterion for consistency of egger's test} [this is the
+  scale family situation, assumption needs to be introduced] Focused
+  on the situation where there is selection that can depend on both
+  vector components, eg, $g_j(y_j,\sigma_j)$, but the postselection
+  distribution is the iid. e.g., the preselection $(y_j,\sigma_j)$
+  arent just independent but iid, plus the selection stragy is the
+  same $g_j=g$, all $j$.  In this case (other case, not iid, requires
+  entire vector be considered), Egger's test is inconsistent when the
+  plim of
+  $\hat{\beta}_0=\mean{ys}-\mean{s}\hat{\Cov}(ys,s)/\hat{\V}(s)$ is
+  $0$:
+  \begin{align}
+    % \sel\E(ys^2)/\sel E(ys)=\sel E(s^2) / \sel E(s).
+    \sel\E(ys)/\sel\E(s) = \Cov(ys,s)/\V(s)
+  \end{align}
+  Letting $s'=s/\sqrt{\sel\V(s)}$ so that $\sel\V(s')=\sel\V(ys)=1$, rewrite as
+  $\sel\Corr(ys,s')=\sel\E(ys)/E(s')$.  When $s'$ and $ys$ are independent, get
+  $0$ on both sides, this is just the null case. At other extreme,
+  when the conditional outcome mean is the identity, $\sel\E(ys\mid s')=s'$, get $1$ on
+  both sides. [simulation at 24a.]
+
+  Suppose the responses are normal [ref] and selection is hard
+  thresholding on the standardized statistic, where the threshold may
+  depend on $s$.  The conditional outcome mean
+  $E(ys\mid s)=\int_{c(s)}^\infty z\phi(z)dz/(1-\Phi(c(s)))$ is the
+  gaussian hazard function $\phi(c(s))/(1-\Phi(c(s)))$. this being the
+  identity requires the cutoff function $c(s)$ to be the inverse of
+  the gaussian hazard function $\phi/(1-\Phi)$ [inverse exists,
+  function is convex increasing], a concave increasing selection
+  function. [describe growth rate, should be fast. unlikely this type
+  of selection] The authors of the primary studies would have to be
+  more selective when the studies are larger/have smaller sd.
+
+  Not too crazy to have selection increasing in $s=1/\sigma$, if using
+  selection on raw value rather than p-value. Flat selection on raw
+  value $y_j>c$ ie $z_j\sigma_j>c$ with $z_j=y_j/\sigma_j\sim (0,1)$ is
+  selection increasing in $s$ viewed as selection on the p-vlue,
+  $z_j>c/\sigma_j$.
+
+  \emph{selection on raw value} Setting where given iid $(y_j,\sigma_j)$ and selecting on
+  $y_j=\sigma_jz_j$. Test is asymptotically null iff
+  $E(sz)/E(z)=E(s^2)/E(s)$ where now $s$ and $z$ are the post-selection
+  distributions. this criterion is obtained by taking plims in
+  $0=\hat{\beta_0}=\overline{y}-\overline{x}\hat{\beta_1}$. Provided
+  $E(z)\neq 0$ (ie provided not in the true null case) rewrite as
+  \begin{align}
+    0=\E\left( s(s / \E(s) - z/\E(z))\right)=\E\left( s(s/\E(s) - \mu(s)/\E(\mu(s)))\right)
+  \end{align}
+  where $\mu(s)=E(z\mid s)$ is the conditional mean of $z=ys$ given $s$.
+  The RV in parens, say $u(s)$ is mean zero. If $u(s)$ is monotonic in $s$, then this is not possible
+  unless $u(s)$ is constant.
+  \begin{proof}
+    Given: $S>0$ a.s., $s_2\ge s_1$ implies $u(s_2)\ge u(s_1)$, and $E(u(S))=0$. Then $\E(u(S); u(S)<0) = -\E(u(X); u(S)>0)$, and
+    \begin{align}
+      \E(Su(S)) &= \E(Su(S); u(S)<0) + \E(Su(S); u(S)\ge 0)\\
+                &\ge \E(Su(S); u(S)<0) + \sup\{s: u(s)<0\}\E(u(S);u(S)\ge 0)\\
+                &= \E\left((S-\sup\{s: u(s)<0\})u(S); u(S)<0\}\right) \ge 0,
+    \end{align}
+    and $=0$ iff $S\{u(S)>0\}=\sup\{s:u(s)<0\}=S-\sup\{s:u(s)<0\}$ iff $S$ is consant or $u(S)=0$ a.s.
+    % Suppose $s_2\ge s_1$ implies $u(s_2)\ge u(s_1)$. Since $E(u(s))=0$, there is some $s_0$ in the support of $s$ such that $u(s)\le 0$ for $s\le s_0$, $u(s)\ge 0$ for $s\ge s_0$, and $\int_0^{s_0}u(s)dF(s)=-\int_{s_0}^\infty u(s)dF(s)$. Then
+    % \begin{align}
+    %   \E\left(s\left(\frac{\mu(s)}{\E(\mu(s))}-\frac{s}{\E(s)}\right)\right)dF(s)&=\int_0^\infty s u(s) dF(s)\\
+    %                                                                              &=\int_0^{s_0}+\int_{s_0}^\infty s u(s) dF(s)\\
+    %                                                                              &\ge \int_{s_0}^\infty s u(s) dF(s)\ge 0.
+    % \end{align}
+    % The inequality is strict unless
+    % $0=\int_0^{s_0}u(s)dF(s)=-\int_{s_0}^\infty u(s)dF(s)$, i.e.,
+    % $u(s)$ is $0$ a.s. [[shorter proof on back of egger p15]]
+  \end{proof}
+  The RV $u(s)$ is degenerate iff the conditional mean $\mu(s)$ is a
+  linear function of $s$. Very aggressive thresholding, like
+  $c(s)$ described above.% This is In particular, this cannot happen
+  % if $mu(cs)=E(z;z>cs)$ is the gaussian hazard function ie when the
+  % $y_j$ are $N(0,\sigma_j)$.
+
+  Turn therefore to when $u(s)$ is monotonic. Sufficient condition is that the
+  integral of the surival function $\int_x^{\infty}(1-F(y))dy$ of the
+  studies be log concave (egger p15).
+  \begin{proof}
+    Given $\mu(s)=\int_{cs}^\infty zf_Z(z)dz / (1-F_Z(cs))$. Then $\mu(s)>cs$ [why strict], $\E\mu(s)>c \E s$. Then
+    \begin{align}
+      \partiall s \left(\frac{s}{\E s} - \frac{\mu(s)}{\E \mu(s)}\right) &= \frac{1}{\E s} - \frac{\mu'(s)}{\E \mu (s)}\\
+                                                                         &> (\E s)^{-1}\left( 1 - c^{-1}\mu'(s)\right).
+    \end{align}
+    Substitute
+    \begin{align}
+      \mu'(s) &= c\frac{-cs f_Z(cs)}{1-F_Z(cs)} + \frac{\left(\int_{cs}zf_Z(z)dz \right)\left(cf_Z(cs)\right)}{(1-F_Z(cs))^2}\\
+      &= \frac{c f_Z(cs)}{1-F_Z(cs)}(\mu(s)-cs)
+    \end{align}
+    to get
+    \begin{align}
+      \frac{1}{\E s}\left( 1 - \frac{f_Z(cs)}{1-F_Z(cs)}(\mu(s)-cs)\right).
+    \end{align}
+    Let $x=cs$, then enough to show
+    \begin{align}
+      f_Z(x)\left(\frac{\int_x^{\infty}zf_Z(z)dz}{1-F_Z(x)}-x\right) < 1-F(x).
+    \end{align}
+    Integrating by parts,
+    $\int_x^{\infty}zf_Z(z)dz - x +
+    xF_Z(x)=\int_x^{\infty}(1-F_Z(z))dz$, provided that
+    $x(1-F_Z(x))\to 0$ as $x\to\infty$. The latter is implied by
+    $\V(X)=c\V(1/\sigma)<\infty$. Substituting, the condition becomes
+    $\frac{\int_x(1-F_Z(z))dz}{1-F_Z(x)}<\frac{1-F_Z(x)}{f_Z(x)}$,
+    $\partiall x \log \int_x(1-F_Z(z))dz < \partiall x \log
+    (1-F_Z(x))$,
+    $\partiall x \log \frac{1-F_Z(x)}{\int_x(1-F_Z(z))dz}>0$, implying
+    since the argument to $\log$ is nonnegative
+    \begin{align}
+      0& < \partiall x \frac{1-F_Z(x)}{\int_x^{\infty}(1-F_Z(z))dz} \\
+       & = -\frac{\partial^2}{\partial x^2}\log \int_x^{\infty}(1-F_Z(z))dz.
+    \end{align}
+  \end{proof}
+  Log-concavity of the tail integral of $1-F(x)$ is implied by log
+  concavity of $1-F(x)$, in turn implied by log concavity of the
+  density $f$ [Bagnoli Thrm 2. try to find reference in marshall olkin
+  or elsewhere].  This includes many commonly used distributions. A
+  commonly used distribution it does not include is the pareto
+  [egger.R \#26; bagnoli notes]. As for converse, proof shows $\mu'<1$
+  iff log concave right integral. If $\mu'<1$ condition doesnt hold,
+  monotonicity of $u$ will depend on joint distribution, give power
+  law example.
+
+  (12/5) 1. The sufficienct for inconsistency of egger's test with
+  thresholding on the raw value is, for some $s$,
+  $0=u'(s)=\frac{d}{ds}\frac{(1-F_Z(cs))^\alpha}{\int_{cs}^{\infty}(1-F_Z(z))dz}$
+  where $\alpha=cE(S)/E(\mu_c(s))$ is $\le 1$. The monotonicity condition is probably
+  sufficient as well, in the sense that there is a nondegenerate distribution
+  of $s=1/\sigma$, such that $E(Su(S))=0$ if $u'(s)=0$ for some $s$.
+
+  2. From the monotonicity condition $u'(s)>0$ or $u'(s)<0$, gronwall's
+  condition gives necessary conditions that must be satisfied in order
+  that egger's test be consistent for raw thresholding.
+
+
+  4. For distributions of $S$ with a mean given by $c,m$, $u'(s)=0$ on
+  an interval when the outcome distribution follows a power law with
+  exponent $m$ and thresholding on the raw value at $c$. This seems to
+  be the only type of distribution where $u'(s)$ vanishes on the
+  interval, by solving the diff eq. (egger 16). But the criterion for
+  inconsistency can be met without $u$ vanishing on an interval.
+
+
+
+\item \emph{consistency of begg test}
+
+  3. Begg test well motivated by power. Whether selecting on raw value
+  or p-value, clear trend of $y$ against $\sigma$.
+
+
+  (12/2) a. Begg test is inconsistent for iid $(y,\sigma)$ iff
+  $E(\t{s}(\t{y}-E(\t{y})))=0$. The analogous criterion for the egger
+  test is $E(\t{s}(\t{y}-E(\t{y})/E(\t{s})\t{s}))$ [but before this was
+  $z$ not $s$--check].  b. The density of $\tilde{y}$ given
+  $\t{\sigma}=s$ is the same as the density of $y$ given $\sigma=s$
+  given the selection event (egger 16). c. The begg test is consistent
+  when thresholding on the raw value ie $\{y>c\}$ or p-value
+  $\{y/\sigma>c\}$ (egger 16), ie the criterion in a) is never met.
+
+  Given a slope family $F_Z$ for the outcome distribution,
+  \begin{align}
+    y\mid\sigma \sim F_Z(y/\sigma)
+  \end{align}
+  Then $y/\sigma=ys$ is independent of $s$, as
+  $y/\sigma \mid \sigma \sim f_Z$ whatever $\sigma$. Egger and begg
+  tests sufficient statistics are similar,
+  $(\sel y/\sel \sigma,\sel \sigma)=(\sel z,\sel\sigma)$.
+
+  \emph{Consistency under p-value selection.} Given iid observations
+  from a mean zero scale family $y\mid\sigma \sim F_Z(y/\sigma)$, suppose
+  selection event $A$ is on the the standardized measurement
+  $z=y/\sigma$ alone. Then the joint post selection density factors,
+  \begin{align}
+    f_{\sel z,\sel\sigma}(a,b)=\frac{f_{z,\sigma}(a,b)\mathbbm{1}\{a\in A\}}{\P(A)}=f_Z(a)\frac{\mathbbm\{a\in A\}}{\P(A)}f_{\sigma}(b)
+  \end{align}
+  and so $\sel z$ and $\sel s$ are independent. Moreover, integrating
+  out $a$ in [above display] shows that $\sel s \sim s$, the
+  distribution of $\sigma$ is unchanged by the selection event.
+
+  Begg's test $\sqrt{9n/4}|\tau|>z_{1-\alpha}$ is consistent under the alternative, ie rejects with probability 1, if the mean of the kernel of Kendall's $\tau$, viewed as a U-statistic, ie the concordance probability [relate below to beggs actual statistic]
+  \begin{align}
+    \P\left(\left\{\frac{\sel y_1-\mu}{\sel\sigma_1}<\frac{\sel y_1-\mu}{\sel\sigma_1}\right\}\cap\{\sigma_1\ < \sigma_2\}\right)
+  \end{align}
+  tends in probability to a value other than 1/4 as $n\to\infty$. This holds in light of the preceding paragraph since
+  \begin{align}
+    \P\left(\left\{ \sel z_1-\mu/\sel\sigma_1 < \sel z_2-\mu/\sel\sigma_2\right\}\{\sel\sigma_1 < \sel\sigma_2\} \right)
+    &=\P(\sel\sigma_1 < \sel\sigma_2)\E(F_{\sel z_1-\sel z_2}(\mu(1/\sel\sigma_2-1/\sel\sigma_1))\{\sel\sigma_1<\sel\sigma_2\})\\
+        &=\P(\sigma_1 < \sigma_2)\E(F_{\sel z_1-\sel z_2}(\mu(1/\sigma_2-1/\sigma_1))\{\sigma_1<\sigma_2\}).
+  \end{align}
+  Since $\sigma_1,\sigma_2$ are iid, $\P(\sigma_1 < \sigma_2)=1/2$,
+  since $\sel z_1,\sel z_2$ are iid, $F_{\sel z_1-\sel z_2}$ is
+  symmetric about $0$, and on $\{\sigma_1<\sigma_2\}$,
+  $1/\sigma_2-1/\sigma_1<0$. Then above is $<1/4$ so long as
+  $\mu=E(\sel z)>0$. In particular, for p-val thresholding, where
+  $ (1-F_Z(c))E(\sel z)=\int_c^\infty z f_Z(z)dz = -\left(\int_{-\infty}^c z f_Z(z)dz\right) > \int_{-\infty}^\infty z
+  f_Z(z)dz=0$, assuming $c$ is in the interior of the support of $Z$.
+
+  \emph{Consistency under raw selection.} Suppose
+  selection event $A$ is a function of both $z$ and $\sigma$. Then no
+  longer the case that $\sel z$ and $\sel\sigma$ are independent or
+  that $\sel sigma$ is distributed as $\sigma$. Instead we only have
+  \begin{align}
+    f_{\sel z,\sel s}(a,b)=\frac{f_{z,s}(a,b)\{(a,b)\in A\}}{\P (A)}=\frac{f_{z}(a)f_s(b)\{(a,b)\in A\}}{\P (A)}
+  \end{align}
+  Suppose the postselection measurement $\sel z$ is monotonic in $\sel \sigma$...[got stuck, sim 36 suggest might not always be consitent...]
+  
+\item \emph{slope of egger and begg test, p-val thresholding}
+  (12/30)
+  Verified by simulation (egger \#34) the slope of begg test is $\mu'(0)/\sigma(0)=\int_\infty^\infty f_Z^2(z)dz * E(s_1-s2; s1<s2) / (\sqrt{4/9}$. Local power function approximation is not too bad for uniform and normal $f_Z$. (1/1) can rewrite $E(s_1-s2; s1<s2)$ as $(1/2)*E(|s_1-s_2|)$; maybe relate to mean absolute deviation?
+
+  (1/1) It is perhaps to be expected that the power to detect a trend
+  depends on the dispersion of $\sigma$ relative to the dispersion of
+  $y$. Oddly egger test/p-value thresholding power depends on location
+of $\sigma$ distribution. The power curve will be better or worse than
+begg's depending on this location. Is it also odd that the power
+of begg's test depends on the dispersion of $\sigma$ (not relative to that of $z$
+
+(1/7) test slope for egger test under raw thresholding see egger p 20
+
+\item\emph{slope, raw thresholding}
+  (1/7) test slope for egger test under raw thresholding see egger p 20
+
+\item\emph{discussion}
+  random truncation model though. must find a parametrization though. exponential tilting.
+\end{enumerate}
+
+
+\emph{slope of egger test, p-val thresholding}
+
+Parameterize the p-value selection
+models $\{(Z,S) \mid Z>c: c\in \supp Z\}$ by the mean of $\sel
+Z$. This is possible since the mean
+\begin{align}
+  \mu(c)=\int_c^\infty zf_Z(z)dz / (1-F_Z(c))
+\end{align}
+is a strictly monotonic function of the cutoff $c$ [need to assume density $f_Z(z)\neq 0$ for all $z\in\supp Z$ ie support is convex. throughout, perhaps clarify focus is on ``continuous scale families'' not just ``scale families''] ,
+\begin{align}
+  \mu'(c) &= \frac{-cf_Z(c)}{1-F_Z(c)} + \frac{\left(\int_c^{\infty}zf_Z(z)dz\right)f_Z(c)}{(1-F_Z(c))^2}\\
+          % &= \frac{f_Z(c)}{1-F_Z(c)}\left(\frac{\int_c^\infty zf_Z(z)dz}{1-F_Z(c)}-c\right)\\
+          &= \frac{f_Z(c)}{(1-F_Z(c))^2}\left(\int_c^{\infty}(z-c)f_Z(z)dz\right) > 0.
+\end{align}
+
+Let $h>0$, let $\theta_n=h/\sqrt{n}$, let $\P_n$ denote the law of $(\sel S,\sel Z)$ conditional on $\{Z>c(\theta_n)\}$. Assume $\V(S)<\infty$, $f_Z(z)\neq 0$ for $z\in\supp Z$. Then
+\begin{align}
+  \lim_n \P_n\left(\frac{\hat{\beta}_0}{\sqrt{\V(\hat{\beta}_0)}} >
+  t_{n-1,1-\alpha}\right)= 1-\Phi\left(z_{1-\alpha} -
+  \frac{h}{\sqrt{\V(Z)\E(S^2)/\V(S)}}\right).
+\end{align}
+So the test slope is $h/\sqrt{\V(Z)\E(S^2)/\V(S)}$.
+
+\begin{proof}
+
+  [0. formula for betahat]
+  Egger's test is to reject when $\hat{\beta}_0/\sqrt{\hat{\V}(\hat{\beta}_0)} > t_{n-1,1-\alpha}$.
+  
+  Let $X_n$ be the $n\times 2$ design matrix, ie a column of $1's$ and
+  a column of the regressors $s_j$. Let $\zeta_n$ by the column vector
+  of measurements $\sel z_j=\sel y_j/\sel\sigma_j$. Then
+  $\hat{\beta}_0$ is the first component of
+  $(X_n^tX_n)^{-1}X_n^t\zeta_n$, which computes to
+  $\hat{\beta}_0=(\hat{\V}(s))^{-1}\sum_{j=1}^n(\mean{s^2}-\mean{s}s_j)z_j$,
+  where $\hat{\V}(s)=n^{-1}\sum_j(s_j-\mean{s})^2$.  The variance
+  estimate is
+  $\hat{\V}(\hat{\beta}_0)=\mean{s^2}\hat{\V}(s)RSS/(n-2)$, where
+  $RSS=||(I-X(X^tX)^{-1}X^t)\zeta_n||^2$. So the test statistic is
+  \begin{align}
+    \frac{\hat{\beta}_0=(\hat{\V}(s))^{-1}\sum_{j=1}^n(\mean{s^2}-\mean{s}s_j)z_j}{\mean{s^2}\hat{\V}(s)RSS/(n-2)}.
+  \end{align}
+  
+  [1. First step: make iid: 1--variance term, 2--means]
+  To show: Asymptotic equivalence of
+  \[
+    n^{-1/2}\frac{\sum_{j=1}^n\left(\V(S)^{-1}(\E(S^2)-\E(S)S_j)Z_j-\mu_n\right)}{\sqrt{\V(Z)\E(S^2)/\V(S)}}
+    \]
+  and
+  \[
+    n^{-1/2}\frac{\sum_{j=1}^n\left(\V(S)^{-1}(\E(S^2)-\E(S)S_j)Z_j-\mu_n\right)}{\sqrt{\V(Z)\E(S^2)/\V(S)}}.
+  \]
+  To show:
+  \begin{align}
+    \sqrt{n}\left(\left(\E(S^2)-\mean{S^2}\right)\mean{\sel{Z}} - \mean{S\sel{Z}}\left(\E(S)-\mean{S}\right)\right) \underset{P_n}{\to} 0
+  \end{align}
+  where convergence is in probability under the sequence of laws $\P_n$ of $(\sel Z,\sel S)$ at $\theta_n$.
+
+  First term: $\sqrt{n}\left(\E(S^2)-\mean{S^2}\right)$ is $O_{P_n}(1)$
+  by the CLT, also distribution of $S$ does not change with $P_n$. [need
+  $V(S)<\infty$] and $\mean{\sel{Z}}\to 0$ using a weak LLN for
+  triangular arrays and
+  $\sel Z \sim_{\theta_n} Z\{Z>c_n\}/(1-F_Z(c_n))$. So
+  $\sqrt{n}\left(\E(S^2)-\mean{S^2}\right)\mean{\sel{Z}}\to 0$ in
+  probability along $P_n$. Second term:
+  $\sqrt{n}\left(\E(S)-\mean{S}\right)$ is $O_{P_n}(1)$ by CLT. Orthogonality
+  of $S$ and $\sel{Z}$ and domination of $\sel{Z}$ implies
+  $\mean{S\sel{Z}}\to_{P_n}\E_0(SZ)=0$.
+
+  To show:
+  $RSS/n=\zeta_n^t(I-X(X^tX)^{-1}X^t)\zeta_n/n \to_{\P_n}\V(Z)$,
+  convergence is in probability along $\P_n$. 
+  \begin{align}
+    \zeta_n^tX(X^tX)^{-1}X^t\zeta_n &= (\hat{\V}(s))^{-1}\left(\mean{\sel{z}}(\mean{s^2}\mean{\sel{z}}-\mean{s}\mean{s\sel{z}})+\mean{\sel{z}s}(\mean{\sel{z}s}-\mean{\sel{z}}\mean{s}) \right)\\
+    &= (\hat{\V}(s))^{-1}\left(\mean{s^2}(\mean{\sel{z}})^2 + (\mean{\sel{z}s})^2 - 2\mean{s}\mean{\sel{z}}\mean{s\sel{z}}\right).
+  \end{align}[fix overbar leaking over like unibrow]
+  Converges in probability to $0$ as above [verify], with each
+  monomial convering to $\E(S^2)\E(Z^2)$. So $RSS/n= o_{\P_n}(1)+ n^{-1}\zeta_n^t\zeta_n$, which tends along $\P_n$ to $\E(Z^2)=\V(Z)$, as above.
+  
+  [2. Second step: CLT application]
+
+  Let $\sel Z_n$ denote the postselection distribution of $Z$ under $\theta_n=h/\sqrt{n}$, i.e., conditional on $\{Z>Sc(\theta_n)\}$ [causes confusion with indexing subscript]. Let $E_n$ denote expectation under $\theta_n=h/\sqrt{n}$, i.e., conditional on $\{Z>Sc(\theta_n)\}$. Only relevant for $\sel Z$ since the distribution of $\sel S\sim S$ does not change with $n$.  Let  $\mu_n=\E(\sel Z_n)=h/\sqrt{n}$.
+
+  Apply Lindeberg-Feller CLT to conclude asy normality:
+  \begin{align}
+    n^{-1/2}\frac{\sum_{j=1}^n\left(\V(S)^{-1}(\E(S^2)-\E(S)S_j)Z_j-\mu_n\right)}{\sqrt{\V(Z)\E(S^2)/\V(S)}} \overset{\theta_n}{\Rightarrow} N(0,1)
+  \end{align}
+  
+  Since the $(\sel Z_j,S_j)$ are iid, the Lindeberg condition is
+  \begin{align}
+    \E_n\left(\left( \frac{\V(S)^{-1}(\E(S^2)-\E(S)S_1)\sel{Z_1}-\E_n(\sel Z)}{\sqrt{\V(Z)\E(S^2)/\V(S)}}  \right)^2; n^{-1/2}|\ldots|>\epsilon\right) \to 0
+  \end{align}
+  for all $\epsilon>0$. Ellipses represent the term in parenthesis. The family $\{\V(S)^{-1}(\E(S^2)-\E(S)S_1)\sel{Z_1}-\E_n(\sel Z)\}$ over the probabilities $\P_n$ is in fact uniformly integrable. Since the distribution of $S_1$ does not depend on $\P_n$, $S_1$ and $\sel Z_1$ are independent, and $\sel Z_1 \sim_{\theta_n} Z\{Z>c_n\}/(1-F_Z(c_n)) \to_{a.s.} Z$.
+
+
+  Also
+  \begin{align}
+    \E_n\left(\left(\frac{(\E(S^2)-\E(S)S_1)\sel Z_1}{\V(S)} -\E_n(\sel Z)  \right)^2\right) &= \frac{\E_n((\sel Z)^2)((\E(S^2))^2-\E(S^2)(\E(S))^2)}{\V(S)^2} - (\E_n(\sel Z))^2\\
+                                                                                             &= \E_n((\sel Z)^2)\E(S^2)/\V(S) - (\E_n(\sel Z))^2\\
+                                                                                             &\rightarrow \frac{\V(Z)}{\V(S)}\E(S^2)
+  \end{align}
+  as $n\to\infty$. By definition of $E_n$, $\E_n(\sel Z)\to 0$ and as
+  above domination of $\sel Z$ by bounded multiples of $Z$ implies
+  $\E_n(\sel Z)\to \E(Z^2)$. So the summands are standardized.
+
+  [  3. Third step: obtain slope]
+  
+  The local limiting power at the null $\theta=0$ is then
+  \begin{align}
+    &\lim_n \P_n\left(\frac{\hat{\beta}_0}{\sqrt{\V(\hat{\beta}_0)}} > t_{n-1,1-\alpha}\right)
+      = \lim_n\P_n\left(n^{-1/2}\frac{\sum_{j=1}^n\V(S)^{-1}(\E(S^2)-\E(S)S_j)Z_j}{\sqrt{\V(Z)\E(S^2)/\V(S)}} > t_{n-1,1-\alpha} \right)\\
+    &= \lim_n\P_n\left(n^{-1/2}\frac{\sum_{j=1}^n\left(\V(S)^{-1}(\E(S^2)-\E(S)S_j)Z_j - \mu_n\right)}{\sqrt{\V(Z)\E(S^2)/\V(S)}} > t_{n-1,1-\alpha} -\frac{n^{-1/2}\mu_n}{\sqrt{\V(Z)\E(S^2)/\V(S)}}   \right)\\
+    &= 1-\Phi\left(z_{1-\alpha} - \frac{h}{\sqrt{\V(Z)\E(S^2)/\V(S)}}\right).
+  \end{align}
+  
+\end{proof}
+
+\end{document}

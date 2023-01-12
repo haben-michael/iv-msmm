@@ -1,0 +1,896 @@
+\documentclass{article}
+\usepackage{amsthm}
+\usepackage{bbm}
+\usepackage{amssymb}
+\usepackage{mathtools,etoolbox,xcolor}
+\usepackage{booktabs}
+\usepackage{url}
+\usepackage{textcomp}
+\renewcommand{\t}[1]{\tilde{#1}}
+\newcommand{\partiall}[1]{\frac{\partial}{\partial #1}}
+\newcommand{\gm}{\theta}
+\newcommand{\E}{E}
+\renewcommand{\P}{P}
+\newcommand{\V}{Var}
+\newcommand{\cov}{Cov}
+\newcommand{\corr}{Corr}
+\newcommand{\mean}[1]{\overline{#1}}
+\newcommand{\sel}[1]{#1^*}
+\newcommand{\biasratio}{b}% {$(E|S_1-S_2|)^2/\E(S^2)$}
+\newcommand{\cind}{\perp \!\!\! \perp}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\DeclareMathOperator{\supp}{supp}
+\DeclareMathOperator{\diag}{diag}
+% \DeclareMathOperator{\x}{x}
+\newcommand{\z}{Z}
+\newcommand{\y}{Y}
+\newcommand{\s}{S}
+\newcommand{\w}{W}
+\newcommand{\x}{X}
+\newcommand{\zvec}{\overline{Z}}
+\newcommand{\svec}{\overline{S}}
+\newcommand{\Svec}{R}
+\newcommand{\eval}{\lambda}
+\newcommand{\evec}{v}
+\newcommand{\thetahat}{\hat{\theta}}
+% \DeclareMathOperator{\theta4}{\hat{\theta4}}
+% \DeclareMathOperator{\thetaind}{\hat{\theta}_{\cind}}
+% \DeclareMathOperator{\mindensity}{p}
+% \DeclareMathOperator{\bnd}{r}
+% \DeclareMathOperator{\A}{A}
+% \DeclareMathOperator{\B}{B}
+% \DeclareMathOperator{\Aprime}{A'}
+% \DeclareMathOperator{\Bprime}{B'}
+% \DeclareMathOperator{\f0bound}{p}
+% \DeclareMathOperator{\C}{C}
+\newcommand{\h}[2]{\{(u_{#1}-u_{#2})(v_{#1}-v_{#2})>0\}}
+\mathtoolsset{showonlyrefs=true}
+\newtoggle{commenttoggle}
+\toggletrue{commenttoggle}
+\newcommand{\comment}[1]{
+  \iftoggle{commenttoggle}{
+    {\normalsize{\color{red}{ #1}}\normalsize}
+  }
+  {}
+}
+
+\begin{document}
+
+\textbf{Title: Correction to Begg's Test for Publication Bias}
+
+\textbf{Author: Haben Michael and Musie Ghebremichael}
+
+
+Abstract: Begg and Mazumdar proposed using a rank correlation test to
+for publication bias when carrying out meta-analyses. The asymptotic
+variance of the rank correlation test statistic was derived under
+assumptions unmet by this application, often resulting in a loss of
+power. Low power when Begg's test is used to screen for publication
+bias may lead to false positives in a subsequent meta-analysis. We
+obtain the asymptotic bias under the common conditionally normal model
+as a function of the distribution of primary study variances. In
+simulations we consider the performance of Begg's test using an
+approximation to the correct asymptotic variance. We then examine
+several meta-analyses drawn from the literature where the standard and
+bias-corrected versions of Begg's test lead to different conclusions.
+
+
+% \begin{enumerate}
+\section{Introduction}
+  % \begin{enumerate}
+  % \item meta-analysis, publication bias, tests for publication bias
+
+  Meta-analysis is a popular technique for summarizing a body of
+  studies. Key to the soundness of the approach is that the body of
+  studies used be representative of the studies conducted. This
+  requirement may fail to be met when publication bias is present,
+  when the availability of a study is tied to its conclusion \cite{begg1994b}. Several
+  hypotheses tests have been proposed with the goal of identifying the
+  presence of publication bias on the basis of the relationship
+  between the conclusion of the study and various study
+  characteristics.
+  
+  Common to these tests is that the null is held to be no publication
+  bias. A typical conservative analyst might be expected to treat the
+  presence of publication bias as the null. Given the manifold sources
+  of publication bias, devising a test under such a null does not
+  appear practical. The result, however, is that Type II errors in the
+  test for publication bias will often correspond to Type I errors in
+  the subsequent meta-analysis. Assessing and improving the power of
+  the screening test is therefore worthwhile.
+
+  One of the most common tests for publication bias, Begg's test
+  \cite{begg1994a}, tests for correlation between the studies' reported
+  effect sizes and their standard errors.  An issue with Begg's test
+  procedure is that it uses the asymptotic variance for a general
+  correlation test derived under assumptions unmet by Begg's
+  test. This nominal variance is often larger than the correct
+  variance, as discussed below. As a result, the test does not reject
+  as frequently as it ought, which, as mentioned above, is likely to
+  lead to Type I error in the meta-analysis for which the publication
+  bias test is being performed.
+
+    
+  % \item beggs test, problem with test, significance of problem for
+    % publication bias
+
+    
+    
+    
+  % \item preview computation of magnitude of error [proposed solution?]. differentiate from bergen paper.
+
+  This issue with Begg's test has been noted previously, including by
+  the author of the test \cite{begg1994a,begg1994b}. More recently,
+  \cite{gjerdevik2014} showed by direct calculation that the
+  observations are correlated, so that the usual assumptions for the
+  rank correlation test are not met. Since the rank correlation test
+  depends on an asymptotic approximation, this criticism isn't
+  entirely fair unless the effect of the correlation does not vanish
+  in the limit, as we show.
+    
+  % \end{enumerate}
+\section{Asymptotic bias of Begg's test}
+\subsection{Description of test}
+  % \begin{enumerate}
+  % \item intro begg's test, logic of begg's test, problem with
+    % correlation
+    % section: description of beggs test
+    
+    Begg's test is a test of correlation between the reported effect
+    sizes and their reported variances. The premise is that a tendency
+    to publish larger effect sizes induces a trend in effect sizes
+    across their variances, and no such trend exists without
+    selection. See Fig. \refeq{fig:selection} for an illustration.
+    
+    The data consists of independent pairs
+    $(y_1,\sigma_1),\ldots,(y_n,\sigma_n)$ representing the estimated
+    effect sizes and sampling variances of $n$ studies with a common mean effect size, say $\theta$:
+    \begin{align}
+      \begin{split}
+      \E(y_j\mid\sigma_j)=\theta, j=1,\ldots,n\\
+      \V(y_j\mid\sigma_j)=\sigma_j.
+      \label{model:nonpara}
+    \end{split}
+    \end{align}
+    The null is that $y_j$ is uncorrelated with $\sigma_j$, $j=1,\ldots,n$.
+    % Given study effects $y_1,\ldots,y_n$ assumed normal
+    % with variances $\sigma_1^2,\ldots,\sigma_n^2$ and common mean
+    % $\mu$.[does theorem 1 hold when mu isnt 0? yes kernel doesnt
+    % depend on translation] 
+    The test statistic is Kendall's rank
+    correlation coefficient,
+    $$
+    \tau=2{n\choose 2}^{-1}\sum_{j<k}\left\{(u_j-u_k)(v_j-v_k)>0\right\} - 1,
+    $$
+    applied to the sequence of pairs $(u_j,v_j)$ given by the data after standardizing the effect sizes,
+    \begin{align}
+      \begin{split}\label{defn:pairs}
+        (u_j,v_j)&=\left(\frac{y_j-\hat{\theta}}{\sqrt{\sigma_j^2-\sigma^2_{\hat{\theta}}}},\sigma_j\right),j=1,\ldots,n,\\
+        \text{where}\\
+        \hat{\theta}&=(\sum_{j=1}^ny_j/\sigma^2_j)/(\sum_{j=1}^n1/\sigma_j^2),\\
+        \sigma^2_{\hat{\theta}}&=1/\sum_{j=1}^n(1/\sigma_j^2).
+      \end{split}
+    \end{align}
+    % where[[mention dependence of u on n, $u^{(n)}_j$]]
+    The mean estimate
+    $\hat{\theta}=(\sum_{j=1}^ny_j/\sigma^2_j)/(\sum_{j=1}^n1/\sigma_j^2)$
+    is the inverse-variance weighted estimate of the common study mean
+    $\theta$ and $\sigma^2_{\hat{\theta}}=1/\sum_{j=1}^n(1/\sigma_j^2)$
+    is its variance, both conditional on the study variances.  The
+    test statistic counts the number of corresponding pairs of
+    studentized effect sizes
+    $u_j=(y_j-\hat{\theta})/\sqrt{\sigma_j^2-\sigma^2_{\hat{\theta}}}$
+    and variances $v_j=\sigma_j$ that concord in their magnitudes, in
+    the sense that either $u_j<u_k$ and $v_j<v_k$ or $u_j>u_k$ and
+    $v_j>v_k$. The null of no correlation is to be interpreted as no
+    publication bias, and is rejected at level $\alpha$ when
+    $\sqrt{9n/4}|\tau| > \Phi^{-1}(1-\alpha/2)$. %  [U-statistic with
+    % kernel ... .]
+
+    The asymptotic null variance $4/9$ is derived under the assumption
+    that the pairs form an iid sequence. This assumption does not hold
+    for the pairs (\refeq{defn:pairs}) due to the common terms
+    $\hat{\theta}$ and $\sigma^2_{\hat{\theta}}$. While the latter is
+    of order $1/n$ and typically negligible in the limit, the
+    dependence induced by the summary statistic $\thetahat$,
+    ordinarily of order $1/\sqrt{n}$, must be accounted for in
+    computing the asymptotic null variance of $\sqrt{n}\tau$.
+    
+    % to the fixed-effects summary statistics $\hat{\theta}$ and fixed effects variances $1/\sum_j\sigma_j^{-2}$ common to all the pairs.
+  % \item theorem--true asymptotic null variance
+  %   \begin{enumerate}
+  %   \item assumptions--iid, normal response
+  %     \item if discussing power, also inroduce alternative models
+  %   \end{enumerate}
+  % \end{enumerate}
+    
+  \subsection{Source of bias}\label{subsection:source_of_bias}
+  
+  The variance of $\sqrt{n}\tau$ is 
+    \begin{align}
+      \cov(\sqrt{n}\tau)=4n{n\choose 2}^{-2}\sum_{1\le i,j,k,l\le n}\cov(\h{i}{j},\h{k}{l})
+    \end{align}
+    The sum has ${n\choose 2}{n-2\choose 2}$ terms where $i,j,k,l$ are
+    all distinct, $2(n-2){n\choose 2}$ terms where the set
+    $\{i,j,k,l\}$ has size 3, and ${n\choose 2}$ terms where
+    $|\{i,j,k,l\}|=2$, so
+    \begin{align}
+      \cov(\sqrt{n}\tau)=4\frac{(n-2)(n-3)}{n-1}\cov(\h{1}{2},\h{3}{4})+\\
+      16\frac{n-2}{n-1}\cov(\h{1}{2},\h{1}{3}) + O(1/n).
+    \end{align}    
+    The second term on the rhs, with the $O(1)$ coefficient, converges in probability to
+    $$16\cov\left(\left\{\left(\frac{y_1-\theta}{\sigma_1}-\frac{y_2-\theta}{\sigma_2}\right)(\sigma_1-\sigma_2)>0\right\},\left\{\left(\frac{y_1-\theta}{\sigma_1}-\frac{y_3-\theta}{\sigma_3}\right)(\sigma_1-\sigma_3)>0\right\}\right) = 4/9,$$ the usual asymptotic null variance of
+    Kendall's $\tau$. %  [details:
+    % \begin{align}
+    %   \P&((u_1-u_2)(v_1-v_2)>0,(u_1-u_3)(v_1-v_3)>0)=\\
+    %     &= \P(u_1>u_2,u_1>u_3)\P(v_1>v_2,v_1>v_3) +\\
+    %       &2\P(u_1>u_2,u_1<u_3)\P(v_1>v_2,v_1<v_3)+\\
+    %      &\P(u_1<u_2,u_1<u_3)\P(v_1<v_2,v_1<v_3)\\
+    %    &=2\E(F_{U}^2)^2 + 2(\E(F_U(U)(1-F_U(U))))^2 = 2((1/12+1/4)^2 + (1/2-1/12+1/4)^2)=5/18
+    % \end{align}
+    % so $16\cov_{1213}=16(5/18-1/4)=4/9$.
+    % ]
+    % \begin{align}
+    %   &\P((u_1-u_2)(v_1-v_2)>0,(u_1-u_3)(v_1-v_3)>0)=\\
+    %   &6+6=3
+    % \end{align}
+    The first term on the rhs, with an $O(n)$ coefficient, is a
+    source of bias if the covariance
+    \begin{align}
+      &\cov(\h{1}{2},\h{3}{4})=\\ 
+      &\cov\left(\left\{\left(\frac{y_1-\thetahat}{\sqrt{\sigma_1^2-\sigma_{\thetahat}^2}}
+        -\frac{y_2-\thetahat}{\sqrt{\sigma_2^2-\sigma_{\thetahat}^2}}\right)(\sigma_1-\sigma_2)>0\right\} ,\left\{\left(\frac{y_1-\theta}{\sqrt{\sigma_1^2-\sigma_{\thetahat}^2}}-\frac{y_3-\theta}{\sqrt{\sigma_3^2-\sigma_{\thetahat}^2}}\right)(\sigma_4-\sigma_4)>0\right\}\right)
+        \label{eqn:cov_bias_source}
+    \end{align}
+    does not vanish faster than $1/n$. The false positive rate of
+    Begg's test will exceed or fall below the nominal level when the
+    direction of the bias is negative or positive, respectively, i.e., when the covariance (\refeq{eqn:cov_bias_source}) is positive or negative.
+
+    \subsection{Direction of bias}
+
+    % Ignore variance estimate.
+
+    Assume in (\refeq{model:nonpara}) that $y_j/\sigma_j$ has a fixed
+    distribution, say $F_Z$, i.e., the pairs
+    $(y_1,\sigma_1),\ldots,(y_n,\sigma_n)$ belong to a scale
+    family. % May rewrite the data as
+    % $(\z_1,\sigma_1),\ldots,(\z_n,\sigma_n)$, where $z_j=y_j/\sigma_j$
+    % and $z_j$ is independent of $\sigma_j$, $j=1,\ldots,n$. 
+    Assume
+    further that $F_Z$ is the distribution of a symmetric random
+    variable. Let $\s^2=1/\sigma^2$ denote the study precisions.
+    \begin{align}
+      \begin{split}
+        \label{model:symmetric}
+        \z_1,\ldots,\z_n \text{ iid } &\sim F_Z\\
+        \s_1,\ldots,\s_n \text{ iid } &\sim F_S\\
+        \z_j &\sim -\z_j,\\
+        z_j \mid s_j &\sim z_j,\\
+        \y_j&=\z_j/\s_j,j=1,\ldots,n
+      \end{split}
+    \end{align}
+    Ignoring the $O(1/n)$ terms $\sigma_{\thetahat}$ in (\refeq{defn:pairs}), the test statistic may be written in terms of $z$ and $s$ as
+    \begin{align}
+      \tau=\sum_{j<k}\left\{\frac{z_j-z_k}{s_j-s_k}>\thetahat\right\}.
+    \end{align}
+    The covariance (\ref{eqn:cov_bias_source}) determining the bias of the asymptotic variance relative to the $9/4$ is
+    \begin{align}
+      \cov\left(\left\{\frac{z_1-z_2}{s_1-s_2}>\thetahat\right\},\left\{\frac{z_3-z_4}{s_3-s_4}>\thetahat\right\} \right).
+    \end{align}
+    The grand mean estimate $\thetahat=\sum \z\s/\sum \s^2$ is a function of
+    $(z_1,s_1),\ldots,(z_4,s_4)$ and induces dependence
+    between the two terms in the covariance. By symmetry of the $F_Z$, $\P(\{\frac{z_j-z_k}{s_j-s_k}>\thetahat\}=1/2$, so the last expression is
+    \begin{align}
+      &\E(\{\frac{z_1-z_2}{s_1-s_2}>\thetahat\}\{\frac{z_3-z_4}{s_3-s_4}>\thetahat\})-1/4\\
+      &=\P(\frac{z_1-z_2}{s_1-s_2}\wedge\frac{z_3-z_4}{s_3-s_4}>\thetahat)-1/4.
+    \end{align}    
+    The symmetry of $F_Z$ further implies that $\{\frac{z_1-z_2}{s_1-s_2}>\thetahat\}\{\frac{z_3-z_4}{s_3-s_4}>\thetahat\}$ has the same distribution as $\{\frac{z_1-z_2}{s_1-s_2}<\thetahat\}\{\frac{z_3-z_4}{s_3-s_4}<\thetahat\}$, so the condition for a positive bias, $\E(\{\frac{z_1-z_2}{s_1-s_2}>\thetahat\}\{\frac{z_3-z_4}{s_3-s_4}>\thetahat\})<1/4$, is
+      % has the same distribution as
+      % $\{\x < \thetahat\}\{\y < \thetahat\}$, so the problem is the
+      % same as showing [break up following. there are multiple
+      % inequalities/equalities so it isnt clear which one 'the problem'
+      % refers to]
+      \begin{align}
+        1/2 &> \P\left(\left\{\frac{z_1-z_2}{s_1-s_2}>\thetahat\right\}\left\{\frac{z_3-z_4}{s_3-s_4}>\thetahat\right\}\right) + \P\left(\left\{\frac{z_1-z_2}{s_1-s_2}<\thetahat\right\}\left\{\frac{z_3-z_4}{s_3-s_4}<\thetahat\right\}\right)\\
+        % \P(\{\x > \thetahat\}\{\y > \thetahat\}) + \P(\{\x < \thetahat\}\{\y < \thetahat\}) = \P((\x-\thetahat)(\y-\thetahat) > 0)\\
+        % 1/2 &> \P(\{\x > \thetahat\}\{\y > \thetahat\}) + \P(\{\x < \thetahat\}\{\y < \thetahat\}) = \P((\x-\thetahat)(\y-\thetahat) > 0)\\
+            % &= \P(\x\y - \thetahat(\x + \y) + \thetahat^2 > 0)\\
+            &= \P(\zvec^T(\Svec_1\Svec_2^T+\Svec_2\Svec_1^T)\zvec/2>0),
+      \end{align}
+      where $\zvec=(\z_1,\ldots,\z_n)$ and (for $n\ge 5$)
+      \comment{maybe factor out sum}
+      \begin{align}
+        \Svec_1&=(\frac{1}{\s_1-\s_2}-\frac{\s_1}{\sum\s_j^2}, \frac{-1}{\s_1-\s_2}-\frac{\s_2}{\sum\s_j^2},\frac{-\s_3}{\sum \s_j^2},\ldots,\frac{-\s_n}{\sum \s_j^2})  \\
+        \Svec_2&=(-\frac{\s_1}{\sum \s_j^2},\frac{-\s_2}{\sum \s_j^2},\frac{1}{\s_3-\s_4}-\frac{\s_3}{\sum\s_j^2}, \frac{-1}{\s_3-\s_4}-\frac{\s_4}{\sum\s_j^2},-\frac{\s_5}{\sum \s_j^2},\ldots,\frac{-\s_n}{\sum \s_j^2}).
+      \end{align}
+      The two nonzero eigenvalues of $(\Svec_1\Svec_2^T+\Svec_2\Svec_1^T)/2$ are $\eval_a\pm\eval_b$ where
+      \begin{align}
+        \eval_a&=-1/(2\sum_j\s_j^2)\\
+        \eval_b&=\frac{\sqrt{((\s_1-\s_2)^2/\sum_j\s_j^2-2)((\s_3-\s_4)^2/\sum_j\s_j^2-2)}}{2(\s_1-\s_2)(\s_3-\s_4)}.
+      \end{align}
+      Then $\eval_a-\eval_b\le 0 \le \eval_a+\eval_b$, and
+      $|\eval_a+\eval_b|<|\eval_a-\eval_b|$, the negative eigenvalue
+      is larger in magnitude. Let $\evec_1,\evec_2$ denote unit
+      eigenvectors associated respectively to the positive and
+      negative eigenvalues. The condition for a positive bias takes the form
+      \begin{align}
+        \P\left( -\frac{\eval_a}{\eval_b} > \frac{\z^T(\evec_1^{\otimes 2}-\evec_2^{\otimes 2})\z}{\z^T(\evec_1^{\otimes 2}+\evec_2^{\otimes 2})\z} \right) > 1/2.\label{eqn:iff_cond}
+      \end{align}
+
+      The ratio $-\eval_a/\eval_b$ is $>0$ of order $1/n$. A
+      sufficient condition for a positive bias is then
+      $\P(\z^T(\evec_1^{\otimes 2}-\evec_2^{\otimes 2})\z<0)\ge 1/2$
+      or
+      \begin{align}
+        \P(|\z^T\evec_1|<|\z^T\evec_2|)\ge 1/2.\label{eqn:suff_cond}
+      \end{align}
+      The projections $\z^T\evec_1,\z^T\evec_2$ are uncorrelated with
+      mean zero. When $\z$ is gaussian, they are iid conditionally on
+      $\s$, and (\refeq{eqn:suff_cond}) holds with equality. In
+      general, however, whether (\refeq{eqn:iff_cond}) or
+      (\refeq{eqn:suff_cond}) holds, and therefore whether the bias is
+      positive or negative, depends on the relationship between the
+      distribution of $\z$ and of $\s$.
+      
+      % The bias is be negative when the primary study effects [ref] have
+    % a symmetric distribution.
+
+    % \begin{theorem} Given iid $(s_j,y_j),j=1,\ldots,n$ such that
+    %   $(z_1,\ldots,z_n)=(y_1s_1,\ldots,y_ns_n)|(s_1,\ldots,s_n)$ are
+    %   iid symmetric mean 0 variance 1, then $\cov(h((u_1^{(n)},v_1),(u_2^{(n)},u_2)),h((u^{(n)}_3,v_3),(u^{(n)}_4,v_4))\le 0$ as $n\to\infty$.[z and s have no atoms]
+    % \end{theorem}
+    % \begin{proof}
+
+    %   Let $x=...,y=...$.
+    %   To show:
+    %   \begin{align}
+    %     \P(\{\x > \thetahat\}\{\y > \thetahat\}) < 1/4.      
+    %   \end{align}
+    %   By symmetry of the $z_j$, $\{\x > \thetahat\}\{\y > \thetahat\}$
+    %   has the same distribution as
+    %   $\{\x < \thetahat\}\{\y < \thetahat\}$, so the problem is the
+    %   same as showing [break up following. there are multiple
+    %   inequalities/equalities so it isnt clear which one 'the problem'
+    %   refers to]
+    %   \begin{align}
+    %     1/2 &\ge \P(\{\x > \thetahat\}\{\y > \thetahat\}) + \P(\{\x < \thetahat\}\{\y < \thetahat\}) = \P((\x-\thetahat)(\y-\thetahat) > 0)\\
+    %         &= \P(\x\y - \thetahat(\x + \y) + \thetahat^2 > 0)\\
+    %           &= \P\left(\x\y - \frac{\sum_5^n zs}{\sum_5^n s^2}(\x+\y) + (\sum_1^n s^2)^{-2}\left((\x+\y)(\sum_1^4 zs)(\sum_1^4 s^2 - \sum_5^n s^2) + (\sum_1^n zs)^2\right)>0\right).
+    %   \end{align}
+    %   Let $\A_n=,\B_n=...$ so the last inequality reads as $1/2 \ge \P(A_n+B_n>0)$, or $1/2 \le \P(A_n+B_n < 0)$. As $\P(A_n+B_n < 0) \ge \P(\{\A_n<0\} \cap \{|B_n|<|A_n|\})$, it is enough to show that, as $n\to\infty$,
+    %   \begin{align}
+    %     \P(\A_n<0) &= 1/2 + \Omega(1/n(1+\log n)) \label{thrm:sign:Abound}\\
+    %     \P(|\B_n|<|\A_n|) &= 1-O(1/n). \label{thrm:sign:Bbound}
+                              %         \end{align}
+      % [lower Omega bound turned out not to hold.]
+    %   Then choosing $n_0$ such that  $n \ge n_0$ implies $\P(\A_n<0)-1/2 - \P(|\B_n|>|\A_n|) > \epsilon$,
+    %   \begin{align}
+    %     \P(A_n+B_n < 0) &\ge \P(\{\A_n<0\} \cap \{|B_n|<|A_n|\})\\
+    %                     &=\P(\A_n <0) \backslash \P(|\B_n|>|\A_n|)\\
+    %                     &\ge \P(\A_n<0) - \P(|\B_n|>|\A_n|)\\
+    %                     &> 1/2 + \epsilon.
+    %   \end{align}
+    %   To show \refeq{thrm:sign:Abound} [fix labels not showing]. Let
+    %   $\thetaind=...$. The RV $\thetaind$ is independent of
+    %   $(\x,\y)$. For any fixed negative value of $\thetaind$,
+    %   \begin{align}
+    %     \P(\A_n<0) &= \P(\x\y+\thetaind(\x+\y) < 0)\\
+    %                &= \P(\x < 0, \y > 0) - \P(\x<0, 0<y<\frac{-\thetaind \x}{\x+\thetaind})\\
+    %                &+ \P(0 < x \wedge y < |\thetaind|) + \P(\x > |\thetaind|, |\thetaind| < \y < \frac{-\thetaind\x}{\x+\thetaind})\\
+    %                &+ \P(\x < 0, \y < 0) - \P(0 < \x < |\thetaind|, \y < \frac{-\thetaind\x}{\x+\thetaind}).\label{thrm:sign:Adecomposition}
+    %   \end{align}
+      
+    %   [See figure?] As $x\sim -x, y\sim -y$,
+    %   \begin{align}
+    %     \P(\x<0, 0 < \y < \frac{-\thetaind\x}{\x+\thetaind}) &= \P(\x>0, 0 < \y < \frac{\thetaind\x}{-x+\thetaind}) \text{   and    }\\
+    %     \P(0<\x<|\thetaind|, \y < \frac{-\thetaind\x}{x+\thetaind}) &= \P(0 < \x < |\thetaind|, \y < \frac{\thetaind\x}{\x+\thetaind}).
+    %   \end{align}
+    %   [be consistent in using $-\thetaind$ or $|\thetaind|$].
+
+    %   Moreover, on $0 < \x < |\thetaind|$,
+    %   $\frac{\thetaind\x}{\x+\thetaind} > \x$, and on $\x>0$,
+    %   $\frac{\thetaind\x}{-\x+\thetaind} < \x \wedge |\thetaind|$. Therefore,
+    %   \begin{align}
+    %     \{\x > 0, 0 < \y < \frac{\thetaind\x}{-\x+\thetaind}\} \cap \{0<\x<|\thetaind|, \y>\frac{\thetaind\x}{\x+\thetaind}\} &= \emptyset \text{   and   }\\
+    %     \{\x > 0, 0 < \y < \frac{\thetaind\x}{-\x+\thetaind}\} \cup \{0<\x<|\thetaind|, \y>\frac{\thetaind\x}{\x+\thetaind}\} &\subset \{0< \x\wedge\y < |\thetaind|\}.\label{thrm:sign:switchedregions}
+    %   \end{align}
+
+    %   Substitution into \refeq{thrm:sign:Adecomposition} gives, for $\thetaind<0$,
+    %   \begin{align}
+    %     \P(\A_n<0) &= \P(\x<0,\y>0) + \P(\x>0,\y<0)\\
+    %                &+ \P(\x>|\thetaind|,|\thetaind|<\y<\frac{|\thetaind|\x}{\x-|\thetaind|}) + \P(\{0 < \x\wedge\y < |\thetaind|\} \backslash \text{lhs of \refeq{thrm:sign:switchedregions}})\\
+    %                &\ge 1/2 +  \P(\x>|\thetaind|,|\thetaind|<\y<\frac{|\thetaind|\x}{\x-|\thetaind|}).
+    %   \end{align}
+    %   Same holds by symmetry for positive values of $\thetaind$.
+      
+    %   Remains to show that
+    %   $\P(\x>|\thetaind|,|\thetaind|<\y<\frac{|\thetaind|\x}{\x-|\thetaind|})=\Omega(1/n(1+\log
+    %   n))$. The density of $z_1-z_2$ has a mode at $0$ [Pf?], and by
+    %   assumption the density is continuous. Therefore in some
+    %   neighborhood of $0$, say ..., the density has a local maximum at
+    %   $0$. Since $s_1-s_2$ is independent and also continuous, the
+    %   same holds for the ratio $\x$. The same argument applies for the
+    %   independent RV $\y$ as well, so that the joint density of
+    %   $(\x,\y)$ on the plane has a local maximum in some rectangular
+    %   neighborhood of the origin, say, the joint density exceeds
+    %   $\mindensity$ on $[-\bnd,\bnd]\times[-\bnd,\bnd]$. Then,
+    %   supposing as before that $\thetaind<0$,
+    %   \begin{align}
+    %     &\P(\{\x>|\thetaind|\}\cap\{|\thetaind|<\y<\frac{|\thetaind|\x}{\x-|\thetaind|}\} )\\
+    %     &\ge \P(\{\x>|\thetaind|\}\cap\{|\thetaind|<\y<\frac{|\thetaind|\x}{\x-|\thetaind|}\} \cap \{-\bnd<\x<\bnd\}\cap\{-\bnd<\y<\bnd])\\
+    %     &=\int_{|\thetaind|\wedge\bnd}^{\bnd}\int_{|\thetaind|\wedge\bnd}^{\frac{|\thetaind|\x}{\x-|\thetaind|}\wedge\bnd}dF_{\y}(\y)dF_{\x}(\x)\\
+    %     &\ge\mindensity\int_{|\thetaind|\wedge\bnd}^{\bnd}\int_{|\thetaind|\wedge\bnd}^{\frac{|\thetaind|\x}{\x-|\thetaind|}\wedge\bnd}d\y d\x
+    %       =\begin{cases}
+    %         \thetaind^2(1+\log((\frac{\bnd}{|\thetaind|}-1)^2)) &\mbox{if } |\thetaind| < \bnd \\
+    %         0 & \mbox{if } |\thetaind| \ge \bnd
+    %       \end{cases} .
+    %   \end{align}
+    %   As before, same argument holds for $\thetaind>0$ by symmetry. 
+
+    %   To show \refeq{thrm:sign:Bbound}: Multiply $P(|\B_n|>|\A_n|)$ through by $(s_1-s_2)^2(s_3-s_4)^2$ to get $P(|\Bprime_n|>|\Aprime_n|)$ where
+    %   \begin{align}
+    %     \Aprime&=(z_1-z_2)(s_1-s_2)(z_3-z_4)(s_3-s_4) - \\
+    %            &\frac{\sum_5^n zs}{\sum_5^n s^2}(s_1-s_2)(s_3-s_4)((z_1-z_2)(s_3-s_4)+(z_3-z_4)(s_1-s_2))\\
+    %     \Bprime&= (\sum_1^n s^2)^{-2}(s_1-s_2)(s_3-s_4)\cdot\\
+    %            &\left(((z_1-z_2)(s_3-s_4)+(z_3-z_4)(s_1-s_2))(\sum_1^4 zs)(\sum_1^4 s^2 - \sum_5^n s^2) + (\sum_1^n zs)^2\right).
+    %   \end{align}
+    %   [[using A' and B' to make sure rhs is integrable, but maybe not necessary, bc of the $1/n^2$ term]]
+
+    %   Let $\f0bound>0,\epsilon>0$ be given such that the density of $\A_n$ is bounded by $\f0bound$ on $(-\epsilon,\epsilon)$.
+    %   \begin{align}
+    %     \P(|\A_n|<|\B_n|) &\le \P(|\A_n|<|\B_n|; |\B_n|<\epsilon) + \P(|\B_n|>\epsilon)\\
+    %     &\le \f0bound\E(|\B_n|; |\B_n|<\epsilon) + \P(|\B_n|>\epsilon)\\
+    %   \end{align}
+      
+    %   As $\thetaind\to 0$ a.s., $1+\log((\frac{\bnd}{|\thetaind|}-1)^2)\to\infty$ a.s., [maybe change notation to show dependence of $\thetaind$ on $n$] and $\E(\thetaind^2)=1/\sum s_j^2$,
+    %   \begin{align}
+    %     &\frac{\P(|\A|<|\B|)}{\P(\A<0)}\\
+    %     &\le \frac{\mbox[..b bound..]}{\E(\thetaind^2(1+\log((\frac{\bnd}{|\thetaind|}-1)^2)); \thetaind<r)} \to 0.
+    %   \end{align}
+    %   Therefore there exists $n_0$ such as required in [ref].
+    % \end{proof}
+
+
+
+    
+    % \begin{proof}
+    %   The covariance is
+    %   \begin{align}
+    %     &\cov(h((u_1^{(n)},v_1),(u_2^{(n)},u_2)),h((u^{(n)}_3,v_3),(u^{(n)}_4,v_4)) = \\
+    %     &\E\left(\cov(h((u_1^{(n)},v_1),(u_2^{(n)},u_2)),h((u^{(n)}_3,v_3),(u^{(n)}_4,v_4)\mid s_1,\ldots,s_n) \right) + \\
+    %     &\cov\left(\E\left(h((u_1^{(n)},v_1),(u_2^{(n)},u_2))\mid s_1,\ldots,s_n\right), \E\left(h((u_3^{(n)},v_3),(u_4^{(n)},u_5))\mid s_1,\ldots,s_n\right)\right)
+    %   \end{align}
+
+    %   The symmetry of the $z_j$ implies $E\left(h((u_1^{(n)},v_1),(u_2^{(n)},u_2))\mid s_1,\ldots,s_n\right)=\E\left(h((u_3^{(n)},v_3),(u_4^{(n)},u_5))\mid s_1,\ldots,s_n\right)=1/2$ so the second term in the sum is 0, and after substitution into the first, the problem becomes showing
+    %   \begin{align}
+    %     1/4 &>  \E\left(h((u_1^{(n)},v_1),(u_2^{(n)},u_2))h((u_3^{(n)},v_3),(u_4^{(n)},u_5))\right)\\
+    %         &= \P\left((z_1-z_2-\hat{\theta}_n(s_1-s_2))(s_1-s_2)>0 \text{ and } (z_3-z_4-\hat{\theta}_n(s_3-s_4))(s_3-s_4)>0  \right).
+    %   \end{align}
+    %   By the symmetry of the $z_j$, the last event has the same probability as $\P\left((z_1-z_2-\hat{\theta}_n(s_1-s_2))(s_1-s_2)<0 \text{ and } (z_3-z_4-\hat{\theta}_n(s_3-s_4))(s_3-s_4)<0  \right)$, so the problem becomes showing
+    %   \begin{align}
+    %     1/2 &>       \P\left(\left((z_1-z_2-\hat{\theta}_n(s_1-s_2))(s_1-s_2)<0\right)\left((z_3-z_4-\hat{\theta}_n(s_3-s_4))(s_3-s_4)\right)<0  \right)\\
+    %     &=  \P\left(\left(a_n-\hat{\theta}_\perp^{(n)}(s_1-s_2)(s_3-s_4)\right)\left(b_n-\hat{\theta}_\perp^{(n)}(s_1-s_2)(s_3-s_4)\right)<0\right)\\
+    %     &=  \P\left(a_nb_n-\hat{\theta}_\perp^{(n)}(s_1-s_2)(s_3-s_4)(a_n+b_n)+(\hat{\theta}_{\perp}^{(n)})^2(s_1-s_2)(s_3-s_4) <0\right),
+    %   \end{align}
+
+    %   where
+    %   \begin{align}
+    %     a_n&=...\\
+    %     b_n&=...\\
+    %     \hat{\theta}_\perp^{(n)}
+    %   \end{align}
+
+    %   [[      Condition on $s_1,\ldots$ in remainder.]]
+
+    %   Given $s_1,\ldots$, $\hat{\theta}_\perp^{(n)}$ is independent of the other terms in [ref]. Moreover, for large $n$ it is symmetric, 
+    % \end{proof}
+    \subsection{Bias in the Gaussian model}
+    The study effects are often modeled as gaussian by appealing to
+    the CLT, e.g., in the original paper \cite{begg1994a}. In this
+    situation, the bias takes the form given by Theorem \ref{theorem:1}.
+    \comment{proofs to appendix depending on journal}
+    \begin{theorem}\label{theorem:1} Given iid $(\y_j,\s_j),j=1,\ldots,n$, such that
+      $(\y_1,\ldots,\y_n)|(\s_1,\ldots,\s_n)\sim
+      N(0,\diag(1/\s_1^2,\ldots,1/\s_n^2))$, $\s>0$ a.s., $\s$ has a
+      continuous lebesgue density, $\E(\s^2)<\infty$, and $P(S^2\le s)$ is $O( s^\epsilon)$  for some $\epsilon>0$, then
+      $\V(\sqrt{n}\tau)\to 4/9 - \frac{(\E|\s_1-\s_2|)^2}{\pi\E(\s^2)}$.
+  \end{theorem}
+  \begin{proof}
+    % Writing the kernel in [ref kendalls tau] as $(\z_j-\z_k)/(\s_j-\s_k)>\hat{\theta}$, the
+    % covariance is
+    As discussed above, any bias in the asymptotic variance relative to 4/9 is due to the term (\refeq{eqn:cov_bias_source})
+    \begin{align}
+      % \cov_{1234} = \P(\frac{z_1-z_2}{s_1-s_2}\wedge \frac{z_3-z_4}{s_3-s_4}>\hat{\theta}) - \P(\frac{z_1-z_2}{s_1-s_2} > \hat{\theta})^2
+      \cov_{0}=\P(\frac{\z_1-\z_2}{\s_1-\s_2}\wedge \frac{\z_3-\z_4}{\s_3-\s_4}>\thetahat) - 1/4.
+      \label{thm1:cov_bias_source}
+    \end{align}
+    % By the symmetry of $z_j$, $\P(\frac{z_1-z_2}{s_1-s_2} > \hat{\theta})=1/2$.
+    The result follows on showing that 
+    \begin{align}
+      % n\cdot \left(\P\left(\frac{z_1-z_2}{s_1-s_2}\wedge \frac{z_3-z_4}{s_3-s_4}>\hat{\theta}\mid s_1,\ldots,s_n\right)-\frac{1}{4}\right) \to \frac{(s_1-s_2)(s_3-s_4)}{4\pi\E(S^2)}
+      \P\left(\frac{\z_1-\z_2}{\s_1-\s_2}\wedge \frac{\z_3-\z_4}{\s_3-\s_4}>\thetahat\mid \s_1,\ldots,\s_n\right)-\frac{1}{4}
+      = \frac{(\s_1-\s_2)(\s_3-\s_4)}{4\pi\sum_{j=5}^n \s_j^2} + o(1/\sum_{j=5}^n \s_j^2)
+    \end{align}
+    and $n$ times the rhs is uniformly integrable, since then the LLN gives
+    \begin{align}
+      \begin{split}
+      \cov(\sqrt{n}\tau) - 4/9 &= 4n \cov_{0} + o(1)\\
+                               &= 4n\E\left( \frac{(\s_1-\s_2)(\s_3-\s_4)}{4\pi\sum_{j=5}^n \s_j^2} + o(1/\sum_{j=1}^n \s_j^2) \right) + o(1)\\
+                               &\to \E\left(\frac{(\E(\s_1-\s_2))^2}{\pi\E(\s^2)}\right).
+                             \end{split}\label{thm1:conclusion}
+    \end{align}
+    
+    Since $\z_1,\ldots\z_n,$ are independent of $\s_1,\ldots,\s_j$, (\refeq{thm1:cov_bias_source}) is
+    \begin{align}
+      &\P\left(\frac{\sum_{j=5}^n \z_j\s_j}{\sum_j \s_j^2} < \left(\frac{\z_1-\z_2}{\s_1-\s_2}- \frac{\sum_{j=1}^4\z_j\s_j}{\sum_j\s_j^2}  \right)\wedge \left(\frac{\z_3-\z_4}{\s_3-\s_4}- \frac{\sum_{j=1}^4\z_j\s_j}{\sum_j\s_j^2}\right) \bigg\vert \svec_n\right)\\
+      &=\E\left(\Phi\left(\frac{\sum_j\s_j^2}{\sqrt{\sum_{j=5}^n\s_j^2}}\left(\frac{\z_1-\z_2}{\s_1-\s_2}- \frac{\sum_{j=1}^4\z_j\s_j}{\sum_j\s_j^2}  \right)\wedge \left(\frac{\z_3-\z_4}{\s_3-\s_4}- \frac{\sum_{j=1}^4\z_j\s_j}{\sum_j\s_j^2}\right)  \right) \bigg\vert \svec_n\right)\\
+      &=\E\left(\Phi(\w_0\wedge \w_1)\mid \svec_n\right),\label{thm1:min_exp}
+    \end{align}
+    where $\w_0,\w_1$ are conditionally jointly normal with mean $0$, variances
+    $$
+    V_0=\frac{2}{(\s_1-\s_2)^2} + \frac{2}{\sum_j\s_j^2}+\frac{\sum_{1}^4\s^2}{(\sum_j\s_j^2)^2}, \hspace{10px}    V_1=\frac{2}{(\s_3-\s_4)^2} + \frac{2}{\sum_j\s_j^2}+\frac{\sum_{1}^4\s^2}{(\sum_j\s_j^2)^2}
+    $$
+    and covariance
+    $$
+    \rho\sqrt{V_0V_1}=-\frac{2}{\sum_j\s_j^2}+\frac{\sum_{1}^4\s^2}{(\sum_j\s_j^2)^2}.
+    $$
+    The density $f_{\w_0\wedge \w_1}$ of the minimum of a bivariate normal pair is readily available and substitution into (\refeq{thm1:min_exp}) gives
+    \begin{align}
+      &\E\left(\Phi(\w_0\wedge \w_1)\mid \overline{s}_n\right) = \int_{-\infty}^{\infty}\Phi(u)f_{\w_0\wedge \w_1}(u)du\\
+      &=\sum_{j\in\{0,1\}}\frac{1}{\sqrt{V_j}}\int_{-\infty}^{\infty}\Phi(u)\Phi\left(\frac{u}{\sqrt{1-\rho^2}}\left(\frac{\rho}{\sqrt{V_j}}-\frac{1}{\sqrt{V_{1-j}}}\right) \right)\phi\left(\frac{u}{\sqrt{V_j}}\right)du.
+    \end{align}
+    The integral inside the sum has the form
+    \begin{align}
+      \int_{-\infty}^{\infty}\Phi(\alpha_j u)\Phi(\beta_j u)\phi(\gamma_j u)du
+    \end{align}
+    with $\alpha_j=1,\beta_j=\frac{u}{\sqrt{1-\rho^2}}\left(\frac{\rho}{\sqrt{V_j}}-\frac{1}{\sqrt{V_{1-j}}}\right),$ and $\gamma_j = \frac{1}{\sqrt{V_j}}$. This integral may be computed by differentiating first with respect to $\alpha$ and then $\beta$ to put it in terms of elementary functions,
+    \begin{align}
+      \int_{-\infty}^\infty u^2\phi(\alpha_j u)\phi(\beta_j u)\phi(\gamma_j u)du=\frac{1}{2\pi(\alpha_j^2+\beta_j^2+\gamma_j^2)^{3/2}},
+    \end{align}
+    then integrating  twice to obtain $\frac{1}{2\pi\gamma_j}\arctan\left(\frac{\alpha_j\beta_j}{\gamma_j\sqrt{\alpha_j^2+\beta_j^2+\gamma_j^2}}\right)$ as the required definite integral up to a constant. The constant may be determined by taking limits as $1/(4\gamma_j)$, giving
+    \begin{align}
+      \E\left(\Phi(\w_0\wedge \w_1)\mid \overline{s}_n\right) =\frac{1}{2}+\frac{1}{2\pi}\sum_j\arctan\left(\frac{\alpha_j\beta_j}{\gamma_j\sqrt{\alpha_j^2+\beta_j^2+\gamma_j^2}}\right).     
+    \end{align}
+
+    Let $\Delta_0=\s_1-\s_2$ and $\Delta_1=\s_3-\s_4$. After simplification, the last expression is
+    \begin{align}
+      \frac{1}{2}+\frac{1}{2\pi}\sum_j\arctan\left(-\frac{1}{\Delta_j^2}\left(\frac{1}{\Delta_0^2\Delta_1^2}+\left(\frac{1}{\Delta_0^2}+\frac{1}{\Delta_1^2}\right)\frac{1}{2\sum_j\s_j^2}\right)^{-1/2}\right).
+    \end{align}
+    Let $u=1/\sum_{j=5}^n\s_j^2$, so by the LLN $u\to 0$ almost surely. When $u=0$, the last expression is $1/2 + (2\pi)^{-1}\sum_j \arctan\left(-|\frac{\Delta_{1-j}}{\Delta_j}|\right)=1/4$. Expanding about $u=0$ and simplifying, 
+    \begin{align}
+      \E\left(\Phi(\w_0\wedge \w_1)\mid \overline{s}_n\right) &=\frac{1}{4} + \frac{u}{2\pi}\sum_j\frac{\partial}{\partial u}\arctan\left(-\frac{1}{\Delta_j^2}\left(\frac{1}{\Delta_0^2\Delta_1^2}+\left(\frac{1}{\Delta_0^2}+\frac{1}{\Delta_1^2}\right)\frac{1}{2\sum_j\s_j^2}\right)^{-1/2}\right)\bigg|_{u=0} + o(u)\\
+      &=\frac{1}{4}+\frac{u}{4\pi}\Delta_0\Delta_1 + o(u).
+    \end{align}
+    % By another application of the LLN, $n\cdot u \to 1/\E(S^2)$ and $n\cdot o(u)\to 0$ a.s.
+    % The sequence $n\cdot u=n/\sum_{j=5}^n \s_j^2, n=1,2,\ldots,$ consists of the harmonic means of the variances $\sigma^2_j$, upper bounded by the arithmetic means, known to form a uniformly integrable sequence under the assumption of integrability of $\sigma^2$. \comment{handle remainder term}
+    Passing the limit into the expectation in \refeq{thm1:conclusion} follows from the
+    eventual uniform integrability of the sequence
+    $n\cdot u=n/\sum_{j=5}^n \s_j^2, n=1,2,\ldots,$ which in turn follows from Lemma    \ref{lemma:1}.
+    
+    
+  \end{proof}
+
+  \begin{lemma}\label{lemma:1}
+    If $\x_1,\x_2,\ldots$ are nonnegative and iid, then the sequence
+    of reciprocals of the sample means
+    $n/(\sum_{j=1}^n\x_j),n=n_0,n_0+1,\ldots,$ is uniformly integrable
+    for some $n_0$ if and only if the common cdf of the $\x_j$ is
+    $O(x^\epsilon)$ for some $\epsilon>0$.
+  \end{lemma}
+
+  \begin{proof}
+    First, $n/(\sum_{j=1}^n\x_j)$ has moments $>1$, say $1+\epsilon$, for $n$ large enough. As $\P(\frac{1}{n}\sum_{j=1}^n\x_j<x)\le \P(\x_1<nx)^n$,
+    \begin{align}
+      \E\left(\left(\frac{n}{\sum_{j=1}^n\x_j}\right)^{1+\epsilon}\right) &=
+                                                      (1+\epsilon)\int_0^\infty x^\epsilon\P\left(\frac{n}{\sum_{j=1}^n\x_j}>x\right)dx\\
+                                                    &\le(1+\epsilon)\left(1+\int_1^\infty x^\epsilon\P\left(\sum_{j=1}^n\x_j<\frac{n}{x}\right)dx\right)\\
+                                                    &\lesssim (1+\epsilon)\left(1+\int_1^\infty x^\epsilon\left(\frac{n}{x}\right)^{n\epsilon}dx\right),
+    \end{align}
+    which is finite for $n > 1/\epsilon-1$.
+    Next, for such $n$,  the sample means $\frac{1}{n}\sum_{j=1}^n\x_j,n=1,2,\ldots,$ are a reverse martingale with respect to $\mathcal{F}_n=\sigma\{\sum_{j=1}^n\x_j,\sum_{j=1}^{n+1}\x_j,\ldots\}$. The conditional form of Jensen's inequality applied to the convex function $x\mapsto x^{-(1+\epsilon)}$ on $\mathbb{R}^+$ gives, for $k\in\mathbb{N}$,
+    \begin{align}
+      \E\left(\left(\frac{n+k}{\sum_{j=1}^{n+k}\x_j}\right)^{1+\epsilon}\right) &= \E\left(\left(\E\left(\frac{1}{n}\sum_{j=1}^n\x_j\bigg\vert\mathcal{F}_{n+k}\right)\right)^{-(1+\epsilon)}\right)\\
+                                                                                &\le \E\left(\left(\frac{1}{n}\sum_{j=1}^n\x_j\right)^{-(1+\epsilon)}\right) =
+                                                                                  \E\left(\left(\frac{n}{\sum_{j=1}^{n}\x_j}\right)^{1+\epsilon}\right).
+    \end{align}
+    The reciprocals of the sample means are therefore $L^p$--bounded with $p=1+\epsilon$ for all large $n$, implying that they are uniformly integrable.
+
+    Conversely, if $\P(\x<x)$ isn't $O(x^\epsilon)$ for any $\epsilon$, there are sequences $\epsilon_n \to 0, x_n\to 0, x_n<1,$ such that $\P(\x<x_n)>x_n^{\epsilon_n}$. Then as $\P(\frac{1}{m}\sum_{j=1}^m\x_j < x_n) > \P(\x<x_n)^m > x_n^{m\epsilon_n}$,
+    \begin{align}
+      \E\left(\frac{m}{\sum \x_j}\right) &= \int_0^\infty \P\left(\frac{m}{\sum\x_j}>x\right)dx\\
+                              &\ge \int_1^\infty \P\left(\frac{1}{m}\sum_j\x < 1/x\right)dx\\
+                              &\ge \sum_{j=1}^\infty x_j^{m\epsilon_j}(1/x_{j+1}-1/x_j)\\
+                              &\ge \sum_{j=j_0}^\infty (x_j/x_{j+1}-1),
+    \end{align}
+    with $j_0$ is chosen so that $m\epsilon_j<1$ when $j\ge j_0$. The condition $x_n\to 0$ then implies
+    \begin{align}
+      \sum_{j=j_0}^\infty (x_j/x_{j+1}-1) &\ge \sum_{j=j_0}^\infty \log(x_j/x_{j+1})\\
+                                        &=\log\left(\prod_{j=j_0}^\infty x_j/x_{j+1}\right)=\infty,
+    \end{align}
+    so the reciprocals of the sample means aren't integrable. % For the reciprocals of sample means of nonnegative RVs, integrability and uniform integrability are the same.[not quite true--only the tails of the sequence of sample means are UI]
+  \end{proof}
+
+  
+  Theorem \ref{theorem:1} states that when the study effects are gaussian the bias depends on the ratio
+  $$
+  \biasratio=\frac{(\E|\s_1-\s_2|)^2}{\pi\E(\s^2)}
+  $$
+  of the squared mean absolute difference to the second moment of the
+  distribution of study precisions. The quantity is scale free, but depends on the location of $\s$ through the denominator. Jensen's inequality gives
+  $(\E|\s_1-\s_2|)^2\le \E((\s_1-\s_2)^2)=2\V(S)\le 2E(\s^2)$ so that
+  $\biasratio\le 2$ and the magnitude of the asymptotic bias of the
+  estimator is bounded above by $2/\pi$. This bound is only
+  achieved when the distribution of $S$ degenerates to a point mass at
+  $0$. Viewing $1/E(\s^2)$ as the harmonic mean of the study variances
+  $\sigma^2$, another bound is
+  $\biasratio \le \E(\sigma^2)(\E|\s_1-\s_2|)^2$.  
+
+  For $S$ uniformly distributed on $[a,b], a\ge 0$,
+  $\biasratio = \frac{(b-a)^2}{3(a^2+b^2+ab)}$, which is maximized at
+  $1/3$ when $a=0$. For the general beta distribution with parameters
+  $a>0,b>0$, the form of $\biasratio$ is given in Table
+  \ref{table:biasratio}. A continued fraction approximation suggests
+  it is maximized at $(a,b)\approx (.15,.39)$ with value
+  $\approx .66$, a bimodal density (Fig. \refeq{fig:1}).
+  \begin{figure}
+    \centering
+    \includegraphics[scale=.5]{fig1.png}
+    \label{fig:1}
+    \caption{The beta distribution maximizing $\rho$ (obtained numerically).}
+  \end{figure}
+  
+  For $S$ exponentially distribution, $\biasratio = 1/2$. For a gamma
+  distribution with shape parameter $a$,
+  $\biasratio=\frac{16a}{a+1}(B(1/2,a,a+1)-1/2)^2$, where
+  $B(1/2,k,k+1)=\int_0^{1/2}x^k(1-x)^{k+1}dx$ is an incomplete beta
+  integral. Numerical evaluation suggests this expression is maximized
+  at $k\approx .54$ with value $\approx .56$.
+
+  
+  When $S$ has a pareto distribution with shape parameter $a$, i.e., $f_S(s) =a\sigma^a/s^{a+1}\{s>\sigma\}$ when the scale parameter is $\sigma$,
+  $$
+  \biasratio = \frac{4a(a-2)}{((2a-1)(a-1))^2},
+  $$
+  defined for $a>2$ and maximized over $a$ at the unique root of $-2a^3+6a^2-2a-1$ on $(2,\infty)$,
+  $$
+  a=1+2\sqrt{2/3}\cos\left( 1/3\arctan\left(\sqrt{101/27}\right)  \right) \approx 2.53,
+  $$
+  where it takes the value $\approx .14$.
+
+  In practice, one may attempt to estimate $\biasratio$ using the
+  data. This approach may introduce bias of its own, particularly when
+  using common ratio estimators in conjunction with  smaller
+  meta-analyses.
+
+  
+\section{Simulations}
+
+  We consider the Types I and II error rates for the standard and 
+  debiased versions of Begg's test. To carry out the debiased version
+  of Begg's test, we used both the true asymptotic bias, which depends
+  on the distribution of $S$, and an approximation based on the
+  data. For the latter, given a sample of study precisions
+  $s_1,\ldots,s_n$, $\biasratio=(\E|\s_1-\s_2|)^2/E(\s^2)$ was estimated
+  by
+    \begin{align}
+      \left({n\choose 2}^{-1}\sum_{j<k}|s_j-s_k|\right)^2\bigg/ \overline{s^2}.
+    \end{align}
+      The scripts used to run the simulations and produce the figures
+      in this section, as well as a supporting \texttt{R} package, are available at \url{https://github.com/haben-michael/begg-public}.
+
+      \begin{enumerate}
+      
+  \item FPR control
+    
+    To examine the Type 1 error rate, data is generated under the null
+    model (\ref{model:symmetric}). The distributions of $\s$ considered were uniform,
+    beta, exponential, gamma, and pareto. Three meta-analysis sample
+    sizes were considered, 25, 75, and 150. The test was conducted at
+    a nominal level of 5\%. There were 1000 monte carlo repetitions.
+
+    The results are presented in Table \refeq{table:fpr}. The unadjusted
+    Begg test is conservative and consistent with the discussion in
+    Section \ref{subsection:source_of_bias} this bias does not go away with increased
+    sample size.  The magnitude of the asymptotic bias follows the
+    order one expects from Table \ref{table:biasratio}: i.e., beta, gamma, uniform,
+    pareto from most to least severe. For the small meta-analyses the
+    corrected test exceeds the nominal level by 1--3\%, matching the
+    nominal level for the larger meta-analysis. There does not appear
+    to be much loss in approximating the correct variance using the
+    data rather than using the true variance, even for the smaller
+    meta-analysis.
+    
+  \item Type II error rate
+
+    % Examination of the Type 2
+    % error rate requires the specification of a selection model. We f
+    We examine the Type II error rate under an alternative considered
+    by \cite{begg1994a}. Under this alternative, a study with p-value $p$
+    is selected for publication with probability $\propto\exp(-bp)$,
+    with $b\ge 0$. The parameter $b$ controls the strength of
+    selection, with $b=0$ corresponding to no selection. The choice of
+    selection function was informed by studies of selection bias
+    contemporaneous with \cite{begg1994a}. The distrbutions of $\s$
+    considered for this simulation were uniform, beta, exponential and gamma, and the size
+    of the meta-analyses considered were 25, 75, and 150.
+
+    Power curves are presented in Fig. \refeq{fig:power}. For
+    interpretability, the alternatives are parameterized by the
+    proportion of studies selected, rather than $b$. The improvement
+    in power across distributions and sizes of has a median value of
+    17\%.  The estimator based on the approximation to the true
+    asymptotic variance performs similarly to the oracle estimator.\comment{maybe show this by simulation.}
+    
+  \end{enumerate}
+  
+  % \item re-analysis of meta-analysis?
+
+    \section{Data analysis}\label{section:data analysis}
+
+    As an application, we describe three meta-analyses chosen to
+    illustrate different conclusions drawn by the standard and
+    bias-corrected Begg's test. In the typical situation that Begg's
+    test reports a p-value far from the analyst's chosen level, the
+    bias-corrected test will agree with the biased test. In these
+    examples, the standard Begg's test reports p-values in the range
+    $5--10\%$ and would be insignificant at the $5\%$ level. The three
+    examples were chosen to contrast the stength of evidence for
+    publication bias conveyed by a funnel plot, the conventional
+    informal test for publication bias. In the first, the authors see
+    little evidence for publication bias based on a funnel plot. In
+    the second, the authors are unable to determine the risk of
+    publication bias. In the third, the authors caution that studies
+    have likely been omitted.
+    
+    % In the first, an informal analysis
+    % suggests that publication bias may be present, and this conclusion
+    % is contradicted by the standard Begg's test. In the second, an
+    % informal analysis and the standard Begg's test conducted at the
+    % $5\%$ level both offer little indication of publication bias.  For
+    % both meta-analyses the bias bias-corrected Begg's test returns a
+    % p-value $<2\%$. % Both meta-analyses were chosen with mean differences of
+    % % continuous data as effects to make the gaussian assumption of
+    % % Theorem \ref{theorem:1} more plausible.
+    
+    % In a 2014 analysis, \cite{zhang2014} assess the therapeutic effects of
+    % Astragalus (\emph{Radix Astragali}), a traditional remedy, in
+    % treating kidney disease. As part of their analysis, the authors
+    % examine whether Astragalus is associated with a decrease in serum
+    % creatinine, high levels of which are associated with poor kidney
+    % health. To do so they conduct a meta-analysis of 13 randomized and
+    % quasi-randomized trials together involving 775 subjects. The
+    % conclusion of the meta-analysis is that Astragalus is associated
+    % with a decrease of $‐21.39$ \textmu mol/L relative to control, with a
+    % $95\%$ CI $(‐34.78, ‐8)$, and a p-value of $.17\%$. Upon
+    % examining a funnel plot [see...], the authors warn of the
+    % possibility of publication bias. On these data, however, the usual
+    % Begg's test returns as p-value $5.5\%$, which just fails to give
+    % significant evidence of publication bias at the $5\%$ level. On
+    % the other hand, the bias-corrected Begg's test returns as p-value
+    % $1.6\%$, confirming the authors' suspicions.
+
+    In a 2005 analysis, \cite{van2005} assess the therapeutic effects
+    of alpha-glucosidase inhibitors in treating type 2 diabetes
+    mellitus. As part of this analysis, they examine the change in
+    body weight under treatment. In a meta-analysis based on 13
+    randomized trials of at least 12 weeks' duration together
+    involving 864 subjects, the authors find little or no effect of
+    the treatment on weight, contrary to expectations. The authors
+    assess the likelihood of publication bias as low based on a funnel
+    plot (Fig. \ref{fig:funnel}). On this data, Begg's test gives a p-value of $7.4\%$,
+    whereas the bias-corrected test rejects at the $5\%$ level with a
+    p-value of $2.7\%$. In this case the possibility of publication
+    bias, suggested by the bias-corrected test, is arguably of less
+    concern as the subsequent meta-analysis can't be a false
+    positive, failing to be significant at the chosen level.
+
+    In a 2016 analysis, \cite{mcnicol2016} assess the therapeutic
+    effects of intravenously administered paracetamol in treating
+    postoperative pain. As part of their analysis, they examine the
+    reduction in opioids administered under treatment by
+    paracetamol. In a meta-analysis of 13 randomized trials together
+    involving $777$ subjects, the authors find a highly significant
+    reduction of $1.92$ mg, with a $95\%$ CI $(-2.41,-1.42)$. The
+    authors assess the quality of the data as moderate, noting that
+    the risk of selective reporting is unclear. In this case, a
+    standard Begg's test gives a p-value $5.2\%$, just insignificant
+    at the $5\%$ level, whereas the bias-corrected test returns a
+    p-value $2.6\%$, suggesting publication bias is present and
+    casting doubt on the validity of the subsequent meta-analysis.
+    
+    In a 2020 analysis, \cite{hooper2020} assess the effect of low-fat
+    intake on body weight in populations not seeking to lose
+    weight. The authors conduct a meta-analysis on 26 randomized
+    trials of at least six months' duration involving $50,907$
+    subjects. They find that a low-fat diet is associated with a
+    $-1.56$ kg difference in weight, with a $95\%$ CI $(-1.88,-1.23)$,
+    and a p-value reported as $<.00001$. Though the trials in this
+    analysis were chosen in part for their low summary risk of bias,
+    the authors warn of the possibility of selection bias based on a
+    funnel plot (Fig. \ref{fig:funnel}) and other analyses. Begg's test, however, gives a
+    p-value $7.8\%$, whereas the corrected test gives a p-value
+    $3.3\%$, consistent with the authors' suspcicions.
+
+    
+    
+\section{Conclusion}
+
+  We have examined the causes of a known bias in Begg's test and
+  quantified it in the common model of normally distributed
+  studies. We have also suggested a debiased estimator that matches
+  the nominal variance in the limit as the number of studies grows,
+  unlike the standard estimator, which remains conservative. In
+  simulations the corrected estimator is somewhat anticonservative on
+  smaller meta-analyses, although from the perspective of an analyst
+  concerned primarily about the integrity of the meta-analysis,
+  exceeding the nominal level may be preferable to falling under it,
+  as discussed earlier.  \comment{maybe mention the poor performance of beggs test}
+
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{selection.png}
+  \caption{  The effect of a simple hard thresholding selection model on the
+  study means. Overlaid on the joint density of $\y$ and $\sigma$ is the mean of $\y|\sigma$
+  before selection, $\theta=0$, exhibiting no
+  trend (solid line), a threshold obtained by rejecting studies with a one-sided p-value
+  $>.3$ (dashed line), and the mean of the studies
+  after selection, exhibiting a trend that Begg's test can pick up (dotted line).
+}
+  \label{fig:selection}
+\end{figure}
+  
+% \item possible additions: lower power curve? proposed solution[done]? nonnormal response? asymptotic normality
+% \end{enumerate}
+  % [give table of distributions of common nonnegative rv's with common values for $\biasratio$ and the resulting bias]
+  
+  \begin{table}
+    \begin{tabular}{l c c}
+    distribution of $S$ & $\biasratio$ & max asymptotic bias \\
+    \hline\\
+    uniform  & $\frac{(b-a)^2}{3(a^2+b^2+ab)}$  & .11\\
+    beta & $\left(\frac{4B(a+b,a+b)}{B(a,a)B(b+b)}\right)^2\frac{a+b+1}{a(a^2+ab+a+b)}$ & .21\\
+    % exponential & 1/2 & .16\\
+    gamma & $\frac{16a}{a+1}(B(1/2,a,a+1)-1/2)^2$ & .18\\
+    pareto & $\frac{4a(a-2)}{((2a-1)(a-1))^2}$ & .04\\
+  \end{tabular}
+  \caption{Shape families of some nonnegative RVs, $\rho=\text{bias}\times\pi=(\E|S_1-S_2|)^2/E(S^2)$ in
+    terms of the shape parameters, and the maximum bias of the
+    asymptotic variance over the shape family.}
+  \label{table:biasratio}
+\end{table}
+
+\begin{table}
+  \input{210313_table.tex}
+  \caption{False positive rates for standard Begg's test, after debiasing using true asymptotic bias, and after debiasing using estimated asymptotic bias [fix n=76 to 75].}
+  \label{table:fpr}
+\end{table}
+
+% \begin{figure}
+  %   \centering
+  %   \resizebox{250pt}{!}{%
+  %     \input{ms/210313_table.tex}
+  %   }
+  %   \captionof{figure}{Causal DAG describing longitudinal confounding with $T=2$ time points.}
+  %   \label{fig:sra dag}
+  % \end{figure}
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{power_curves.png}
+  % \includegraphics[scale=.5]{ms/210314a.png}
+  \caption{Power curves of standard Begg's test, after debiasing using true asymptotic bias, and after debiasing using estimated asymptotic bias. The alternatives are parameterized by the proportion of studies selected. The estimator debiased using an estimate of the true bias and the true bias itself overlap.\comment{increase size of plot}}
+  \label{fig:power}
+\end{figure}
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{funnel_plots.png}
+  \caption{Funnel plots of the three meta-analyses described in Section \ref{section:data analysis}. These were interpreted as suggesting lower, moderate, and higher possibilities of publication bias, going from left to right.}
+  \label{fig:funnel}
+\end{figure}
+
+
+\bibliographystyle{plain}
+\bibliography{begg.bib}
+
+\end{document}

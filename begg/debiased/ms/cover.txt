@@ -1,0 +1,7 @@
+We present a correction to Begg's test for publication bias, currently
+one of the two most popular formal tests of publication bias. The
+correction boosts the power of the by about 17% in our
+simulations. While the gain is arguably modest, there is little
+downside to using the corrected test, and we present examples drawn
+from the literature where the boost in power does in fact make a
+difference.

@@ -1,0 +1,361 @@
+
+## 52. figure illustrating beggs test
+
+require(MASS)
+n <- 1e6
+threshold <- qnorm(1-.3)
+sigma <- sort(runif(n,0,1))
+## sigma <- sort(rexp(n))
+y <- rnorm(n,sd=sigma)
+## png('selection.png')
+smoothScatter(sigma,y,colramp=function(n)gray.colors(n,rev=TRUE),ylab='Y',xlab=expression(sigma),xlim=c(.1,max(sigma)-.2),ylim=c(-2,2),bandwidth=.1,transformation=function(x)x^.25)
+abline(0,threshold,lty=2)
+abline(h=0,lty=1)
+conditional.mean <- dnorm(threshold/sigma)/(1-pnorm(threshold/sigma))*sigma
+lines(sigma,conditional.mean,lty=3)
+## dev.off()
+
+dd
+## plot(sigma,y,pch='.',col=rgb(0,0,0,.3))
+## image(kde2d(sigma,y,n=200),ylim=c(-1,1))
+
+
+
+## 55. cochran data
+
+require(rjson)
+source('public/pkg/R/begg.test.R')
+
+## data = fromJSON(file='scrape/cochrane_data.json')
+## data <- lapply(data, function(paper) {
+##     paper$outcomes <- lapply(paper$outcomes, function(outcome) {
+##         outcome$ma.data <- sapply(outcome$studies, function(study) c(se=study$se,effect=study$effect))
+##         ## outcome$begg.adjusted <- tryCatch(begg.test(outcome$ma.data['effect',],outcome$ma.data['se',]^2,adjusted=TRUE)$p.value,warning=function(w)NA)
+##         ## outcome$begg.unadjusted <- tryCatch(begg.test(outcome$ma.data['effect',],outcome$ma.data['se',]^2,adjusted=FALSE)$p.value,warning=function(w)NA)
+##         outcome$begg.adjusted <- begg.test(outcome$ma.data['effect',],outcome$ma.data['se',]^2,adjusted=TRUE)$p.value
+##         outcome$begg.unadjusted <- begg.test(outcome$ma.data['effect',],outcome$ma.data['se',]^2,adjusted=FALSE)$p.value
+##         outcome$paper.id <- paper$ID
+##         outcome$paper.title <- paper$title
+##         ## if(length(paper$title)==0){
+##         ##     browser()
+##         ##     }
+##         outcome
+##     })
+##     paper
+## })
+
+data = fromJSON(file='scrape/cochrane_data.json')
+for(paper_idx in 1:length(data)) {
+    for(outcome_idx in 1:length(data[[paper_idx]]$outcomes)) {
+        outcome <- data[[paper_idx]]$outcomes[[outcome_idx]]
+        outcome$ma.data <- sapply(outcome$studies, function(study) c(se=study$se,effect=study$effect))
+        outcome$begg.adjusted <- begg.test(outcome$ma.data['effect',],outcome$ma.data['se',]^2,adjusted=TRUE)$p.value
+        outcome$begg.unadjusted <- begg.test(outcome$ma.data['effect',],outcome$ma.data['se',]^2,adjusted=FALSE)$p.value
+        outcome$paper.id <- data[[paper_idx]]$ID
+        outcome$paper.title <- data[[paper_idx]]$title
+        outcome$paper.ID <- data[[paper_idx]]$ID
+        data[[paper_idx]]$outcomes[[outcome_idx]] <- outcome
+    }
+}
+names(data) <- sapply(data, function(lst)lst$ID)
+
+## agree <- disagree <- 0
+## cutoff <- .05
+## for(paper in data) {
+##     for(outcome in paper$outcomes) {        
+##         if(!is.na(outcome$begg.adjusted) && !is.na(outcome$begg.unadjusted)) {
+##             if(outcome$begg.adjusted < cutoff && outcome$begg.unadjusted > cutoff) {
+##                 disagree <- disagree + 1
+##             } else {
+##                 agree <- agree + 1
+##                 }
+##         }
+##     }
+## }
+## disagree / (agree + disagree)
+
+
+pvals <- lapply(data, function(paper) {
+    outcomes <- lapply(paper$outcomes, function(outcome) data.frame(paper.id=outcome$paper.id,paper.title=outcome$paper.title,outcome.id=outcome$outcome_id,outcome.pval=outcome$outcome_pval,n.studies=outcome$n_studies,adjusted=outcome$begg.adjusted,unadjusted=outcome$begg.unadjusted))
+    ## print(outcomes)
+    do.call(rbind,outcomes)
+})
+pvals <- do.call(rbind,pvals)
+pvals <- na.omit(pvals)
+rownames(pvals) <- NULL
+
+mean(pvals$adjusted[pvals$unadjusted>.05]<.05)
+## a difference on about 2% of the meta analyses
+
+cutoff <- .05
+idx <- which(pvals$unadjusted>cutoff)
+idx[which.min(pvals$adjusted[idx])]
+
+subset(pvals,subset=unadjusted>.05 & adjusted<.035,select=c('paper.id','outcome.id','n.studies','outcome.pval','adjusted','unadjusted'))
+
+
+## png('./ms/funnel_plots.png')
+op <- par(mfrow=c(1,3))
+## diabetes study
+ma.data <- data[['CD003639']]$outcomes[['CMP-001.12']]$ma.data
+plot(ma.data['effect',],ma.data['se',],xlab='effect',ylab='standard error',main='Van de Laar et al.')
+## tufts/analgesic study
+ma.data <- data[['CD007126']]$outcomes[['CMP-008.01']]$ma.data
+plot(ma.data['effect',],ma.data['se',],xlab='effect',ylab='standard error',main='Mcnicol et al.')
+## fat study
+ma.data <- data[['CD013636']]$outcomes[['CMP-002.02']]$ma.data
+plot(ma.data['effect',],ma.data['se',],xlab='effect',ylab='standard error',main='Hooper et al.')
+par(op)
+## dev.off()
+
+
+
+
+
+
+
+
+
+
+
+## 1. FPR analysis
+## source('misc.R')
+
+
+## tau <- function(z,s) {
+##     y <- z/s
+##     theta.fe <- sum(y*s^2)/sum(s^2)
+##     cor(z-theta.fe*s,s,method='kendall')
+## }
+tau <- function(y,v) {
+    ## y <- z/s
+    theta.fe <- sum(y/v)/sum(1/v)
+    ## list(tau=cor((y-theta.fe)/sqrt(v-1/sum(1/v)),v,method='kendall'),theta.fe=theta.fe)
+    cor((y-theta.fe)/sqrt(v-1/sum(1/v)),v,method='kendall')
+}
+
+require(parallel)
+B <- 5e3
+q <- qnorm(1-.05/2)
+rS <- rexp
+rho <- 1/2
+rSs <- c(uniform=function(n)runif(n,0,1), exponential=rexp, gamma=function(n)rgamma(n,shape=.54), beta=function(n)rbeta(n,.15,.39), pareto=function(n)EnvStats::rpareto(n,location=1,shape=2.52687))
+rhos <- c(uniform=1/3,exponential=1/2,gamma=.56,beta=.66,pareto=.1390052)
+biases <- rhos/pi
+distributions <- structure(names(rSs),names=names(rSs))
+## distributions <- distributions[1:2]
+ns <- round(seq(1e1,1.5e2,len=20))
+by.distr <- lapply(distributions, function(distr) {
+    rS <- rSs[[distr]]; bias <- biases[distr]
+    ## rS <- runif; bias <- 1/3/pi
+    by.n <- sapply(ns, FUN=function(n) {
+        tau.stats <- mclapply(1:B, mc.cores=detectCores()-2, FUN=function(jj) {
+        ## tau.stats <- lapply(1:B,  FUN=function(jj) {
+            s <- rS(n)
+            z <- rnorm(n)
+            s.md.hat <- mean(abs(outer(s,s,`-`)))
+            s2.hat <- mean(s^2)
+            bias.hat <- s.md.hat^2/s2.hat/pi
+            c(tau=tau(y=z/s,v=1/s^2),bias.hat=bias.hat)
+        })
+        tau.stats <- simplify2array(tau.stats)
+        tau.hat <- tau.stats['tau',]; bias.hat <- tau.stats['bias.hat',]
+        ## var(tau.stats)
+        c(power=mean(sqrt(9*n/4)*abs(tau.hat)>q),power.debiased=mean(sqrt(n/(4/9-bias))*abs(tau.hat)>q),power.debiased.hat=mean(sqrt(n/(4/9-bias.hat))*abs(tau.hat)>q))
+    })
+})
+
+power <- sapply(by.distr,function(m)m['power',])
+power.debiased <- sapply(by.distr,function(m)m['power.debiased',])
+power.debiased.hat <- sapply(by.distr,function(m)m['power.debiased.hat',])
+matplot(power,x=ns,type='l',lty=1:length(distributions),col=1,xlab='number of studies',ylab='FPR',ylim=range(unlist(by.distr)))
+matplot(ns,power.debiased,lty=1:length(distributions),type='l',col=2,add=TRUE)
+matplot(ns,power.debiased.hat,lty=1:length(distributions),type='l',col=3,add=TRUE)
+abline(h=.05)
+legend('topright',lty=1:length(distributions),legend=distributions)
+
+require(xtable)
+ns.idx <- which(ns %in% c(25,76,150))
+out <- matrix(paste0(t(round(power,2)[ns.idx,]),', ',t(round(power.debiased,2)[ns.idx,]),', ',t(round(power.debiased.hat,2)[ns.idx,])),nrow=length(distributions))
+attr(out,'dimnames') <- list(distribution=distributions,n=ns[ns.idx])
+addtorow <- list(pos=list(0, 0),
+                 command=c("& \\multicolumn{3}{c}{meta-analysis size} \\\\\n",
+                      paste0('precision distribution &',paste0(ns[ns.idx],collapse='&'), '\\\\\n')))
+## sink('210313_table.tex')
+print.xtable(xtable(out),add.to.row = addtorow,floating=FALSE,latex.environment=NULL,include.colnames = FALSE)
+## print.xtable(xtable(out),add.to.row = addtorow,include.colnames = FALSE)
+## sink()
+
+
+
+
+
+
+
+
+
+## 2. FPR analysis with effect heterogeneity
+## source('misc.R')
+source('../public/pkg/R/begg.test.R')
+## tau <- function(y,v) {
+##     ## y <- z/s
+##     theta.fe <- sum(y/v)/sum(1/v)
+##     ## list(tau=cor((y-theta.fe)/sqrt(v-1/sum(1/v)),v,method='kendall'),theta.fe=theta.fe)
+##     cor((y-theta.fe)/sqrt(v-1/sum(1/v)),v,method='kendall')
+## }
+est.var.between <- function(y,sigma) {
+    ## w <- 1/sigma^2
+    n <- length(y)
+    df <- n-1
+    theta.fe <- sum(y/sigma^2/sum(1/sigma^2))
+    Q <- sum((y-theta.fe)^2/sigma^2)
+    out <- max(0, (Q-df)/(sum(1/sigma^2)-sum(1/sigma^4)/sum(1/sigma^2)))
+    ## if(return.I2) out <- c(var.between.hat=out,I2=(Q-df)/Q)
+    ## out
+}
+est.I2 <- function(y,sigma) {
+    n <- length(y)
+    df <- n-1
+    theta.fe <- sum(y/sigma^2/sum(1/sigma^2))
+    Q <- sum((y-theta.fe)^2/sigma^2)
+    out <- (Q-df)/Q
+}
+require(parallel)
+B <- 3e3
+alpha <- .05
+q <- qnorm(1-alpha/2)
+## rS <- rexp
+## rho <- 1/2
+rSs <- c(uniform=function(n)runif(n,0,1), exponential=rexp, gamma=function(n)rgamma(n,shape=.54), beta=function(n)rbeta(n,.15,.39), pareto=function(n)EnvStats::rpareto(n,location=1,shape=2.52687))
+## rhos <- c(uniform=1/3,exponential=1/2,gamma=.56,beta=.66,pareto=.1390052)
+## biases <- rhos/pi
+distributions <- structure(names(rSs),names=names(rSs))
+## distributions <- distributions[1:2]
+ns <- round(seq(1e1,1.5e2,len=20))
+v.bw <- 2
+by.distr <- lapply(distributions, function(distr) {
+    rS <- rSs[[distr]]## ; bias <- biases[distr]
+    ## rS <- runif; bias <- 1/3/pi
+    by.n <- sapply(ns, FUN=function(n) {
+        stats <- mclapply(1:B, mc.cores=detectCores()-2, FUN=function(jj) {
+        ## tau.stats <- lapply(1:B, FUN=function(jj) {
+            s.wi <- rS(n)
+            v.wi <- 1/s.wi^2
+            v.total <- v.wi+v.bw
+            s.total <- 1/sqrt(1/s.wi^2+v.bw)
+            z <- rnorm(n)
+            v.bw.hat <- est.var.between(y=z/s.total,sigma=sqrt(v.wi))
+            s.total.hat <- 1/sqrt(1/s.wi^2+v.bw.hat)
+            c(begg.test(y=z/s.total,v=1/s.total^2,adjusted=FALSE)$p.value,
+              begg.test(y=z/s.total,v=1/s.total^2,adjusted=TRUE)$p.value,
+              begg.test(y=z/s.total.hat,v=1/s.total.hat^2,adjusted=TRUE)$p.value,
+              I2=est.I2(y=z/s.total,sigma=sqrt(v.wi)))
+            ## s2.hat <- mean(s.total^2)
+            ## bias.hat <- s.md.hat^2/s2.hat/pi
+            ## c(tau=tau(y=z/s.total,v=1/s.total^2),bias.hat=bias.hat)
+        })
+        stats <- simplify2array(stats)
+        structure(c(rowMeans(stats[1:3,]<alpha),mean(stats['I2',])),names=c('pval.unadjusted','pval.adjusted.oracle','pval.adjusted.hat','I2'))
+    })
+})
+
+power.unadjusted <- sapply(by.distr,function(m)m['pval.unadjusted',])
+power.adjusted.oracle <- sapply(by.distr,function(m)m['pval.adjusted.oracle',])
+power.adjusted.hat <- sapply(by.distr,function(m)m['pval.adjusted.hat',])
+I2 <- colMeans(sapply(by.distr,function(m)m['I2',]))
+matplot(power.unadjusted,x=ns,type='l',lty=1:length(distributions),col=1,xlab='number of studies',ylab='FPR',ylim=c(0,.2))#range(unlist(by.distr)))
+matplot(ns,power.adjusted.oracle,lty=1:length(distributions),type='l',col=2,add=TRUE)
+matplot(ns,power.adjusted.hat,lty=1:length(distributions),type='l',col=3,add=TRUE)
+abline(h=.05)
+legend('topright',lty=1:length(distributions),legend=distributions)
+
+require(xtable)
+ns.idx <- which(ns %in% c(25,76,150))
+out <- matrix(paste0(t(round(power.unadjusted,2)[ns.idx,]),', ',t(round(power.adjusted.oracle,2)[ns.idx,]),', ',t(round(power.adjusted.hat,2)[ns.idx,])),nrow=length(distributions))
+attr(out,'dimnames') <- list(distribution=paste0(distributions,' $(I^2=',round(I2,2),')$'),n=ns[ns.idx])
+addtorow <- list(pos=list(0, 0),
+                 command=c("& \\multicolumn{3}{c}{meta-analysis size} \\\\\n",
+                      paste0('precision distribution &',paste0(ns[ns.idx],collapse='&'), '\\\\\n')))
+sink('220204_table.tex')
+print.xtable(xtable(out),add.to.row = addtorow,floating=FALSE,latex.environment=NULL,include.colnames = FALSE,sanitize.text.function=function(x){x})
+## print.xtable(xtable(out),add.to.row = addtorow,include.colnames = FALSE)
+sink()
+
+
+
+
+
+
+
+## 2c-3. FPR with t distr. df=1, maybe df=1.25 cases seem to have
+## unbounded bias. More pronounced with unif[0,1] than unif[1,2] for S
+## distribution, seems to be some interaction.
+source('../begg2/misc.R')
+n.rZ <- 5
+Z.params <- seq(2.5,1,len=n.rZ)
+rZs <- lapply(Z.params,function(df)function(n)rt(n,df=df))
+require(parallel)
+ns <- round(seq(6,1e2,len=20))
+B <- 1e5
+## by.n <- sapply(ns, function(n) {
+## rZ <- rZs[[3]]
+## by.n <- mclapply(ns, mc.cores=detectCores()-3,FUN=function(n) {
+## by.Z <- mclapply(rZs, mc.cores=detectCores()-3,FUN=function(rZ) {
+by.Z <- lapply(rZs, FUN=function(rZ) {
+    cat('\n')
+    ## by.n <- sapply(ns,FUN=function(n) {
+    by.n <- mclapply(ns,mc.cores=detectCores()-4,FUN=function(n) {
+        cat('.')
+        mean(replicate(B, {
+            z <- rZ(n) 
+            s <- runif(n,1,2)
+            ## theta.hat <- rowSums(z*s)/rowSums(s^2)
+            ## x <- (z[,1]-z[,2])/(s[,1]-s[,2])
+            ## y <- (z[,3]-z[,4])/(s[,3]-s[,4])
+            ## cov(x > theta.hat, y > theta.hat)
+            begg.test(y=z/s,v=1/s^2)['pval'] < .1
+        }))
+    })
+    by.n <- simplify2array(by.n)
+})
+by.Z <- simplify2array(by.Z)
+## png('neg_bias_students.png')
+colors <- rev(gray.colors(n.rZ))
+matplot(ns,by.Z,type='l',col=colors,lty=1,xlab='no. of studies',ylab='FPR')
+abline(h=.1,lty=2)
+legend('topleft',col=colors,lty=1,legend=Z.params,title='df')
+dev.off()
+## save.image('220209.RData')
+
+
+
+
+## 2c-4. FPR with beta distr
+source('../../2/misc.R')
+n.rZ <- 5
+Z.params <- c(2,1,.3,.2)#seq(1,.3,len=n.rZ)
+rZs <- lapply(Z.params,function(a)function(n)rbeta(n,a,a)-1/2)
+require(parallel)
+ns <- round(seq(6,50,len=10))
+B <- 1e5
+by.Z <- lapply(rZs, FUN=function(rZ) {
+    cat('\n')
+    ## by.n <- sapply(ns,FUN=function(n) {
+    by.n <- mclapply(ns,mc.cores=detectCores()-4,FUN=function(n) {
+        cat('.')
+        mean(replicate(B, {
+            z <- rZ(n) 
+            s <- runif(n,1,2)
+            begg.test(y=z/s,v=1/s^2)['pval'] < .1
+        }))
+    })
+    by.n <- simplify2array(by.n)
+})
+## png('neg_bias_beta.png')
+by.Z <- simplify2array(by.Z)
+colors <- rev(gray.colors(length(Z.params)))
+matplot(ns,by.Z,type='l',col=colors,lty=1,xlab='no. of studies',ylab='FPR')
+abline(h=.1,lty=2)
+legend('topleft',col=colors,lty=1,legend=Z.params,title='beta parameter')
+## dev.off()
+## save.image('220209b.RData')

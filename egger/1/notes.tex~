@@ -1,0 +1,239 @@
+\documentclass{article}
+\usepackage{bbm}
+\renewcommand{\t}[1]{\tilde{#1}}
+\begin{document}
+
+11-2
+
+showing t-stat is asymptotically normal under alternative, aiming to
+show limit under local alternatives. realized the null is when $c\to
+-\infty$ at first, then thought about the nulls when the $\mu$ are
+nonmonotone.
+
+was assuming the response $y/\sigma \sim (0,1)$, which holds if the
+grand mean is 0 (and the important case in practice). started thinking
+about when grand mean is any $\mu$. realized that even with the simple
+thresholding estimator isn't necessarily the case that thresholding
+the $(\mu/sigma, 1)$ variables preserves the order of the means.
+
+
+11-3
+
+under null egger statistic is $(\mu/\sigma_j,1)$, intercept is $0$,
+$\beta_1=\bar{x}/\bar{y}$. under alternative selecting by $y/\sigma >
+c$, the pairs (iid?) $(y,\sigma)$ will be changed by shifting both to
+the right. how does the ratio have to change to stay equal to
+$\beta_1$?
+
+focused on $\mu=0$ case. then local power is same as t-statistic,
+$\mu'(0)/\sigma(c)$, where those are the post selection mean and sd.
+
+11-5
+
+after working on local power at $mu=0$ null, wanted to look at other
+nulls--the ones found earlier, ie, the $1/\sigma$ vector plus a vector
+orthogonal to the column space. got caught up trying to describe the
+set of those vectors (top of p.14).
+
+If $0<x_1<\ldots<x_n$ then there is no monotonic $v\in
+C(X)^{\perp}$. $\sum v_j=0$, let
+$v_1<\ldots<v_k<0<v_{k+1}<\ldots<v_n$, divide through by
+$\sum_{k+1}^nv_j$ so $\sum_1^k-v_j=sum_{k+1}^nv_j=1$. then $(v,x)=0$
+implies $-\sum_1^kv_jx_j=sum_{k+1}^nv_jx_j$ but the lhs is $\in
+(x_1,x_k)$ whereas rhs is $in (x_{k+1},x_n)$. Same proof works if
+there is some $k$ such that $v_j<0$ iff $j\le k$.
+
+But what vectors $v$ are in fact orthogonal to the columns space? not
+monontonic vectors, but maybe other permutations. ortho complement is
+dimension $n-2$ so any of the components other than 2 can be ordered
+arbitrarily. (11/6) Tried to show that given any $v_1,\ldots,v_n$ with
+$\sum v_j=0$ and there is no $k$ with $v_1,\ldots,v_k$ all $<0$,
+$v_{k+1},\ldots,v_n$ all $>0$ its orthogonal complement contains some
+$0<x_1<\ldots<x_n$. But counterexample: $v=(-1/2,1/2,-1/2,1/2)$, let
+$x=(a,a+b,a+b+c,a+b+c+d)$, then
+$(v,x)=-(2a+b+c)/2 + (2a+2b+c+d)/2=(b+d)/2>0$.
+
+Data are independent random pairs
+$(y_j,\sigma_j),\sigma_j>0,E(y_j\mid\sigma_j)=\mu,
+var(y_j\mid\sigma_j)=\sigma_j^2, j=1,\ldots,n$. Independence implies
+the distribution of $(y_1,\ldots,y_n)\mid (\sigma_1,\ldots,\sigma_n)$
+is the same as the distribution of
+$(y_1\mid\sigma_1,\ldots,y_n\mid\sigma_n)$ (implied by bayes rule in
+case densities exist, and if not, how to define conditional
+distribution anyway?) The actual property we need. allows us to
+replace the conditional test statistic of a meta-analysis data set say
+$T((y_1,\sigma_1),\ldots,(y_n,\sigma_n))\mid\sigma_1,\ldots,\sigma_n$
+with
+$T((y_1\mid\sigma_1,\sigma_1,\ldots,(y_n\mid\sigma_n,\sigma_n)))$. (this
+property might be better than independence. e.g. analysists might
+choose sample sizes hence $\sigma_j$ based off of what other analysts
+have chosen.)
+
+
+Four testing scenarios: $mu=0,mu\neq 0$ and null/alt ie selection/no
+selection. The observations are $(y_j,\sigma_j)$.
+
+If no selection. Regressing $y_j/\sigma_j\sim (\mu/\sigma,1)$ on
+$1/\sigma$, and the linear model
+$y_j/\sigma = (1,1/\sigma)^T(\beta_0,\beta_1)+\epsilon$ is satisfied
+with $\beta=(0,\mu)$ and $\epsilon=y_j/\sigma-\mu/\sigma$ independent
+with equal variance. So test is consistent, asy normality for inference.
+
+Selection present, $\mu=0$. preselection, the observations are
+$y_j\sim (0,\sigma_j)$. If selection is on the p-value/z-stat
+$y/\sigma\sim (0,1)$. If $y_j/\sigma_j\mid\sigma_j \sim f$ ie in
+addition to
+$E(y_j/\sigma_j\mid\sigma_j)=\mu/\sigma_j,var(y/\sigma_j\mid\sigma_j)=1$,
+the entire conditional distribution is specified, ie the conditional
+distributions $y_j\mid\sigma_j$ are a scale family
+$f(y/\sigma)/\sigma$. (show can assume selection mechanism
+$g(y_1/\sigma_1,\ldots,y_n/\sigma_n,U)$ can be reduced to a function
+$g(y_j/\sigma_j,U)$ in this case since the $y_j/\sigma_j$ are
+iid. then eg hard thresholding is given by..., probabilistic threshold
+is given by...) Then postselection response is independent of
+postselection regressor: given $u,v$ and selection mechanism $g_j$,
+$E(u(g_j(y/\sigma_j))v(1/\sigma_j))=E(E(\ldots\mid\sigma_j))=E(E(u(g_j(y/\sigma_j))\mid\sigma_j)v(1/\sigma_j))=E(u(g_j(z)))E(v(1/\sigma_j))$
+with $z\sim f$.
+% then if preselection is iid, so is the
+% postselection distr, say something like $(\mu(c),\sigma(c))$ if the
+% same selection mechanism $g(y_j/\sigma_j)$ is used. Even if different
+% selection mechanisms are used, $g_j(y_j/\sigma_j)$.
+If all the selection mechanisms are the same say $g$, then
+$E(g(y_j/\sigma_j)\mid1/\sigma_j)=E(g(z))$ is constant, and as before
+conditional variance is constant. Again a wellspecified homoskedastic
+linear model $y_j/\sigma_j \sim (1,1/\sigma_j)^T\beta+\epsilon_j$, now
+with $\beta=(g(z),0)$. So test is consistent.
+
+If distributions are different, possibly non-iid postselection
+distribution. Can lead to inconsistent test. \#23 in egger.R. would be
+nice to establish analytically, need estimate of t tails.
+
+If selection mechanisms can vary ...
+
+If $g(z)=0$ ...
+
+Selection present, $\mu\neq 0$. egger regression response is then
+$\sim (\mu_j/\sigma_j,1)$. selection will induce larger $\mu_j$ and
+smaller $\sigma_j$. what can be said about postselection response? at
+least in normal case, and simple thresholding as selection mechanism? ...
+
+So if selection is present and $\mu=0$ (true null) then a type 2 error
+on egger test may lead to a type 1 error on the meta-analysis. if
+selection is present and $\mu\neq 0$ (true non-null), then a type 2
+error on egger test may lead to exaggeration of the true non-null
+effect, arguably less severe problem. either way, for practical
+purposes roles of type 1 and type 2 error are reversed in the case of
+eggers test, so it doesnt make sense to use the roles borrowed from
+usual t-tests.
+
+selection on p-value seems not to be a small study effect.
+
+selection on unstandardized value.
+
+
+11-10 Focused on the situation where there is selection that can
+depend on both vector components, eg, $g_j(y_j,\sigma_j)$, but the
+postselection distribution is the iid. e.g., the preselection
+$(y_j,\sigma_j)$ arent just independent but iid, plus the selection
+stragy is the same $g_j=g$, all $j$.  In this case (other case, not
+iid, requires entire vector be considered), egger test is inconsistent
+when the plim of betahat is 0, which is
+$E(yx^2)/E(yx)=E(x^2)/E(x)$. Usual null case (not a caes of
+inconsistency) is when $y=\mu+\epsilon$ is independent of
+$x=1/\sigma$. Thought about local power at these distributions, but
+need a parameterization. Maybe find a corresponding criterion for
+inconsistency for begg test. (11-13) Rewrite criterion for
+$\hat{\beta}_0=0$ as $cor(x,z)=E(z)/E(x)$ with $z\sim (0,1)$ and
+$var(x)=1$ (Egger \#14). When $x$ and $z$ are independent, get $0$ on
+both sides, this is just the null case. At other extreme, when the
+outcome mean is the identity, $E(z\mid x)=x$, get $1$ on both
+sides. (simulation at 24a.) In the normal-normal model, requires the
+cutoffs to be the inverse of the gaussian hazard function
+$\phi/(1-\Phi)$ (inverse exists, function is convex increasing),
+analysts would have to be more selective when the studies are
+larger/have smaller sd. Concave increasing selection
+function. (https://math.stackexchange.com/questions/1038173/a-property-of-the-hazard-function-of-the-normal-distribution).
+
+Not too crazy to have selection increasing in $s=1/\sigma$, if using
+selection on raw value rather than p-value. Flat selection on raw
+value $y_j>c$ ie $z_j\sigma_j>c$ with $z_j=y_j/\sigma_j\sim (0,1)$ is
+selection increasing in $s$ viewed as selection on the p-vlue,
+$z_j>c/\sigma_j$.
+
+(11/22) Setting where given iid $(y_j,\sigma_j)$ and selecting on
+$y_j=\sigma_jz_j$. Test is asymptotically null iff
+$E(sz)/E(z)=E(s^2)/E(s)$ where now $s$ and $z$ are the post-selection
+distributions. this criterion is obtained by taking plims in
+$0=\hat{\beta_0}=\overline{y}-\overline{x}\hat{\beta_1}$. Provided
+$E(z)\neq 0$ (ie the true null case) rewrite as $Es(s/E(s)-z/E(z))=0$,
+where the RV in parens (say $u(s)$, after conditioning inside on $s$)
+is mean zero. If $u(s)$ is monotonic in $s$, then this is not possible
+unless $s$ is an atom (egger p14). In particular, this cannot happen
+if $mu(cs)=E(z;z>cs)$ is the gaussian hazard function ie when the
+$y_j$ are $N(0,\sigma_j)$. Try to extend to other distributions maybe
+log concave distributions. (11/25) Sufficient condition is that the
+integral of the surival function $\int_x^{\infty}(1-F(y))dy$ of the
+studies be log concave (egger p15). This includes many commonly used
+distributions. A commonly used distribution it does not include is the
+pareto (egger.R \#26; bagnoli notes). (This was surprising, I thought the class
+would be something like, unimodal distributions. If you move $x$ to
+the rigth by $\delta$, I expected for any such distribution that
+$E(Y;Y>x)$ would change by less than $\delta$.) Try to find a partial
+converse; if the integral of the survival function isn't log concave,
+then there is some choice of $1/\sigma$ distribution for which egger's
+test is inconsistent. (12/2) Could  not establish partial converse. Just say:  $\mu'<1$ iff log concave right integral. If condition doesnt hold, will depend on joint distribution, give power law example. 
+
+(12/2) a. Begg test is inconsistent for iid $(y,\sigma)$ iff
+$E(\t{s}(\t{y}-E(\t{y})))=0$. The analogous criterion for the egger
+test is $E(\t{s}(\t{y}-E(\t{y})/E(\t{s})\t{s}))$ [but before this was
+$z$ not $s$--check].  b. The density of $\tilde{y}$ given
+$\t{\sigma}=s$ is the same as the density of $y$ given $\sigma=s$
+given the selection event (egger 16). c. The begg test is consistent
+when thresholding on the raw value ie $\{y>c\}$ or p-value
+$\{y/\sigma>c\}$ (egger 16), ie the criterion in a) is never met.
+
+Possible directions to generalize. a. Outcomes models outside a scale
+family, ie, given iid $(y,\sigma)$, keeping the basic meta-analysis
+assumption $Var(y\mid\sigma)=\sigma^2$ but not assuming
+$f(y\mid\sigma)=f_0(y/\sigma)/\sigma$. [Is this most general thing
+possible, given the $\sigma$ will follow some distribution and the
+pairs $(y,\sigma)$ are assumed independent plus the basic variance
+assumption? No, $\sigma$ need not be identically distributed. Not sure
+how much of whta was done holds just assuming $\sigma$ independent.]
+b. Different selection models other than the hard thresholding on the
+raw value or p-value.
+
+(12/5) 1. The sufficienct for inconsistency of egger's test with
+thresholding on the raw value is, for some $s$,
+$0=u'(s)=\frac{d}{ds}\frac{(1-F_Z(cs))^\alpha}{\int_{cs}^{\infty}(1-F_Z(z))dz}$
+where $\alpha=cE(S)/E(\mu_c(s))$ is $\le 1$. The monotonicity condition is probably
+sufficient as well, in the sense that there is a nondegenerate distribution
+of $s=1/\sigma$, such that $E(Su(S))=0$ if $u'(s)=0$ for some $s$.
+
+2. From the monotonicity condition $u'(s)>0$ or $u'(s)<0$, gronwall's
+condition gives necessary conditions that must be satisfied in order
+that egger's test be consistent for raw thresholding.
+
+3. log-concavity of the tail integral of $1-F(x)$ is implied by log
+concavity of $1-F(x)$, in turn implied by log concavity of the density
+$f$ (Bagnoli Thrm 2...tried to find reference in marshall olkin or
+elsewhere).
+
+4. For distributions of $S$ with a mean given by $c,m$, $u'(s)=0$ on
+an interval when the outcome distribution follows a power law with
+exponent $m$ and thresholding on the raw value at $c$. This seems to
+be the only type of distribution where $u'(s)$ vanishes on the
+interval, by solving the diff eq. (egger 16). But the criterion for
+inconsistency can be met without $u$ vanishing on an interval.
+
+5. TODO: compare local power of begg and egger at the true null. look at super-linear selection. would be nice to tie together result on tails with result on selection rate.
+
+(12/12)
+1. term ``small study bias'' may be ambiguous. No study size bias in selecting according to the unstandardized effect, $\{y>c\}$, is a small study bias when viewed as selection wrt p-value, $\{z>c\sigma\}$. No bias in selecting according to p-value, $\{z>c\}$, is a bias against larger studies when viewed as selection on the raw value, $\{y>c/\sigma\}$, the opposite of a small study effect.
+2. A few days ago found what I thought was the astymptotic power function in the experiments selecting on the p-value. But it is normal and rmrks in van der vaart suggest it should be an exponential limit. Also could not establish the family is qmd. Considering now families that don't have the supports shifting wit the parameter.
+3. Begg test well motivated by power. Whether selecting on raw value or p-value, clear trend of $y$ against $\sigma$.
+
+(12/30)
+Verified by simulation (egger \#34) the slope of begg test is $\mu'(0)/\sigma(0)=\int_\infty^\infty f_Z^2(z)dz * E(s_1-s2; s1<s2) / (\sqrt{4/9}$. Local power function approximation is not too bad for uniform and normal $f_Z$.
+
+\end{document}

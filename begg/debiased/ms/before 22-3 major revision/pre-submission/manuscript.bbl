@@ -1,0 +1,40 @@
+\begin{thebibliography}{1}
+
+\bibitem{begg1994b}
+Colin Begg.
+\newblock Publication bias.
+\newblock In Harries Cooper and Larry Hedges, editors, {\em The Handbook of
+  Research Synthesis}, pages 399--409. Russel Sage Foundation, New York, 1994.
+
+\bibitem{begg1994a}
+Colin Begg and Madhuchhanda Mazumdar.
+\newblock Operating characteristics of a rank correlation test for publication
+  bias.
+\newblock {\em Biometrics}, pages 1088--1101, 1994.
+
+\bibitem{gjerdevik2014}
+Miriam Gjerdevik and Ivar Heuch.
+\newblock Improving the error rates of the begg and mazumdar test for
+  publication bias in fixed effects meta-analysis.
+\newblock {\em BMC Medical Research Methodology}, 14(1):1--16, 2014.
+
+\bibitem{hooper2020}
+Lee Hooper, Asmaa~S Abdelhamid, Oluseyi~F Jimoh, Diane Bunn, and C~Murray
+  Skeaff.
+\newblock Effects of total fat intake on body fatness in adults.
+\newblock {\em Cochrane Database of Systematic Reviews}, (6), 2020.
+
+\bibitem{mcnicol2016}
+Ewan~D McNicol, McKenzie~C Ferguson, Simon Haroutounian, Daniel~B Carr, and
+  Roman Schumann.
+\newblock Single dose intravenous paracetamol or intravenous propacetamol for
+  postoperative pain.
+\newblock {\em Cochrane database of systematic reviews}, (5), 2016.
+
+\bibitem{van2005}
+Floris~A Van~de Laar, Peter~LBJ Lucassen, Reinier~P Akkermans, Eloy~H Van~de
+  Lisdonk, Guy~EHM Rutten, and Chris Van~Weel.
+\newblock Alpha-glucosidase inhibitors for type 2 diabetes mellitus.
+\newblock {\em Cochrane database of systematic reviews}, (2), 2005.
+
+\end{thebibliography}

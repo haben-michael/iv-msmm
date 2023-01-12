@@ -1,0 +1,48 @@
+This is BibTeX, Version 0.99d (TeX Live 2019/dev/Debian)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: manuscript.aux
+The style file: chicago.bst
+Database file #1: begg2.bib
+Warning--no number and no volume in nolan87
+You've used 3 entries,
+            2861 wiz_defined-function locations,
+            629 strings with 5154 characters,
+and the built_in function-call counts, 1980 in all, are:
+= -- 170
+> -- 130
+< -- 0
++ -- 38
+- -- 50
+* -- 161
+:= -- 370
+add.period$ -- 9
+call.type$ -- 3
+change.case$ -- 19
+chr.to.int$ -- 3
+cite$ -- 4
+duplicate$ -- 53
+empty$ -- 126
+format.name$ -- 58
+if$ -- 358
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 4
+newline$ -- 18
+num.names$ -- 30
+pop$ -- 15
+preamble$ -- 1
+purify$ -- 38
+quote$ -- 0
+skip$ -- 63
+stack$ -- 0
+substring$ -- 116
+swap$ -- 16
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 50
+warning$ -- 1
+while$ -- 34
+width$ -- 0
+write$ -- 41
+(There was 1 warning)

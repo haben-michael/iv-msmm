@@ -1,0 +1,579 @@
+
+R version 4.1.0 (2021-05-18) -- "Camp Pontanezen"
+Copyright (C) 2021 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> setwd('/mnt/c/Users/haben/OneDrive - University of Massachusetts/umass/research/auc/')
+> 
++ ## refactoring auc.lda, auc.hajek
++ require(mvtnorm)
++ ## start <- Sys.time()
++ source('misc.R')
++ set.seed(1)
++ p <- 6
++ ## n <- 1e3
++ beta <- runif(p)
++ Sigma <- matrix(rnorm(p^2),nrow=p)
++ Sigma <- Sigma%*%t(Sigma)
++ quad <- as.numeric(t(beta)%*%Sigma%*%beta)
++ ## Sigma[1,] <- Sigma[,1] <- 0
++ mu.1 <- mu.diff <- Sigma%*%beta
++ mu.0 <- 0*mu.diff; mu.0.red <- 0*mu.diff.red
++ ns <- round(seq(1e2,1e3,len=2e1))
++ by.n <- sapply(ns, function(n) {
++     cat('.')
++     pairs <- replicate(1e2, {
++         x.0 <- rmvnorm(n,mu.0,Sigma)
++         x.1 <- rmvnorm(n,mu.1,Sigma)
++         x <- as.numeric(x.0%*%beta)
++         y <- as.numeric(x.1%*%beta)
++         F <- function(u)pnorm((u-t(beta)%*%mu.0)/quad)
++         G <- function(u)pnorm((u-t(beta)%*%mu.1)/quad)
++         theta <- as.numeric(pnorm(t(beta)%*%(mu.1-mu.0)/sqrt(2*quad)))
++         hajek <- auc.hajek(F,G,x,y,theta,terms.only=FALSE)
++         obs <- auc.hat(x,y) - theta
++         obs - hajek
++         hajek
++     })
++ })
++ ## Sys.time() - start
++ ## sds <- apply(by.n,2,sd)
++ ## lm0 <- lm(log(sds) ~ log(ns))
++ ## lm0
++ mad <- colMeans(abs(by.n))
++ plot(ns,mad)
++ lm0 <- lm(log(mad)~log(ns))
++ coef(lm0)
++ curve(exp(coef(lm0)[1]+coef(lm0)[2]*log(x)),add=TRUE)
++ 
+Loading required package: mvtnorm
+> > Error: object 'mu.diff.red' not found
+> > . + ....................There were 50 or more warnings (use warnings() to see the first 50)
+> > > > > >   (Intercept)       log(ns) 
+-1.1838429464 -0.0002541819 
+> > warnings()
+Warning messages:
+1: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+2: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+3: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+4: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+5: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+6: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+7: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+8: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+9: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+10: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+11: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+12: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+13: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+14: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+15: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+16: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+17: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+18: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+19: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+20: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+21: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+22: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+23: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+24: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+25: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+26: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+27: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+28: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+29: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+30: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+31: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+32: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+33: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+34: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+35: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+36: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+37: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+38: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+39: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+40: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+41: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+42: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+43: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+44: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+45: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+46: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+47: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+48: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+49: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+50: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+> n <- 1e4
+>         x.0 <- rmvnorm(n,mu.0,Sigma)
++         x.1 <- rmvnorm(n,mu.1,Sigma)
++         x <- as.numeric(x.0%*%beta)
++         y <- as.numeric(x.1%*%beta)
++         F <- function(u)pnorm((u-t(beta)%*%mu.0)/quad)
++ 
+> theta <- as.numeric(pnorm(t(beta)%*%(mu.1-mu.0)/sqrt(2*quad)))
++         
+> hist(F(y))
+Warning message:
+In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+> abline(v=theta,col=2)
+> theta
+[1] 0.9808614
+> 
++ ## refactoring auc.lda, auc.hajek
++ require(mvtnorm)
++ ## start <- Sys.time()
++ source('misc.R')
++ set.seed(1)
++ p <- 6
++ ## n <- 1e3
++ beta <- runif(p)
++ Sigma <- matrix(rnorm(p^2),nrow=p)
++ Sigma <- Sigma%*%t(Sigma)
++ quad <- as.numeric(t(beta)%*%Sigma%*%beta)
++ ## Sigma[1,] <- Sigma[,1] <- 0
++ mu.1 <- mu.diff <- Sigma%*%beta
++ mu.0 <- 0*mu.diff#; mu.0.red <- 0*mu.diff.red
++ ns <- round(seq(1e2,1e3,len=2e1))
++ by.n <- sapply(ns, function(n) {
++     cat('.')
++     pairs <- replicate(1e2, {
++         x.0 <- rmvnorm(n,mu.0,Sigma)
++         x.1 <- rmvnorm(n,mu.1,Sigma)
++         x <- as.numeric(x.0%*%beta)
++         y <- as.numeric(x.1%*%beta)
++         F <- function(u)pnorm((u-t(beta)%*%mu.0)/sqrt(quad))
++         G <- function(u)pnorm((u-t(beta)%*%mu.1)/sqrt(quad))
++         theta <- as.numeric(pnorm(t(beta)%*%(mu.1-mu.0)/sqrt(2*quad)))
++         hajek <- auc.hajek(F,G,x,y,theta,terms.only=FALSE)
++         obs <- auc.hat(x,y) - theta
++         obs - hajek
++         hajek
++     })
++ })
++ ## Sys.time() - start
++ ## sds <- apply(by.n,2,sd)
++ ## lm0 <- lm(log(sds) ~ log(ns))
++ ## lm0
++ mad <- colMeans(abs(by.n))
++ plot(ns,mad)
++ lm0 <- lm(log(mad)~log(ns))
++ coef(lm0)
++ curve(exp(coef(lm0)[1]+coef(lm0)[2]*log(x)),add=TRUE)
++ 
+> ....................There were 50 or more warnings (use warnings() to see the first 50)
+> > > > > (Intercept)     log(ns) 
+ -3.0628101  -0.4594918 
+> > 
++ ## refactoring auc.lda, auc.hajek
++ require(mvtnorm)
++ ## start <- Sys.time()
++ source('misc.R')
++ set.seed(1)
++ p <- 6
++ ## n <- 1e3
++ beta <- runif(p)
++ Sigma <- matrix(rnorm(p^2),nrow=p)
++ Sigma <- Sigma%*%t(Sigma)
++ quad <- as.numeric(t(beta)%*%Sigma%*%beta)
++ ## Sigma[1,] <- Sigma[,1] <- 0
++ mu.1 <- mu.diff <- Sigma%*%beta
++ mu.0 <- 0*mu.diff#; mu.0.red <- 0*mu.diff.red
++ ns <- round(seq(1e2,1e3,len=2e1))
++ by.n <- sapply(ns, function(n) {
++     cat('.')
++     pairs <- replicate(1e2, {
++         x.0 <- rmvnorm(n,mu.0,Sigma)
++         x.1 <- rmvnorm(n,mu.1,Sigma)
++         x <- as.numeric(x.0%*%beta)
++         y <- as.numeric(x.1%*%beta)
++         F <- function(u)pnorm((u-t(beta)%*%mu.0)/sqrt(quad))
++         G <- function(u)pnorm((u-t(beta)%*%mu.1)/sqrt(quad))
++         theta <- as.numeric(pnorm(t(beta)%*%(mu.1-mu.0)/sqrt(2*quad)))
++         hajek <- auc.hajek(F,G,x,y,theta,terms.only=FALSE)
++         obs <- auc.hat(x,y) - theta
++         obs - hajek
++     })
++ })
++ ## Sys.time() - start
++ ## sds <- apply(by.n,2,sd)
++ ## lm0 <- lm(log(sds) ~ log(ns))
++ ## lm0
++ mad <- colMeans(abs(by.n))
++ plot(ns,mad)
++ lm0 <- lm(log(mad)~log(ns))
++ coef(lm0)
++ curve(exp(coef(lm0)[1]+coef(lm0)[2]*log(x)),add=TRUE)
++ 
+....................There were 50 or more warnings (use warnings() to see the first 50)
+> > > (Intercept)     log(ns) 
+  -2.384535   -1.016045 
+> > warnings()
+Warning messages:
+1: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+2: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+3: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+4: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+5: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+6: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+7: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+8: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+9: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+10: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+11: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+12: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+13: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+14: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+15: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+16: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+17: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+18: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+19: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+20: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+21: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+22: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+23: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+24: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+25: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+26: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+27: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+28: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+29: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+30: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+31: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+32: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+33: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+34: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+35: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+36: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+37: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+38: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+39: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+40: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+41: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+42: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+43: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+44: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+45: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+46: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+47: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+48: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+49: In u - t(beta) %*% mu.1 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+50: In u - t(beta) %*% mu.0 :
+  Recycling array of length 1 in vector-array arithmetic is deprecated.
+  Use c() or as.vector() instead.
+
+> 

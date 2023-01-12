@@ -1,0 +1,39 @@
+\documentclass{article}
+\usepackage{amsthm}
+\usepackage{bbm}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\renewcommand{\t}[1]{\tilde{#1}}
+\newcommand{\partiall}[1]{\frac{\partial}{\partial #1}}
+\newcommand{\gm}{\theta}
+\newcommand{\E}{E}
+\renewcommand{\P}{P}
+\newcommand{\V}{V}
+\newcommand{\Cov}{Cov}
+\newcommand{\Corr}{Corr}
+\newcommand{\mean}[1]{\overline{#1}}
+\newcommand{\sel}[1]{#1^*}
+\DeclareMathOperator{\supp}{supp}
+\mathtoolsset{showonlyrefs=true}
+
+\begin{document}
+
+\textbf{Title: Power analysis of common selection bias tests}
+
+tests dont just test for constancy of mean, they are oriented toward a trend, presumably for increased power, leveraging assumptions about researchers' practices.
+
+
+testing for publication bias before conductingn meta analysis is itself a selection event.
+
+
+
+If no selection, i.e., null, and $y\sim (\gm,\sigma_j)$. Egger's
+  test is the regression $y_j/\sigma_j\sim (\gm/\sigma_j,1)$ on
+  $1/\sigma$. The linear model
+  $y_j/\sigma = (1,1/\sigma)^T(\beta_0,\beta_1)+\epsilon$ is satisfied
+  with $\beta=(0,\gm)$ and $\epsilon_j=y_j/\sigma_j-\gm/\sigma_j$
+  independent with equal variance $1$. According to usual random
+  design OLS theory, the test is consistent under the null, asymptotic
+  normality valid for inference.
+
+\end{document}

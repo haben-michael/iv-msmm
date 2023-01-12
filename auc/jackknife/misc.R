@@ -1,0 +1,133 @@
+## deprecate:
+concord.xy <- function(x,y) {
+    m <- length(x)
+    n <- length(y)
+    ## stopifnot(m>1,n>1)
+    if(length(x)==0 | length(y)==0)return(0)
+
+    sum(sapply(y,function(y.i)x<y.i))
+    ## sum(outer(x,y,`<`))
+}
+concord.mean <- concord <- function(x,y) mean(outer(x,y,`<`))
+concord.sum <- function(x,y)sum(outer(x,y,`<`))
+
+concord <- function(x,y,mean=TRUE) {
+    m <- length(x)
+    n <- length(y)
+    ## stopifnot(m>1,n>1)
+    if(length(x)==0 | length(y)==0)return(0)
+
+    ans <- sum(sapply(y,function(y.i)x<=y.i))
+    if(mean)ans <- ans/(m*n)
+    ans
+    ## sum(outer(x,y,`<`))
+}
+
+
+auc.obu <- function(x,y,alpha=.05) {
+
+    I <- length(x)
+    stopifnot(length(x)==length(y))
+    m <- sapply(x,length)
+    n <- sapply(y,length)
+    I.10 <- sum(m>0)
+    I.01 <- sum(n>0)
+    M <- sum(m)
+    N <- sum(n)
+
+    theta.hat <- concord.xy(unlist(x),unlist(y)) / (M*N)
+    V.10 <- sapply(x,function(x.i)concord.xy(x.i,unlist(y)))/N
+    V.01 <- sapply(y,function(y.i)concord.xy(unlist(x),y.i))/M
+
+    S.10 <- sum((V.10 - m*theta.hat)^2) * I.10 / ((I.10-1)*M)
+    S.01 <- sum((V.01 - n*theta.hat)^2) * I.01 / ((I.01-1)*N)
+    S.11 <- sum((V.10 - m*theta.hat)*(V.01 - n*theta.hat)) * I / (I-1)
+
+    var.hat <- S.10/M + S.01/N + 2*S.11/(M*N)
+    q <- qnorm(1-alpha/2)
+    return(c(theta.hat=theta.hat,var.hat=var.hat,CI.lower=theta.hat-q*sqrt(var.hat),CI.upper=theta.hat+q*sqrt(var.hat)))
+
+}
+
+
+
+auc.jk <- function(x,y,alpha=.05) {
+    concord <- function(x,y) mean(outer(x,y,`<`))
+    concord.sum <- function(x,y)sum(outer(x,y,`<`))
+    m <- sapply(x,length); n <- sapply(y,length)
+    M <- sum(m); N <- sum(n)
+    I <- length(x); stopifnot(length(x)==length(y))
+
+    theta.hat <- concord(unlist(x),unlist(y))
+    theta.del <- sapply(1:I,function(i)concord(unlist(x[-i]),unlist(y[-i])))
+    pseudo <- I*theta.hat - (I-1)*theta.del
+    theta.jk <- mean(pseudo)
+    var.hat <- var(pseudo)/I
+    q <- qnorm(1-alpha/2)
+
+    return(c(theta.hat=theta.jk,var.hat=var.hat,CI.lower=theta.jk-q*sqrt(var.hat),CI.upper=theta.jk+q*sqrt(var.hat)))
+}
+
+
+
+
+auc.jk2 <- function(x,y,alpha=.05) {
+    concord <- function(x,y) mean(outer(x,y,`<`))
+    concord.sum <- function(x,y)sum(outer(x,y,`<`))
+    m <- sapply(x,length); n <- sapply(y,length)
+    M <- sum(m); N <- sum(n)
+    I <- length(x); stopifnot(length(x)==length(y))
+
+    theta.hat <- concord(unlist(x),unlist(y))
+    ## theta.del <- sapply(1:I,function(i)concord(unlist(x[-i]),unlist(y[-i])))
+    theta.del.x <- sapply(1:I,function(i)concord(unlist(x[-i]),unlist(y)))
+    theta.del.y <- sapply(1:I,function(j)concord(unlist(x),unlist(y[-j])))
+    pseudo.x <- I*theta.hat - (I-1)*theta.del.x
+    pseudo.y <- I*theta.hat - (I-1)*theta.del.y
+    ## pseudo <- I*theta.hat - (I-1)*theta.del
+    theta.jk <- mean(c(pseudo.x,pseudo.y))
+    var.hat <- (var(pseudo.x)+var(pseudo.y))/I
+    q <- qnorm(1-alpha/2)
+    return(c(theta.hat=theta.jk,var.hat=var.hat,CI.lower=theta.jk-q*sqrt(var.hat),CI.upper=theta.jk+q*sqrt(var.hat)))
+}
+
+
+
+
+partition <- function(m) {
+    I <- as.integer(sqrt(nrow(m)))
+    idx.lst <- split(1:(I^2),rep(1:I,each=I))
+    apply(expand.grid(1:I,1:I),1,function(x)m[idx.lst[[x[2]]],idx.lst[[x[1]]]],simplify=FALSE)
+}
+
+## M is slow for larger I
+M <- function(I,partition=FALSE,symmetric=FALSE) {
+    E <- diag(I); ones <- matrix(1,nrow=I,ncol=1)
+    m.a <- kronecker(E,ones%*%t(ones))
+    m.b <- kronecker(ones%*%t(ones),E)
+    m.c <- kronecker(ones,kronecker(E,t(ones)))
+    m.d <- Reduce(`+`,lapply(1:I,function(j)kronecker(matrix(E[j,],nrow=1),kronecker(kronecker(E[,j],E[,j]),t(ones)))))
+    m.e <- Reduce(`+`,lapply(1:I,function(j)kronecker(E[,j],kronecker(t(ones),E[,j]%*%t(E[,j])))))
+    m.f <- kronecker(ones%*%t(ones),ones%*%t(ones))
+    m.g <- kronecker(matrix(E,nrow=1),kronecker(ones,ones))
+    m.lst <- list(a=m.a/I^2,b=m.b/I^2,c=m.c*2/I^2,d=-1/I*m.d,e=-1/I*m.e,f=-4/I^3*m.f,g=2/I^2*m.g)
+    ans <- Reduce(`+`,m.lst)
+    if(symmetric) ans <- (ans+t(ans))/2
+    ## sapply(m.lst,function(m)t(v)%*%m%*%v)
+    if(partition) {
+        ans <- partition(ans)
+    }
+    ans
+}
+## clashing with M = sum_i m_i:
+M.obj <- M
+
+
+mat.pow <- function(M,n)Reduce(`%*%`,rep(list(M),n))
+
+
+s4sub <- function(m){
+    I <- nrow(m)
+    list(id=m,rot180=m[I:1,I:1],diag=t(m),antidiag=t(m[I:1,I:1]))
+}
+shifts <- function(m)lapply(1:(I-1),function(s)(m[c((I-s+1):I,1:(I-s)),c((I-s+1):I,1:(I-s))]))

@@ -1,0 +1,365 @@
+\documentclass[12pt]{article}
+\usepackage{amsthm}
+\usepackage{bbm}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\mathtoolsset{showonlyrefs,showmanualtags}
+\usepackage{etoolbox}
+% \usepackage{booktabs}
+% \usepackage{url}
+%\usepackage{setspace}
+\usepackage[margin=1in]{geometry}
+% \usepackage{authblk}
+\usepackage{natbib}
+% \usepackage[page]{appendix}
+\usepackage[nomarkers,nolists]{endfloat}
+\usepackage{graphicx}
+% \usepackage{tikz}
+% \usetikzlibrary{calc}
+\usepackage{subfig}
+\usepackage{enumitem}
+% \usepackage{array} % tables with fixed width and alignment
+\DeclareMathOperator{\AUC}{AUC}
+\DeclareMathOperator{\V}{Var}
+\DeclareMathOperator{\cov}{Cov}
+\DeclareMathOperator{\corr}{Corr}
+\DeclareMathOperator{\sd}{sd}
+\newcommand{\E}{E}
+\renewcommand{\P}{P}
+\newcommand{\cind}{\perp \!\!\! \perp}
+\newcommand{\X}[1][]{X_{0#1}}
+\newcommand{\Y}[1][]{X_{1#1}}
+\newcommand{\Z}[1][]{X_{#1}}
+\renewcommand{\star}[1]{{#1}^\ast}
+\newcommand{\F}{F}
+\newcommand{\G}{G}
+\newcommand{\D}{D}
+\newcommand{\m}{m}
+\newcommand{\n}{n}
+\newcommand{\auc}{\theta}
+\newcommand{\betastar}{\beta_0}
+\newcommand{\aucdiff}{\Delta\text{AUC}}
+\newcommand{\infl}{\phi}
+\newcommand{\h}{h}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{example}{Example}%[section]
+\makeatletter
+% \def\input@path{{input/}{figs/}}
+% \graphicspath{{./figs/}}
+\newtoggle{commenttoggle}
+\togglefalse{commenttoggle}
+\newcommand{\comment}[1]{
+  \iftoggle{commenttoggle}{
+    {\normalsize{\color{red}{ #1}}\normalsize}
+  }
+  {}
+}
+\title{Nonparametric estimation of the auc of an estimated index}
+% \author[1]{Haben Michael}
+% \author[2]{Lu Tian}
+% \affil[1]{University of Massachusetts}
+% \affil[2]{Stanford University}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+
+demler 2017 $\Delta$AUC is one of the most widely used measures of discrimination.
+
+\section{Background/setting}
+
+
+difference of 2 aucs.
+may be viewed as a U-statistic. 
+2 complications to the basic u-stat theory.
+
+1. under the null of no diff, asy distribution is a linear (weighted?) combination of chi-squares, weights hard tocompute etc. however: pepe 2013 seems to resolve the problem of testing the index aucs for
+significant difference. they show that
+$auc(x,y)=P(risk(X,Y|D=0) < risk(X,Y|D=1))$ is equal to
+$auc(x)=P(risk(X|D=0) < risk(X|D=1)$, where
+$risk(\cdot)=P(D=1\mid \cdot)$, if and only if the risks are equal
+$risk(X,Y)=risk(X)$. suppose it is needed to test
+$P(\beta^T(x,y)|D=0 < \beta^T(x,y)|D=1)=P(\gamma^Tx|D=0 <
+\gamma^Tx|D=1)$, obtained by LDA, logistic regression etc. if there is
+some monotone link $h$ such that
+$P(D=1|x,y)=h(\beta^T(x,y)),P(D=1|x)=h(\gamma^T(x))$, then the test is
+the same as
+$P(risk(x,y)|D=0 < risk(x,y)|D=1)=P(risk(x)|D=0 < risk(x)|D=1)$ so one
+may just test $risk(x,y)=risk(x)$. however, this requires knowing the
+true risk function. one can obtain the indices $beta^T$ and $gamma^T$
+and compare the discrimination, and use the indices in practice,
+without knowing the correct risk function.
+
+might as well test risk function unless the asy null distribution
+requires fewer modelling assumptions, improved efficiency or something
+else to recommend it.
+
+
+heller gives the asy null distribution specifically for betahat
+estimated by mrc method.  [[update: heller doesnt make modeling
+assumptions on the covariates, only on the estimation of betahat;
+maybe that is a benefit over testing risk function? ie is there a test
+for the mrc coefficients that doesnt require modeling covariates?]]
+demler for lda with gaussian covariates ((no benefit over pepe
+approach here since parametric assumptions imposed)). recently noted
+((cite)) that asy null distribution remains intractable for common
+estimation methods eg logistic regression.
+
+
+
+therefore only consider the alternative here.
+
+2. second issue is that betahat is estimated from the data so that the
+observations to which the u-statistic is applied are no iid. u-stat
+with estimated parameters is typically still normal, though
+demonstration requires viewing the ustat as a process indexed by
+random index beta. estimation of the parameter in generaly affects the
+asy distribution. address this issue in the following.
+
+\section{Theory}
+
+\subsection{IID sum}
+the approach, which we adopt, is to rewrite more complicated
+estimators as asymptotically equivalent iid sums, amenable to
+conventional analysis. benefits of approximating by an iid sum:
+1. can de-couple the two
+parts of the difference and just focus on the estimating the auc of a
+an index estimated (possibly misspeciifed model) from the data.
+2.  $\hat\theta$ is an IID sum, and the sd estimate
+is the empirical estimator. This is itself an estimate of
+$\sqrt{n}\hat\theta$, not $\hat\theta$. So there was no need to make
+sure it is $o(1/\sqrt{n})$, it just needs to be $o(1)$. And esetimated
+parameters are OK (take taylor expansion) as long as the parameter
+estimates are consistent. of course may affect efficiency of asy convergence.
+3. produce routines to reduce auc(beta.hat) to an iid sum,
+whatever the data is. can apply this separately to the full and
+reduced data sets, but also applies more generally to a comparison of
+any correlated aucs with linear parameters estimated from the data (eg
+lda and logistic).
+
+
+
+Let
+\begin{align}
+  \X[1],\ldots,\X[\m] \sim \F,  IID,   \Y[1],\ldots,\Y[\n] \sim \G, IID
+\end{align}
+The statistic $\aucdiff$ is
+\begin{align}
+  \frac{1}{\m\n}\sum_{i,j}\{\hat\beta'\X[i]<\hat\beta'\Y[j]\}
+  -  \frac{1}{\m\n}\sum_{i,j}\{\hat\gamma\X[i]<\hat\gamma\Y[j]\} 
+\end{align}
+For fixed $\hat\beta,\hat\gamma$, this statistic may be viewed as a
+two-sample U-statistic with kernel
+$(x,y)\mapsto \{\hat\beta'x<\hat\beta'y\} -
+\{\hat\gamma'x<\hat\gamma'y\}$.
+For CDFs $F,G$ on $\mathbb{R}^p$ and vector $\beta$ define the notation for the AUC $P(X<Y), X\sim F,Y\sim G,X\cind Y,$ of the index 
+\begin{align}
+  \auc(F,G,\beta) = \int\{\beta'x<\beta'y\}dF(x)dG(y).
+\end{align}
+In this notation,
+$\aucdiff=\auc(\hat\F,\hat\G,\hat\beta)-\auc(\hat\F,\hat\G,\hat\gamma)$.
+We write each term as an IID sum, and later take the difference to
+represent $\aucdiff$ as an IID sum. Decompose the centered AUC
+$\auc(\hat\F,\hat\G,\hat\beta)- \auc(\F,\G,\beta)$ as a sum of two terms, reflecting
+the two sources of estimation%, the CDFs $\hat\F,\hat\G,$ and the parameter $\beta$.
+\begin{align}
+  &\auc(\hat\F,\hat\G,\hat\beta) - \auc(\F,\G,\beta)\\
+  &=\auc(\F+\delta\F,\G+\delta\G,\beta+\delta\beta) - \auc(\F,\G,\beta+\delta\beta) \label{theory:term 1}\\
+    &+ \auc(\F,\G,\beta+\delta\beta)-\auc(\F,\G,\beta)\label{theory:term 2}
+\end{align}
+Where $\delta\F=\hat\F-\F,$ etc.
+
+term \eqref{theory:term 1}: The function $\auc(\cdot,\cdot,\beta)$ is bilinear,
+\begin{align}
+  &\auc(\F+\delta\F,\G+\delta\G,\beta+\delta\beta) - \auc(\F,\G,\beta+\delta\beta)\\
+  &=\auc(\delta\F,\G,\beta+\delta\beta)+\auc(\F,\delta\G,\beta+\delta\beta)+\theta(\delta\F,\delta\G,\beta+\delta\beta)\\
+    &=-\frac{1}{\m}\sum_{i=1}^\m(1-\G(\hat\beta'\X[i])-\auc(\F,\G,\hat\beta)) + \frac{1}{\n}\sum_{i=1}^\n(\F(\hat\beta'\Y[i])-\auc(\F,\G,\hat\beta))+ o(n^{-1/2})
+\end{align}
+
+The approximation in the third
+inequality,$\theta(\delta\F,\delta\G,\beta+\delta\beta)=o(n^{-1/2})$:
+...
+
+For fixed $\hat\beta$, the sums in [ref] are the Hoeffding
+decomposition of $\aucdiff$. Same as the first von Mises
+derivative. For fixed $\hat\beta$, represents term \eqref{theory:term
+  1} as an IID sum to which the CLT may be applied to get the
+asymptotic distribution of $\aucdiff$ if term \eqref{theory:term 2}
+were negligible, e.g., if $\hat\beta$ were not estimated. The Delong
+approach in this situation is to estimate $\F,\G$ using the empirical
+CDFs $\hat\F,\hat\G$, giving rise to the standard Delong statistic for
+inference on $\aucdiff$.
+
+term \eqref{theory:term 2}: Assume $\sqrt{n}(\hat\beta-\betastar)\to 0$ in probability, $\beta\mapsto\auc(\F,\G,\beta)$ is differentiable at $\betastar$. Let the function $\infl$  represent the estimator $\hat\beta$ as an IID sum
+\begin{align}
+  \hat\beta-\betastar=\sum_{i=1}^{\m+\n}\infl(\Z[i]) + o(n^{-1/2})
+\end{align}
+i.e., $\infl$ is an influence function for the $\hat\beta$. Then \eqref{theory:term 2} is
+\begin{align}
+  &\auc(\F,\G,\beta+\delta\beta)-\auc(\F,\G,\beta)  \\
+  &=(\hat\beta-\betastar)\frac{\partial}{\partial\beta}\auc(\F,\G,\beta) + o_P(n^{-1/2})\\
+  &=\frac{\partial}{\partial\beta}\auc(\F,\G,\beta)\sum_{i=1}^{\m+\n}\infl(\Z[i]) + o_P(n^{-1/2}).
+\end{align}
+It isn't needed that $\hat\beta$ be estimated by a correctly specified
+model, only that it has some probability limit at the $\sqrt{n}$
+rate. The influence function may contain nuisance parameters as long
+as it depends on them continuously and consistent estimators are
+available. Though procedure for obtaining the estimate $\hat\beta$ and
+the associated influence function $\infl$ often involve some
+parametric assumptions, we still term the procedure described her as
+non parametric since the model for $\hat\beta$ may be misspecified,
+and the whatever the estimation procedure is it will be known to the
+analyst, so that an influence function may be chosen, if one exists.
+
+
+What goes wrong under the null? If the probability limit of
+$\hat\beta$ and $\hat\gamma$ are the same, then in term
+\eqref{theory:term 2} the derivatives are the same. if well specified
+may be a transofmration of the risk and therfore stationary point,
+derivatives will both vanish and \eqref{theory:term 2} will be
+$o(n^{-1/2})$. What about term \eqref{theory:term 1}?
+
+\subsection{Examples}
+
+
+deriv being 0 iff betahat estimation can be ignored. in case of
+$\aucdiff$, need deriv to be 0 at both betahat and gammahat, then
+usual delong statistic may be used. if index is monotonically related
+to the risk function is sufficient. %may also be necessary if deriv is concave.
+
+proposition
+1. roc curve is maximized pointwise over all functions of the $x$ by the risk function.
+2. auc of risk, and any increasing function of risk, is maximal. auc of a marker is maximal only if the marker only if it is an increasing function of the risk [at least if distributions assumed continuous] i.e., there is a strictly increasing function $f:\mathbb{R}\to\mathbb{R}$ such that $P(risk(x)<x_0|\D=i)=P(f(\beta' x)|\D=i)$ for all $x\in\mathbb{R}$ and $i=1,2$.
+% 3. if deriv is concave,
+3. can use delong statistic if index is related to risk by an increasing function.[more precisely: index is equal to an increasing function of the risk distributionally conditionally on the binary status, at least if distributions are continuous]
+
+1. is neyman pearson lemma, as pointed out by ((pepe)). viewing $\D$
+as a parameter, the most powerful test of the null $\D=0$ versus the
+simple alternative $\D=1$ rejects for large values of the likelihood
+ratio of ((x,g)). Therefore the ROC curve of the likelihood ratio is
+maximal at each point. Since the ROC curve is the same for incrasing
+functions of the likelihood, and ((show likelihood is expit of risk)),
+the same holds of the risk. 3. Though markers not related by increasing
+function may have the same auc, however since the roc curve of the
+risk is maximal, an index with the same auc must have the same roc
+curve, which does imply the index is an increasing function of the
+risk.
+
+Example. A prominent example where the index is an increasing function of the
+risk are the index models for a binary response:
+\begin{align}
+  \P(\D=1) = \h(\beta'x), \beta\in\mathbb{R}^p
+\end{align}
+The function $\h$ is strictly increasing, such as a probit link, logistic
+link, identity, etc. In the $p=1$ case the $\beta$ cancels and the requirement is that the risk be increasing in the sole covariate, i.e., that the covariate or its negation be a risk factor.
+
+However, the $\aucdiff$ consists of 2 aucs, so to apply this example
+as justification for inference based on the standard Delong statistic requires that both AUC models be
+well-specified. In the case of comparing a correctly specified full model $\P(D=1)=...$ to
+a reduced model $...$, the requirement is that the marginalization
+does not break the model. maybe cite bridge distribution paper. Some examples where this requirement holds are:
+% and it often
+% will not be the both will be well specified. excpet collapsible models,
+% where the derivative is 0 in both models and therefore--assuming
+% correct specification--can just use the basic delong stat, ignoring
+% estimation of aprameters.
+
+1. probit regession with gaussian covariates.
+
+2. fisher lda (homoskedastic with gaussian covariates) (just with gaussian data? conjecture in demler 2012 re elliptic distributions. maybe expand on this example in the misspecified lda section.) ((lda is collapsible more generally, but risk may not be an increasing function of the index without the gaussian assumption))
+
+3. logistic regression with a gaussian mixture as covariates in the special case that beta is the lda/malanobis dist beta. This example is almost the same as the homoskedastic LDA example, since [[ref fisher lda display]] the posterior probabilities are given by ... . 
+
+4. lda (heteroskedastic) with independent exponential family data mean parameterized
+
+with normal data as in 1, but heteroskedastic exponential family as in
+2 but not independent, not the case that derivative is 0. [[ref
+example below]]
+
+
+
+% examples where derivative is 0:
+% 1. single covariate. with a single predictor the derivative will often be zero, bc the risk
+% (where the derivative of the auc is 0), $r(x)$, is often a monotonic
+% function of $x$, and
+% $P(\beta x_0 < \beta x_1) = P(x_0 < x_1) = P(r(x_0) < r(x_1))$ in this
+% case. Demler 2017 uses a single covariate in the reduced model, so
+% their example doesn't say much.
+% % 2. exponential family (see notes)
+
+situations in which must account for the $\beta$ parameter estimation
+include: misspecification in one of the above situations ((can view
+ths proposed approach as adding robustness)). or, correct specified
+but nonzero derivative still.
+
+\begin{example} heteroskedastic gaussian lda.  Gaussian linear
+  discriminant analysis but misspecified in that the two classes may
+  not have the same covariance. The model is
+  \begin{align}
+    \Z | \D=i \sim \F_i=N_p(\mu_i,\Sigma_i)\\
+    \P(\D=1)=1-P(\D=0)=\pi_1
+  \end{align}
+  The LDA parameter estimation procedure is to base class membership on the sign of $\beta'x$
+  ((ignore intercepts without loss)), where
+  \begin{align}
+    \hat\beta=...\\
+    \hat\mu=...\\
+    \hat\Sigma = ...\\
+  \end{align}
+  the LDA parameter estimates ((ref above)), which assume a common variance for the two classes, tend in probability to
+  \begin{align}
+    \star\beta &=...\\
+    \star\Sigma &= ...\\
+  \end{align}
+  The AUC and its derivative at the starred parameters are
+  \begin{align}
+    \auc(\F,\G,\star{\beta}) &=...\\
+    \auc'(\F,\G,\star{\beta}) &= ...
+  \end{align}
+  The derivative is $0$ iff ((eigenvector condition)). In terms of the
+  normal means and variances, this condition is ((...)). 2 examples:
+  1. independent data, ((...)), 2. proportional covariance
+  matrices. The first is already implied by the general exponential
+  family result [[ref above]] but not the second as the observations
+  are not independent.
+
+  show that derivative term can be unbounded. % must consider also
+  % variance of infl function ie inverse fisher information, i.e., the
+  % components of  % It is possible for $\auc'(\F,\G,\star{\beta})$ to have large
+  % % components which are countered by variance of the parameter
+  % % estimates. 
+  When $\Sigma\approx\star\sigma$ [[not defined yet
+  $\Sigma=\Sigma_0+\Sigma_1$]], the the influence function is
+  approximately $O(|\Sigma|^{-1/2})$, the root of the inverse Fisher
+  information, and $ \auc'(\F,\G,\star{\beta})$ is approximately
+  $O(|\Sigma|^{1/2})$, so that the product, giving the entire
+  non-Delong term, is approximately $O(1)$. Nevertheless it is
+  possible to push the proportion so that the entire non-Delong term
+  $(\star{\Sigma})^{-1} \auc'(\F,\G,\star{\beta})$ has large
+  components.
+
+  Let
+  \begin{align}
+    \Sigma_0 = ...
+  \end{align}
+  Then $(\star{\Sigma})^{-1} \auc'(\F,\G,\star{\beta}) \to \pm \infty \mathbbm{1}$ ((write out?)) as $\pi_0 \to 1$ and $\epsilon\to 0$ simultaneously. One therefore expects that under this scenario inference based on the Delong estimator will be faulty, as verified by simulation in ((ref simulation section)). ((possible to give result so that the sign of the derivative term is controlled, so that delong can be forced either to low fpr or low power?))
+  
+\end{example}
+
+\section{Simulation}
+
+
+\section{Discussion}
+approach extends straightforwardly to other differentiable functions
+of the data $f(x)$, not just the linear combination.
+
+extends to discrete covariates (modified auc kernel)
+
+\end{document}
+

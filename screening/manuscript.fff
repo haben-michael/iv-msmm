@@ -1,0 +1,65 @@
+\begin{figure}
+\centering
+\begin{tikzpicture}[scale=1.5] 
+\def\xmax{3}
+\def\ymax{4}
+\def\ABlen{1}
+\def\CDlen{3}
+\def\labeldelta{.2}
+\node (slope1) at (1,-.5) {}; 
+\node (slope2) at (.5,1) {};
+\node (A) at (0,0) {};
+\node (B) at ($(A) + \ABlen*(slope1)$) {};
+\node (C) at ($(B) + \CDlen*(slope2)$) {};
+\node (D) at ($(A) + \CDlen*(slope2)$) {};
+  \node (ones) at (\xmax,0) {$\mathbbm{1}$};
+\node (precision) at ($(A) + \ymax*(slope2)$) {$\vec{\frac{1}{\sigma}}$};
+\node[label={$\vec{\frac{Y}{\sigma}}$},outer sep=1pt,inner sep=2pt] (Z) at (C) {};
+
+\draw[->] (A.center) -- (ones);
+\draw[->] (A.center) -- (precision);
+\draw[->] (A.center) -- (Z.center);
+\draw[|-|] (A.center) -- (D.center);
+\draw[dotted] (A.center) -- (B.center);
+\draw[dotted] (B.center) -- (C.center);
+\draw[dotted] (C.center) -- (D.center); 
+\path let \p1 = (B), \p2 = (slope2) in coordinate (betahat) at ($(B)-\y1/\y2*(slope2)$);
+\draw[|-|] (A.center) -- (betahat);
+
+\node (labelbeta) at ($1/2*(betahat)+\labeldelta*(0,1)$) {$\hat{\beta}_0$};
+\node (labeltheta) at ($(A)+1/2*\CDlen*(slope2)+2*\labeldelta*(0,1)$) {$\hat{\theta}$};
+
+% t = neg of y coord of B / y coord of slope2
+\end{tikzpicture}
+  \caption{Schematic description of the orthogonality of $\hat\beta_0$ and $\hat\theta$ in Egger regression. The coefficient $\hat{\beta}_0$ is the length of a projection of $\vec{\frac{Y}{\sigma}}-\hat{\theta}\vec{\frac{1}{\sigma}}$, which is orthogonal to $\hat{\theta}\vec{\frac{1}{\sigma}}$. The regressors $\vec{\sigma}$ are treated as fixed.}
+  \label{fig:1}
+\end{figure}
+\efloatseparator
+ 
+\begin{figure}
+\label{fig:alpha_0}
+  \begin{subfigure}{.5\textwidth}
+    \includegraphics[width=\linewidth]{fig_alpha_0_power.pdf}
+    \caption{Power-type $f_\z$.}
+  \end{subfigure}
+  \begin{subfigure}{.5\textwidth}
+    \includegraphics[width=\linewidth]{fig_alpha_0_beta.pdf}
+    \caption{Beta $f_\z$.}
+  \end{subfigure}
+\caption{The effect of the nominal level $\alpha_0$ of the publication bias screen on the monte carlo mean of the meta-analysis test statistic.}\label{fig:alpha_0}
+\end{figure}
+\efloatseparator
+ 
+\begin{figure}
+ \begin{subfigure}{.5\textwidth}
+    \input{sim/power_0.tex}
+    \caption{$\theta=0$}
+\label{table:power 0}
+  \end{subfigure}\\
+  \begin{subfigure}{.5\textwidth}
+\input{sim/power_0.2.tex}
+    \caption{$\theta=0.2$}
+\label{table:power 0.2}
+  \end{subfigure}
+\caption{The observed false positive rate (\ref{table:power 0}) and power (\ref{table:power 0.2}) for meta-analyses conducted subsequent to a null finding on Egger's test or Begg's test and, for a benchmark, without any preliminary test. Three families were considered for the distribution $f_Z$ of the study effects, versions of Student's t, the power-law distribution, and beta distribution.  From each family, three distributions were used corresponding to a low, medium, or high value of $\zdiff$. For Student's t, the corresponding degrees of freedom were, respectively, 4, 3, and 2.1. For the power-law family \eqref{defn:peaked pdf}, the parameter was -.1, -.5, or -.9. For the beta family \eqref{defn:centered beta}, the common shape parameter was .9, .5, or .1.}\label{fig:table:power}
+\end{figure}

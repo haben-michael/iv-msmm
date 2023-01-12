@@ -1,0 +1,436 @@
+\documentclass{article}
+\usepackage{amsthm}
+\usepackage{bbm}
+\usepackage{amssymb}
+\usepackage{mathtools,etoolbox,xcolor}
+\DeclareMathOperator{\tr}{tr}
+% \usepackage{booktabs}
+% \usepackage{url}
+% \usepackage{textcomp}
+% \renewcommand{\t}[1]{\tilde{#1}}
+% \newcommand{\partiall}[1]{\frac{\partial}{\partial #1}}
+% \newcommand{\gm}{\theta}
+\newcommand{\E}{E}
+\renewcommand{\P}{P}
+\newcommand{\V}{Var}
+\newcommand{\cov}{Cov}
+\newcommand{\corr}{Corr}
+\newcommand{\mean}[1]{\overline{#1}}
+\newcommand{\cind}{\perp \!\!\! \perp}
+\newcommand{\ones}{\mathbbm{1}}
+\newcommand{\I}{I}
+\newcommand{\Id}{E}
+\newcommand{\e}{e}
+\newcommand{\Q}{Q}
+\newcommand{\eigval}{\lambda}
+\renewcommand{\t}[1]{\tr(\Q^{#1})}
+\newcommand{\rowmean}[1]{\overline{\phi}_{#1\cdot}}
+\newcommand{\colmean}[1]{\overline{\phi}_{\cdot #1}}
+\newcommand{\auchat}{\overline{\phi}_{\cdot \cdot}}
+\newcommand{\coef}{c}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{lemma}{Lemma}
+% \newcommand{\h}[2]{\{(u_{#1}-u_{#2})(v_{#1}-v_{#2})>0\}}
+\mathtoolsset{showonlyrefs=true}
+% \newtoggle{commenttoggle}
+% \toggletrue{commenttoggle}
+% \newcommand{\comment}[1]{
+%   \iftoggle{commenttoggle}{
+%     {\normalsize{\color{red}{ #1}}\normalsize}
+%   }
+%   {}
+% }
+
+\begin{document}
+
+Title: Inference on the AUC for clustered data
+
+Abstract: The AUC is a statistic frequently used to evaluate a scalar
+predictor of a binary outcome. When data are correlated, Obuchowski
+'97 presented an estimator for the variance of the AUC statistic that
+remains standard in this setting. We show that this estimator is
+nearly the same as the leave-one-out jackknife, an alternative
+variance estimator based on resampling. We reduce the difference of
+the two variance estimators to the difference of two measures of
+statistical dispersion, the usual sample standard deviation versus a
+possibly novel statistic. This leads to a deterministic $O(1/n^2)$ bound
+on the difference, which is shown to be tight by an adversarial
+example. In as much as the jackknife is a linearization of the
+bootstrap, this result points to the latter as the superior method of
+inference for this problem.
+
+Divide the sample into larger and smaller halves and take the
+difference of the means of the two halves.
+
+\begin{enumerate}
+\item Intro -- AUC, clustering. give overview of different clustering
+  setups in literature. examples of clustered auc
+  applications. mention two estimators of variance. simulation showing
+  similarity. both consistent, but not just O(1/sqrt(I))
+  difference. more like $O(1/I^(3.5))$, relative difference: . 
+
+  Given data consisting $\I$ iid pairs of vectors of continuous scalars
+  \begin{align}
+    X_i=(X_{i1},\ldots,X_{im_i}),Y_i=(Y_{i1},\ldots,Y_{in_i}),i=1,\ldots,\I
+  \end{align}
+  The two vectors are regarded as belonging to two states, e.g., $0$
+  and $1$ or non-diseased and diseased, of ((a unit)). The quality of
+  the vectors as predictors of the binary state is to be assessed. Common examples of correlated biomarker/response data:
+  \begin{enumerate}
+  \item  repeated measurements of tumour antigens (CEA, CA15-3, TPS) as markers for progression/non-progression of breast cancer ((ref emir 2000))
+
+  \item two measurements of the distortion product otoacoustic
+    emissions taken from the left and right ears ((think this should
+    be ears)) of each patient, response: neonatal hearing impairment
+    ((wu 2019))
+
+   \item repeated measurements of levels of vascular enothelial growth
+     factor and a soluble fragment of Cytokeratin 19 as prognostic
+     factors for progression of non-small cell lung cancer ((ref wu
+     wang 2011))
+   \end{enumerate}
+   
+   One way to assess the quality of the predictors is the average
+   probability that a non-diseased observation is less than a diseased
+   observation, where the average is taken over comparisons of
+   elements of a non-diseased cluster against those of an independent
+   diseased cluster((should be: the mean AUC between the controls of
+   one cluster and the cases of an independent cluster))
+  \begin{align}
+    \theta=\E\left(\frac{1}{m_in_k}\sum_{j=1}^{m_i}\sum_{l=1}^{n_k}\{X_{ij}<Y_{kl}\}\right).
+  \end{align}
+  ((need to treat mi,nk. are these random? or make them fixed)).
+  Definition ((ref above)) is one way of generalizing the AUC, a way
+  to evaluate a scalar predictor of a binary outcome, to clustered
+  observations. When $m_i=n_i=1,i=1,\ldots,\I$ in ((ref above)), the
+  AUC may be defined as $\P(X_i<Y_j), i\neq j$, the probability that a
+  diseased observation exceeds an independent non-diseased
+  observation.  When the observations in a cluster have the same
+  marginal distribution, the two definitions agree.
+  
+  The estimate of the AUC presented in ((refs)) is
+  \begin{align}
+    \auchat= \I^{-2}\sum_{i,j}\phi_{ij}
+  \end{align}
+  where
+  \begin{align}
+    \phi_{ij}=\frac{1}{mn}\sum_{k,l}\{x_{ik}<y_{jl}\}, 1\le i,j \le \I
+  \end{align}
+  The estimator has an $O(1/\I)$ bias due to the intra-cluster terms
+  $\phi_{ii}$. ((these terms could be omitted from the estimator,
+  though we follow the original definition in our analysis))
+  
+
+
+
+  \begin{tabular}{c | c | c}
+    & case & control\\
+    \hline&&\\
+    patient \# 1 & $X_1$ & \\
+    \vdots & \vdots & \\
+    patient \# k & $X_{k}$ &\\
+      patient \# k+1 &  & $Y_{k+1}$\\
+     \vdots & & \vdots\\
+    patient \# \I &  & $Y_{\I}$\\
+  \end{tabular}
+Lee et al.
+  \begin{tabular}{c | c | c}
+    & case & control\\
+    \hline&&\\
+    patient \# 1 & $(X_{11},\ldots,X_{1m_1})$ &\\
+    \vdots & \vdots & \vdots\\
+    patient \# k & $(X_{k1},\ldots,X_{km_{\I}})$ & \\
+    patient \# k+1 & & $(Y_{(k+1)1},\ldots,Y_{(k+1)n_{k+1}})$\\
+    \vdots &  & \vdots \\
+    patient \# \I & & $(Y_{\I 1},\ldots,Y_{\I n_{\I}})$\\
+  \end{tabular}
+Obuchowski:
+  \begin{tabular}{c | c | c}
+    & case & control\\
+    \hline&&\\
+    patient \# 1 & $(X_{11},\ldots,X_{1m_1})$ & $(Y_{11},\ldots,Y_{1n_1})$\\
+    \vdots & \vdots & \vdots\\
+    patient \# \I & $(X_{\I1},\ldots,X_{\I m_{\I}})$ & $(Y_{\I1},\ldots,Y_{\I n_{\I}})$\\
+  \end{tabular}
+
+  ((obu ref)) presents an estimator of the variance of ((ref pop auc))
+  enabling inferences to be drawn. Alternative estimators of the
+  variance are resampling methods such as the bootstrap and the
+  jackknife. Fig (()) presents a comparison of ((obu estimator)) and
+  jackknife estimator using synthetic multivariate normal data. The
+  two estimates are nearly identical. Fig (()) suggests that the
+  difference of the two variance estimates is somewhere between
+  $O(1/\I^2)$ and $O(1/\I^{2.5})$.
+
+  Below we establish that the difference between the two variance
+  estiamtors is $O(1/\I^2)$. We also give an adversarial example
+  achieving this bound. Inasmuch as the jackknife may be viewed as a
+  linearization of the bootstrap ((ref)), the result points to the
+  bootstrap for carrying out inference in this setting ((
+  ref model above )).
+
+  
+\item Body
+  \begin{enumerate}
+\item obu estimator and jk, give objective to maximize
+
+  Let 
+  \begin{align}
+    x &\in \mathbbm{R}^{I\times m}, y \in \mathbbm{R}^{I\times n}\\
+    \phi_{ij} &= \frac{1}{mn}\sum_{k,l}\{x_{ik}<y_{jl}\}\\
+  \end{align}
+
+  Were non-diseased cluster $x_i$ and diseased cluster $y_i$
+  independent, the estimator would be a two-sample U-statistic. The
+  variance estimator proposed in ((obu ref)) extends the usual
+  U-statistic variance estimator to account for this dependence.
+
+  The normalized variance of $\hat\theta$ is
+
+  \begin{align}
+    \V(\sqrt{\I}\hat\theta) &= \frac{1}{\I^3}\sum_{i,j,k,l}\cov(\phi_{ij},\phi_{kl})                                              
+  \end{align}
+  The sum consists of $O(\I^4)$ terms in which $i,j,k,l$ are all
+  distinct, which are $0$ since distinct clusters are independent;
+  $O(\I^3)$ terms for which $|\{i,j,k,l\}|=3$; and an asymptotically
+  negligible number of remaining terms.
+
+  Among those terms for which $|\{i,j,k,l\}|=3$ are, first, those of the form
+  \begin{align}
+    \cov(\phi_{ij},\phi_{ik}) &= \E (\phi(X_i,Y_j)\phi(X_i,Y_k)) - \hat\theta^2\\
+    &= \E (f_{10}(X_i)^2) - \hat\theta^2,
+  \end{align}
+  ((notation $\phi(x,y)$)) writing
+  $f_{10}(X_i)=\E\phi(x,Y_j) \vert_{x=X_i}$. ((Sen reference)) shows
+  that $\frac{1}{\I}\sum_j \phi(X_i,Y_j)\to_p f_{10}(X_i)$, leading to
+  $\frac{1}{\I^2}\sum_i(\rowmean{i}-\hat\theta)^2$ as a consistent
+  estimator of the covariance ((ref above display)). A second type for
+  which $|\{i,j,k,l\}|=3$ is $\cov(\phi_{ij},\phi_{kj})$, which may
+  similarly be estimated by
+  $\frac{1}{\I^2}\sum_i(\colmean{j}-\hat\theta)^2$. Finally, to
+  account for covariances of the form
+  $\cov(\phi_{ij},\phi_{ki})=\cov(\phi_{ij},\phi_{ji})$, representing
+  the intra-cluster dependence, ((obu ref)) adds the analogous term
+  $\frac{2}{\I}\sum_i(\rowmean{i}-\hat\theta)(\colmean{i}-\hat\theta)$. The final variance estimator presented in ((obuchowski ref)) is:
+  \begin{align}
+    \hat\sigma^2_{obu}=\frac{1}{\I(\I-1)}\sum_{j=1}^{\I}(\rowmean{j} + \colmean{j} - 2\hat{\theta})^2.
+  \end{align}
+  An additional contribution of ((obu ref)) is to account for variable
+  cluster sizes, though the focus here is on fixed cluster sizes.
+  
+  several estimates of the variance, depending on the
+  cluster/correlation. these include... more recent examples include
+  ...
+
+  The jackknife is a general-purpose technique for estimating the
+  variance of a statistic. For a statistic based on an i.i.d. sample
+  of size $\I$, in this application the
+  observations are the cluster pairs
+  $(x_1,y_1),\ldots,(x_{\I},y_{\I})$, $\I$ ``leave-one-out'' statistics are formed,%  by
+  % computing the statistic on the remaining observations after omitting
+  % an observation from the data set.  
+  \begin{align}
+    \overline{\phi}_{\cdot \cdot, -j} = ..., j=1,\ldots,\I
+  \end{align}
+  ``Pseudo-observations'' are obtained as $...$, and the jackknife variance estimate is the unbiased sample variance of these pseudo-observations
+  \begin{align}
+    \hat\sigma^2_{jk}=...
+  \end{align}
+  in terms of $\phi$
+  \begin{align}
+    \hat\sigma^2_{jk}=\frac{\I}{(\I-1)^3}\sum_{j=1}^{\I}\left(\rowmean{j} + \colmean{j} - 2\hat{\theta} - \frac{1}{\I}\left(\phi_{jj}-\frac{\tr(\phi)}{\I}\right)\right)^2
+  \end{align}
+
+  The difference is
+  \begin{align}
+    \frac{2\I-1}{\I(\I-1)}\sum_j(\rowmean{j} + \colmean{j} - 2\hat{\theta})^2 - \frac{2}{(\I-1)^3}\sum_j\left(\rowmean{j} + \colmean{j} - 2\hat{\theta}\right)\left(\phi_{jj}-\frac{\tr(\phi)}{\I}\right) + \frac{1}{\I(\I-1)^3}\sum_j\left(\phi_{jj}-\frac{\tr(\phi)}{\I}\right)^2
+  \end{align}
+
+  The difference appears to be $O(1/\I^2)$, the relative difference $O(1/I^{3/2})$.
+  
+  (Q is a difference of 2 projections...do these correspond to jk estimator and the obu estimator?? dont think so Q is actually difference of a sample variance and a covariance)
+
+
+
+
+
+
+
+\item description of phi.
+
+  general unbalanced case
+
+  balanced case, $m$ and $n$ fixed, then $\phi$ belongs to the set of matrices
+  \begin{align}
+    \frac{1}{mn}\ \underset{\I\times \I n}{V}\ \underset{In\times\I}{P} : 0\le v_1\le v_2\le\ldots v_{\I n}\le m, \sum_jP_{ij}=1, \sum_iP_{ij}=n, i=1,\ldots,\I
+  \end{align}
+  i.e.,
+  letting $U$ represent the upper right $\I\times\I$ matrix,
+  \begin{align}
+    \frac{1}{mn}\underset{\I\times \I n}{A}\ \underset{\I\times\I}{U}\ \underset{\I m\times\I}{B} :\
+    & A_{ij},B_{ij}\in\{0,1\}\\
+    &A_{i\cdot}=n,A_{\cdot j}=1\\
+    &B_{i\cdot}=1,B_{\cdot j}=m, 1\le i,j\le \I\\
+  \end{align}
+  Letting $\mathbbm{P}_n(f(Y_k))=\frac{1}{n}\sum_{l=1}^nf(y_{kl})$ denote expectation with respect to the empirical distribution of the diseased clusters $y_1,\ldots,y_{\I}$,    $\hat F_i$ be the empirical CDF of cluster $x_i$
+  \begin{align}
+    \phi_{ij} &= \mathbbm{P}_n \hat{F}_i(Y_j)
+  \end{align}
+  
+
+((fig of PF decomposition))
+
+
+  
+\item quad form pictures of summands in 3x3 case, kronecker and delta
+descriptions. symmetric-looking representation of an elt, some
+consequences of the symmetry, how these make sense intuitively.
+
+block structure. View $\Q$ is an $\I\times\I$ matrix of $\I\times\I$ blocks. viewing qf as a sum of qfs. 
+
+\begin{theorem}
+\begin{enumerate}
+  \item elt description of $\Q$ shows symmetric in $p,q,r,s$, where $p,q$
+indexes the block and $r,s$ indexes within the block. The number of pairs or triples from $(p,q,r,s)$ that are all equal is invariant under any permutations $\pi$ on $1,\ldots,\I$, so $\Q_{pqrs}=\Q_{\pi(p)\pi(q)\pi(r)\pi(s)}$, and
+\begin{align}
+  \phi^t\Q\phi=\sum_{p,q,r,s}\Q_{pqrs}\phi_{pr}\phi_{qs}&=\sum_{p,q,r,s}\Q_{\pi(p)\pi(q)\pi(r)\pi(s)}\phi_{\pi(p)\pi(r)}\phi_{\pi(q)\pi(s)}\\
+                                                        &=\sum_{p,q,r,s}\Q_{pqrs}\phi_{\pi(p)\pi(r)}\phi_{\pi(q)\pi(s)}
+\end{align}
+
+\item corollay: blocks are symmetric. this is switching $r,s$ in $\Q_{pqrs}$. similarly for symmetry about anti-diagonal.
+
+\item $\Q$ invariant on following symmetries. any permutation applied in
+common to the rows and columns of the input vector, viewed as a
+matrix. this corresponds to rearranging the iid input clusters.
+
+\item $\Q$ invariant on 1) transposition. proof from $\Q[p,q,r,s]$
+  symmetry: switch $p$ and $q$, and switch $r$ and $s$. corresponds to
+  switching roles of $x$ and $y$. 2) reflection in the anti-diagonal.
+  pf:? interpretation:?.Along with the identity transformation, and
+  180 degree rotation (which is a permutation symmetry), these form a
+  4-member subgroup of S4, symmetry group of the square.
+
+\item blocks sum to 0 proven in notes using kronecker notation
+  
+\end{enumerate}
+\end{theorem}
+
+
+
+theorem on operator
+\begin{enumerate}
+\item higher powers of Q, (Q.lambda)2 is an orthog proj matrix. nullspace,
+  rank, characteristic eqn.  Q is difference of two projection matrices.
+  rank of Q very small but need to understand phi to bound phi.Q.phi.
+\item For $k\ge 0$, $\Q^{2k+1}=\eigval^{2k}\Q$ and $\Q^{2k}=\eigval^{2(k-1)}\Q^2$
+corollary: $(\Q/\eigval)^2$ is an
+  orthogonal projection onto the column space of $\Q^2$, which is the
+  same as the column space of $\Q$. corollary: $\Q/\eigval$ is a
+  differene of two projection matrices onto two ((dimensions))
+  orthogonal subsapces.
+\item for $k>0$
+\[
+  \tr(\Q^{2k})=\begin{cases}
+    2(\I-1)\eigval^{2k}, &k\neq 0, \I\neq 2\\
+    0, &k\neq 0, \I=2\\
+    \I, &k=0
+  \end{cases}
+\]  
+\item The null space of $\Q$ consists of
+  \begin{enumerate}
+  \item ...
+  \item ...
+  \item ...
+  \end{enumerate}
+% \item For $k\ge 2$, $\Q^{2k-1}=\eigval^{2k}\Q$ and
+%   $\Q^{2k}=\eigval^{2(k-1)}\Q^2$.  
+\item 2*(I-1) nonzero eigenvalues, all equal in magnitude to
+  $\eigval=\sqrt{\frac{\I-2}{2\I^2}}$, half positive and half neg.
+\item eigenvectors for nonzero evals sum to 0, since row sums of $\Q$ sum to $0$.
+\item The characteristic polynomial of $\Q$ is
+\[
+  \frac{(-1)^{\I}}{2^{\I-1}}x^{\I^2-2(\I-1)}(2x^2-\I^2(\I-2))^{\I-1}.
+\]
+\end{enumerate}
+
+Let column $j$ of $WW$ have a $1$ in position
+$(j mod \I)*\I + floor(j/I)$, and $0$ elsewhere.(check in R). Then the
+symmetry of $\Q[p,q,r,s]$ in $q,s$ implies $WW$ is a right identity
+for $\Q$, and symmetry in $p,r$, and $WW=WW^t$, implies it is a left
+identity. So $WW-\Id$ is in the nullspace of $Q$. $WW-\Id$ has
+$I(I-1)$ nonzero columns and for each column its negation is also
+present, leaving $I(I-1)/2$-dimensional subsapce of the nullspace of
+$\Q$ in $WW-\Id$.
+
+
+
+
+isotropic vectors and ortho decomposition. row-constant matrices and
+row arithmetic progressions, bases.
+
+
+
+remark re stirling numbers
+
+
+corollary of theorem on symmetries
+\begin{corollary}
+2I phi.vecs kronecker(E,ones),kronecker(ones,E) mutually orthogonal in
+Q basis. ((also, diagonal))((also, upper right triangular))
+\end{corollary}
+follows from blocks summing to 0 and Q(p,q,r,s) symmetry in
+arguments. shows row and col sums of Q are 0.
+$(\e_j\otimes \ones)^t\Q(\e_k\otimes\ones)=0$ is the same as the $j,k$
+block of $\Q$ summing to $0$. This is fixing $p,q$ as $j,k$ and
+summing over $r,s$ in the $\Q$ elt notation.  by $\Q$ argument
+symmetry, we can replace the role of $p$ with $r$ and $q$ with $s$
+shows $(\ones\otimes \e_j)^t\Q(\ones\otimes\e_k)=0$. Instead switching
+the roles of $q$ and $s$ shows
+$(\e_j\otimes \ones)^t\Q(\ones\otimes\e_k)=0$.
+
+(These are Q-orthogonal like B and C (actually first I of these are
+B)--actually these give C: it is a linear combination of vectors with
+constant columns. so I should have been projecting onto this basis.)
+
+
+$O(1/I^2) counter example$
+
+
+\end{enumerate}
+
+\item Conclude/Discussion
+\end{enumerate}
+
+\begin{proof}
+  Let $\coef_j,j\ge 1,$ as the coefficients of $x^{\I^2-j}$ in the
+  characteristic equation of $\Q$, with $\coef_0=1$.  The Newton Identities expressing $\coef_k$ in terms of the traces of powers of $\Q$ are ((ref
+  V.V. Prasolov, Problems and Theorems in Linear Algebra (American
+  Mathematical Society, Providence, RI, 1994) sec 4.1 )) 
+  \begin{align}
+    % \coef_k = -\frac{\t{k}}{k} + \frac{1}{2!}\sum_{\substack{i+j=k\\i\ge j,j\ge 1}}\frac{\t{i}\t{j}}{ij}
+    \coef_k = \sum_{j=1}^k(-1)^{\I^2-j}\sum_{\substack{i_1+\ldots+i_j=k\\i_1\ge 1,\ldots,i_j\ge 1}}\prod_{l=1}^j\frac{\t{l}}{l}.
+  \end{align}
+  Since $\t{2k+1}=0,k\ge 0,$ each sum in ((ref newton identities)) is
+  $0$ when $k$ is odd. Otherwise,
+  \begin{align}
+    (-1)^{\I^2}\coef_{2k} &= \sum_{j=1}^k(-1)^j\sum_{\substack{i_1+\ldots+i_j=2k\\i_1\ge 1,\ldots,i_j\ge 1}}\prod_{l=1}^j\frac{\t{l}}{l}\\
+                        &= \sum_{j=1}^k(-1)^j\sum_{\substack{i_1+\ldots+i_j=k\\i_1\ge 1,\ldots,i_j\ge 1}}\prod_{l=1}^j\frac{\t{2l}}{2l}\\
+                        &= \left(\frac{\I-2}{2\I^2}\right)^k\sum_{j=1}^k(-1)^j\frac{(\I-1)^j}{j!}\sum_{\substack{i_1+\ldots+i_j=k\\i_1\ge 1,\ldots,i_j\ge 1}}\frac{1}{i_1\cdot\ldots\cdot i_j}\\
+                        &= \left(\frac{\I-2}{2\I^2}\right)^k\sum_{j=1}^k(-1)^j\frac{(\I-1)^j}{k!}|s^k_j|\\
+                        &=\left(\frac{\I-2}{2\I^2}\right)^k(-1)^{\I+k}{\I-1\choose k},
+  \end{align}
+  ((use k or j consistently for index consistently)) denoting by $|s^k_j|$ the unsigned Stirling number of the first kind ((ref for identity)).
+  
+  Therefore the characteristic equation is
+  \begin{align}
+    \sum_{j=0}^{\I^2} \coef_j x^{\I^2-j} &= \sum_{j=0}^{\I-1}\coef_{2j}x^{\I^2-2j}\\
+                                         &= \sum_{j=0}^{\I-1}\left(\frac{\I-2}{2\I^2}\right)^j(-1)^{\I+j}{\I-1\choose j}x^{\I^2-2j}\\
+                                         &= (-1)^{\I}x^{\I^2-2(\I-1)}\sum_{j=0}^{\I-1}{\I-1\choose j}x^{2(\I-1-j)}\left(-\frac{\I-2}{2\I^2}\right)^j\\
+                                         &=(-1)^{\I}x^{\I^2-2(\I-1)}\left(x^2-\frac{\I-2}{2\I^2}\right)^{\I-1}.
+  \end{align}
+  
+\end{proof}
+
+\end{document}

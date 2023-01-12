@@ -1,0 +1,71 @@
+## looking at P(|B|>|A| & |A|<0)] rather than just P(|B|>|A|)
+
+filelist <- dir()
+filelist <- filelist[grep('^save[-0-9]+\\.RData',filelist)]
+## load(filelist[1])
+
+res <- lapply(filelist, function(file) {
+    ## file <- filelist[1]
+    load(file)    
+    rZ.names <- sapply(rZs, function(s)deparse(s)[2])
+    do.call(rbind, lapply(1:length(rZs), function(j) cbind(distr=rZ.names[j],do.call(rbind, lapply(c('probs.full','probs.1','probs.2','probs.3'), function(prob)data.frame(B=B,n=ns,prob=prob,mean=as.numeric(by.rZ[[j]][[prob]])))))))
+})
+skinny <- do.call(rbind,res)
+
+
+
+means <- by(skinny, list(skinny$n,skinny$distr,skinny$prob), function(df)data.frame(distr=unique(df$distr),prob=unique(df$prob),n=unique(df$n),B=sum(df$B),mean=sum(df$B*df$mean)/sum(df$B)))
+means <- do.call(rbind,means)
+
+means <- subset(means,n!=6) ## for plotting
+
+rZ.names <- sort(unique(means$distr))
+rZ.names <- rZ.names[-4] # drop beta(.4,.4)
+
+## png('1.png')
+op <- par(mfrow=c(3,4))
+for(j in 2:length(rZ.names)) {
+mmm <- subset(means,subset=means$distr==rZ.names[j],select=-distr)
+mmm$mean[mmm$prob %in% c('probs.full','probs.1')] <- mmm$mean[mmm$prob %in% c('probs.full','probs.1')]-1/2
+with(list(df=subset(mmm,subset=prob=='probs.full')), plot(df$n,df$mean,ylim=range(mmm$mean),main=rZ.names[j]))
+with(list(df=subset(mmm,subset=prob=='probs.1')), points(df$n,df$mean,col=2))
+with(list(df=subset(mmm,subset=prob=='probs.2')), points(df$n,df$mean,col=3))
+with(list(df=subset(mmm,subset=prob=='probs.3')), points(df$n,df$mean,col=4))
+abline(h=0,lty=2)
+## legend('topright',pch=1,col=1:3,legend=c('full','prob.1','prob.2'))
+}
+par(op)
+## dev.off()
+
+## png('2.png')
+op <- par(mfrow=c(3,4))
+for(j in 1:length(rZ.names)) {
+mmm <- subset(means,subset=means$distr==rZ.names[j],select=-distr)
+mmm$mean[mmm$prob %in% c('probs.full','probs.1')] <- mmm$mean[mmm$prob %in% c('probs.full','probs.1')]-1/2
+with(list(df=subset(mmm,subset=prob=='probs.full')), plot(df$n,df$n*df$mean,ylim=range(mmm$n*mmm$mean),main=rZ.names[j]))
+with(list(df=subset(mmm,subset=prob=='probs.1')), points(df$n,df$n*df$mean,col=2))
+with(list(df=subset(mmm,subset=prob=='probs.2')), points(df$n,df$n*df$mean,col=3))
+with(list(df=subset(mmm,subset=prob=='probs.3')), points(df$n,df$n*df$mean,col=4))
+abline(h=0,lty=2)
+## legend('topright',pch=1,col=1:3,legend=c('full','prob.1','prob.2'))
+}
+par(op)
+## [seems P(|B|>|A|) vanishes more slowly not faster than P(A<0), so this approach wont work]
+## [same issue with P(|B|>|A| & |A|<0)]
+## dev.off()
+
+## png('3.png')
+op <- par(mfrow=c(3,4))
+for(j in 1:length(rZ.names)) {
+    mmm <- subset(means,subset=means$distr==rZ.names[j],select=-distr)
+    mmm <- merge(subset(mmm,subset=prob=='probs.full',select=-c(B,prob)),subset(mmm,subset=prob=='probs.1',select=-c(B,prob)),by='n')
+    with(mmm,plot(n,n^(0)*abs(mean.x-mean.y),main=rZ.names[j]))
+    mmm <- subset(means,subset=means$distr==rZ.names[j],select=-distr)
+    with(list(df=subset(mmm,subset=prob=='probs.3')), points(df$n,df$mean,col=2))
+    abline(h=0,lty=2)
+    ## legend('topright',pch=1,col=1:3,legend=c('full','prob.1','prob.2'))
+}
+par(op)
+## dev.off()
+
+## save.image('b.RData')

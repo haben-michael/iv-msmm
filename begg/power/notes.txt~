@@ -1,0 +1,81 @@
+Egger model: y ~ \mu + \epsilon, y/sigma ~ \mu/\sigma +
+\epsilon/\sigma. whatever \sigma is, intercept of regression vs
+1/\sigma will be 0 so will control FPR, even under heterogeneity, with
+no need to account for between-study variance, at least as far as
+fpr.[actually no because inference requires homoskedasticity--will need to use heteroskedasticity-robust variance]
+
+
+lin unfair comparison
+
+
+(1/31) Invariant test. test statistic should be same for any translation of
+the within variances, besides translations of the effect sizes. so a
+function of the differences of the within variances, and of the effect
+sizes. is this maximal invariant? Seems something like concordance
+test would work: proportion of pairs of effects and variances that
+concord. This is similar to Begg's test but not using the standardized
+effect sizes (which depend directly on the variances).
+
+Found that simulation showing that begg's/egger's test were
+inconsistent with heterogeneity, with fpr control worse with sample
+size, only shows that for unif[0,1] as distribution for the within
+variances. even unif[.1,1.1] the tests look OK under
+heterogeneity. This led me to look back at the old calculations on
+egger regression fpr under heteogeneity.
+
+
+(2/1--2/3) Worked on formulas for FPR of egger test under
+heterogeneity. Got expression 1) without assuming normality. Maybe try
+to use old calculations to get mean and variance of the statistic in
+the P( ... >0) statement to say something. And 2) assuming normality,
+in terms of a weighted sum of chi-square. And 3) assuming normality
+and $n\to\infty$. Latter suggests FPR could be higher or lower than
+nominal level depending on moments of precision distribution. Found a
+linear relationship between beta parameters (as precision
+distribution) determining whether FPR is higher than lower.
+
+Maybe find similar relationship for uniform prior.
+
+Maybe this dependence on the precision explains some of the
+conflicting assessments from simulation studies in the literature.
+
+Planning on working on expressions for \tau^2 under selection.
+
+
+(2/4) [worked on begg manuscript. added simulation for random effects model]
+
+(2/5) Worked out way to implement rlin (sample simulated meta-analysis
+data sets with pvalue thresholding and randomly keeping some studes
+that don't meet the threshold) without using the loop. Didn't write out or implement.
+
+Worked on distribution of dersimonian-laird tau.hat under
+hetrogeneity. Tried to get some inequalities to compare it to the true
+tau.hat. Realized the data under selection won't be using the true
+tau.hat either.
+
+[pollard: section on coupling, probably finished with chapter on
+distribution theory in metric spaces]
+
+(2/6) Partially implemented fast/direct version of Lin algo for sampling
+ma data subject to p-val pub bias. Managed for mu=0 case but not
+general mu, which requires sampling from the join distr of (z,s) under
+a linear constraint. Had forgotten that when mu\neq 0, pval selection
+affects s, just like effect size selection. this was in egger#1 notes,
+had decides at the time to set aside the \mu\neq 0 case, maybe now
+too.
+
+
+(2/7) Tried (starting yesterday) to maximize bias ratio. Found a quad
+form to maximize over a polytope, but the form is indefinite. [pollard--started chapter on unif convergence]
+
+
+(2/8) worked more on maximizng bias ratio. a few visualizations for
+the 2-simplex. guessed form of argmax, couldn't confirm. Begg.R #3
+(2022 section).
+
+Added sim to begg manuscript for negative bias (bad FPR) example--t with low df. 
+
+(2/9) realized t example from last night was bad since variances are
+defined so the meta analysis model isn't great. did beta and added to
+ms. though originally chose t since bimodal study distribution seemed
+pathological.

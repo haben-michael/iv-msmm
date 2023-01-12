@@ -1,0 +1,5 @@
+## 40 check dskew
+require(mvtnorm)
+n <- 1e1
+mu <- runif(2)
+rmvnorm(n,c(mu[1],mu[2]))

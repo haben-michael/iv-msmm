@@ -1,0 +1,7 @@
+\begin{figure}[!tbp]
+  \centering
+  \subfloat{\includegraphics[width=0.5\textwidth]{211223a.png}}
+  \hfill
+  \subfloat{\includegraphics[width=0.5\textwidth]{211223b.png}}
+  \caption{random effects model. 10 clusters and at bottom the unclustered population. case observations are represented with ``$-$'' and control observations with ``$|$''. On the left, informative individual auc and uninformative population auc. On the right, informative population auc but uninformative individual auc.}  \label{fig:comparison}
+\end{figure}

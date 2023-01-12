@@ -1,0 +1,55 @@
+
+
+@article{begg1994a,
+  title={Operating characteristics of a rank correlation test for
+                  publication bias},
+    author={Begg, Colin and Mazumdar, Madhuchhanda},
+      journal={Biometrics},
+        pages={1088--1101},
+	  year={1994},
+	    }
+
+
+
+@article{gjerdevik2014,
+  title={Improving the error rates of the Begg and Mazumdar test for
+                  publication bias in fixed effects meta-analysis},
+    author={Gjerdevik, Miriam and Heuch, Ivar},
+      journal={BMC Medical Research Methodology},
+        volume=14,
+	  number=1,
+	    pages={1--16},
+	      year=2014,
+	        publisher={BioMed Central}
+		}
+
+
+@incollection{begg1994b,
+  author      = {Begg, Colin},
+    title       = "Publication Bias",
+      editor      = {Cooper, Harries and Hedges, Larry},
+        booktitle   = "The Handbook of Research Synthesis",
+	  publisher   = "Russel Sage Foundation",
+	    address     = "New York",
+	      year        = {1994},
+	        pages       = {399--409}
+		  }
+
+
+@article{zhang2014,
+  title={Astragalus (a traditional Chinese medicine) for treating chronic kidney disease},
+    author={Zhang, Hong Wei and Lin, Zhi Xiu and Xu, Chuanshan and Leung, Connie and Chan, Lai Sum},
+      journal={Cochrane Database of Systematic Reviews},
+        number={10},
+	  year={2014},
+	    publisher={John Wiley \& Sons, Ltd}
+	    }
+
+@article{hooper2020,
+  title={Effects of total fat intake on body fatness in adults},
+    author={Hooper, Lee and Abdelhamid, Asmaa S and Jimoh, Oluseyi F and Bunn, Diane and Skeaff, C Murray},
+      journal={Cochrane Database of Systematic Reviews},
+        number={6},
+	  year={2020},
+	    publisher={John Wiley \& Sons, Ltd}
+	    }

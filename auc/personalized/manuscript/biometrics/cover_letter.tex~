@@ -1,0 +1,71 @@
+
+\documentclass[10pt]{letter}
+
+\usepackage{geometry}
+
+
+\geometry{
+	paper=a4paper, % Change to letterpaper for US letter
+	top=3cm, % Top margin
+	bottom=1.5cm, % Bottom margin
+	left=4.5cm, % Left margin
+	right=4.5cm, % Right margin
+}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\usepackage{stix}
+
+\usepackage{microtype}
+
+\signature{Haben Michael}
+
+\address{Haben Michael \\Department of Statistics\\ 390 Serra Mall \\ Stanford, CA 94305} % Your address and phone number
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+
+%----------------------------------------------------------------------------------------
+%	ADDRESSEE SECTION
+%----------------------------------------------------------------------------------------
+
+\begin{letter}{Professor A.C. Davison \\ Editor, \emph{Biometrika} \\ Ecole Polytechnique Federale de Lausanne \\
+CH-1015 Lausanne \\
+Switzerland } % Name/title of the addressee
+
+%----------------------------------------------------------------------------------------
+%	LETTER CONTENT SECTION
+%----------------------------------------------------------------------------------------
+
+\opening{Dear Professor Davison,}
+
+Please find enclosed a copy of our manuscript, ``Exact Inference on
+the Random Effects Model for Meta-Analyses with Few Studies,'' that
+Profs. Xie and Tian, Suzanne Thornton, and myself would like to submit
+for publication in \emph{Biometrics}.
+
+The manuscript describes an exact, unconditional, non-randomized
+procedure for producing confidence intervals for the grand mean in a
+random effects meta-analysis. The procedure targets meta-analyses
+based on too few primary studies, $\le 7,$ say, to allow for the conventional
+asymptotic estimators, e.g., DerSimonian and Laird 1986, or non-parametric
+resampling-based procedures, e.g., Liu, Lee, and Xie
+2007. Meta-analyses with such few studies are common, with
+one recent sample of 22453 heath-related meta-analsyes finding a
+median of 3 primary studies per meta-analysis (Davey et
+al. 2011).
+There is therefore a need for reliable and efficient
+procedures to address this setting.
+
+We have not submitted the manuscript elsewhere, and look forward to your review and
+comments.
+
+\vspace{2\parskip} % Extra whitespace for aesthetics
+\closing{Sincerely,}
+
+
+\end{letter}
+
+\end{document}

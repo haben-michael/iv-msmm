@@ -1,0 +1,103 @@
+\begin{figure}
+  \includegraphics[width=\linewidth]{selection.png}
+  \caption{  The effect of a simple hard thresholding selection model on the
+  study means. Overlaid on the joint density of $\y$ and $\sigma$, indicated by grayscale, is the mean $\theta=0$ of $\y|\sigma$
+  before selection and exhibiting no
+  trend (solid line), a threshold line corresponding to rejecting studies with a one-sided p-value
+  $>.3$ (dashed line), and the mean of the studies
+  after selection, exhibiting a trend that Begg's test can pick up (dotted line).
+}
+  \label{fig:selection}
+\end{figure}
+\efloatseparator
+ 
+\begin{figure}
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{neg_bias_beta}
+    % \caption{A subfigure}
+    % \label{fig:sub1}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{neg_bias_students}
+    % \caption{A subfigure}
+    % \label{fig:sub2}
+  \end{subfigure}
+  \caption{The average Type I error rate of Begg's test when the
+    response distribution is based on (left) a shifted beta
+    distribution and (right) Student's t distribution. The error
+    control is lost with (left) bimodality or (right) fewer degrees of
+    freedom. Both situations are arguably pathological in the context
+    of a meta-analysis and unlikely to be encountered in practice. The
+    precision distribution for the studies was simlated as uniform on
+    $[1,4]$.}
+  \label{fig:negative bias}
+  \end{figure}
+
+% \begin{figure}
+%   \includegraphics[width=\linewidth]{students.png}
+%   \caption{The average Type I error rate of Begg's test when the
+%     response distribution is based on (left) a shifted beta
+%     distribution and (right) Student's t distribution. The error
+%     control is lost with (left) bimodality or (right) fewer degrees of
+%     freedom. Both situations are arguably pathological in the context
+%     of a meta-analysis and unlikely to be encountered in practice. The
+%     precision distribution for the studies was simlated as uniform on
+%     $[1,4]$.}
+%   \label{fig:negative bias}
+% \end{figure}
+
+\begin{table}
+    \begin{tabular}{l c c}
+    distribution of $S$ & $\biasratio$ & max asymptotic bias \\
+    \hline\\
+    uniform  & $\frac{(b-a)^2}{3(a^2+b^2+ab)}$  & .11\\
+    beta & $\left(\frac{4B(a+b,a+b)}{B(a,a)B(b+b)}\right)^2\frac{a+b+1}{a(a^2+ab+a+b)}$ & .21\\
+    % exponential & 1/2 & .16\\
+    gamma & $\frac{16a}{a+1}(B(1/2,a,a+1)-1/2)^2$ & .18\\
+    pareto & $\frac{4a(a-2)}{((2a-1)(a-1))^2}$ & .04\\
+  \end{tabular}
+  \caption{Shape families of some nonnegative RVs,
+    $\biasratio=\text{bias}\times\pi=(\E|S_1-S_2|)^2/E(S^2)$ in terms
+    of the shape parameters, and the maximum bias of the asymptotic
+    variance over the shape family. The maximum variance was obtained
+    numerically for the beta and gamma distributions.}
+  \label{table:biasratio}
+\end{table}
+
+\begin{table}
+  \input{210313_table.tex}
+  \caption{False positive rates for the standard Begg's test, after debiasing using the true asymptotic bias, and after debiasing using an estimate of the asymptotic bias.}
+  \label{table:fpr}
+\end{table}
+
+\begin{table}
+  \input{220204_table.tex}
+  \caption{False positive rates under effect heterogeneity for the standard Begg's test using the true (unobserved) between-study variance, after debiasing using an estimate of the asymptotic bias while still using the true (unobserved) between-study variance, and after debiasing using an estimate of the asymptotic bias and an estimate of the between-study variance.}
+  \label{table:fpr_hetero}
+\end{table}
+
+% \begin{figure}
+  %   \centering
+  %   \resizebox{250pt}{!}{%
+  %     \input{ms/210313_table.tex}
+  %   }
+  %   \captionof{figure}{Causal DAG describing longitudinal confounding with $T=2$ time points.}
+  %   \label{fig:sra dag}
+  % \end{figure}
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{power_curves.png}
+  % \includegraphics[scale=.5]{ms/210314a.png}
+  \caption{Power curves of standard Begg's test, after debiasing using true asymptotic bias, and after debiasing using estimated asymptotic bias. The alternatives are parameterized by the proportion of studies selected. The estimator debiased using an estimate of the true bias and the true bias itself overlap.\comment{increase size of plot}}
+  \label{fig:power}
+\end{figure}
+\efloatseparator
+ 
+\begin{figure}
+  \includegraphics[width=\linewidth]{funnel_plots.png}
+  \caption{Funnel plots of the three meta-analyses described in Section \ref{section:data analysis}. These were interpreted as suggesting lower, moderate, and higher possibilities of publication bias, going from left to right.}
+  \label{fig:funnel}
+\end{figure}
