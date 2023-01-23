@@ -917,6 +917,7 @@ coef.reduced.glm.gaussian <- function(p.red,params,lim=Inf) {
 
 ## conditional pdf of the index, beta^tx | g=i, assuming model P(g=i)
 ## = link(params$beta^t x). test: 14b.
+## !!! this version assumes h is the loistic link
 pdf.index.glm.gaussian <- function(x,g,beta,params,lim=Inf) {
     ## browser()
     h <- params$link

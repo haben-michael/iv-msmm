@@ -9903,13 +9903,13 @@ n <- 1e3
 mu <- runif(p.full)
 Sigma <- matrix(runif(p.full^2),p.full)
 Sigma <- Sigma%*%t(Sigma)
-h <- plogis
 beta.0 <- runif(p.full)/2
-beta.star.red <- coef.reduced.glm.gaussian(p.red=2,params=list(mu=mu,Sigma=Sigma,beta=beta.0,link=h),lim=5)
+h <- plogis
+beta.star.red <- coef.reduced.glm.gaussian(p.red=2,params=list(mu=mu,Sigma=Sigma,beta=beta.0,link=h),lim=10)
 
 n <- 1e3
 a <- runif(p.red)
-obs <- replicate(5e2, {
+obs <- replicate(1e3, {
     x <- rmvnorm(n,mu,Sigma)
     x.red <- x[,1:p.red]
     risk <- h(x%*%beta.0)
@@ -9922,9 +9922,36 @@ hist(obs)
 abline(v=beta.star.red%*%a,col=2)
 abline(v=mean(obs),col=3)
 
+## check on adversarial model
+set.seed(1)
+p.full <- 4
+p.red <- 2
+n <- 1e3
+a <- 5
+b <- 5
+mu <- rep(0,p.full)
+Sigma <- diag(p.full)*sqrt(a)
+beta.0 <- c(rep(0,p.red),rep(1,p.full-p.red))/a 
+h <- plogis
+beta.star.red <- coef.reduced.glm.gaussian(p.red=2,params=list(mu=mu,Sigma=Sigma,beta=beta.0,link=h),lim=10) ## should be 0
+n <- 1e3
+pairs <- replicate(1e2, {
+    a <- runif(p.red)
+    obs <- replicate(1e2, {
+        x <- rmvnorm(n,mu,Sigma)
+        x.red <- x[,1:p.red]
+        risk <- h(x%*%beta.0)
+        g <- rbinom(n,1,risk)
+        ## beta.hat.red <- coef(glm(g~x.red-1,family=binomial(link='probit')))
+        beta.hat.red <- coef(glm(g~x.red-1,family=binomial(link='logit')))
+        beta.hat.red%*%a
+    })
+    c(beta.star.red%*%a,mean(obs))
+})
+plot(pairs[1,],pairs[2,]); abline(0,1)
+plot(pairs[1,] - pairs[2,]); abline(h=0)
 
-
-## 14b pdf of beta^x | g=i assuming g satisfies P(g=1)=h(beta.0%*%x), auc calculation
+## 14b pdf of beta^x | g=i assuming g satisfies P(g=1)=h(beta.0%*%x), and auc calculation
 require(mvtnorm)
 p.full <- 4
 p.red <- 2
@@ -10207,7 +10234,7 @@ c(auc.glm.gaussian.new(beta,params),     auc.glm.gaussian(beta,params))
 
 
 ## 14d hajek. seems O(1/n) like expected but routine is very slow so
-## not much data. and many NAs.
+## not much data. and many NAs. [update: redo below in 16f]
 
 start <- Sys.time()
 require(mvtnorm)
@@ -10365,7 +10392,7 @@ h.1 <- function(x)h(x)*(1-h(x))
 h.2 <- function(x)h.1(x)*(1-2*h(x))
 link.name='logit'
 beta.0 <- runif(p.full)/2
-params <- list(mu=mu,Sigma=Sigma,beta=beta.0,link=h,link.deriv=h.1,link.deriv2=h.2)
+params <- list(mu=mu,Sigma=Sigma,beta=beta.0,link=h,link.deriv=h.1,link.deriv2=h.2,p=p.full)
 ns <- round(seq(1e2,1e3,len=20))
 by.n <- sapply(ns, function(n) {
     replicate(1e2, {
@@ -10386,6 +10413,47 @@ plot(ns,mad)
 lm0 <- lm(log(mad)~log(ns))
 coef(lm0)
 curve(exp(coef(lm0)[1]+coef(lm0)[2]*log(x)),add=TRUE)
+
+
+## check influence function standardizes beta.hat
+require(mvtnorm)
+require(parallel)
+source('misc.R')
+set.seed(1)
+p.full <- 4
+p.red <- 2
+n <- 5e3
+mu <- runif(p.full)
+Sigma <- matrix(runif(p.full^2),p.full)
+Sigma <- Sigma%*%t(Sigma)
+h <- plogis
+h.1 <- function(x)h(x)*(1-h(x))
+h.2 <- function(x)h.1(x)*(1-2*h(x))
+link.name='logit'
+beta.0 <- runif(p.full)/2
+params <- list(mu=mu,Sigma=Sigma,beta=beta.0,link=h,link.deriv=h.1,link.deriv2=h.2,p=p.full)
+## ns <- round(seq(1e2,1e3,len=20))
+z.stats <-     replicate(4e2, {
+    x <- rmvnorm(n,mu,Sigma)
+    ## x <- matrix(runif(n*p.full),nrow=n)
+    eta <- as.numeric(x%*%beta.0)
+    risk <- h(eta)
+    g <- rbinom(n,1,risk)
+    beta.hat <- coef(glm(g~x-1,family=binomial(link=link.name)))
+    obs <- beta.hat-beta.0
+    infl <- infl.glm.gaussian(x,g,params,terms.only=TRUE)
+    var.hat <- var(t(infl))/n
+    expm::sqrtm(solve(var.hat))%*%obs 
+})
+z.stats <- z.stats[,,]
+qqnorm(z.stats)
+abline(0,1)
+
+hist(z.stats,prob=TRUE)
+curve(dnorm,add=TRUE)
+
+
+dd
 
 ## ## checking score formula against known probit case--reduced coefs
 ## score <- function(x,g,params) { # x in model matrix format
@@ -10440,13 +10508,14 @@ h.2 <- function(x)h.1(x)*(1-2*h(x))
 link.name='logit'
 beta.0 <- runif(p.full)/2
 params.full <- list(mu=mu,Sigma=Sigma,beta=beta.0,p=p.full,link=h,link.deriv=h.1,link.deriv2=h.2)
-beta.star.red <- coef.reduced.glm.gaussian(p.red,params.full,5)
+beta.star.red <- coef.reduced.glm.gaussian(p.red,params.full,lim=5)
 params.red <- list(mu=mu[1:p.red],Sigma=Sigma[1:p.red,1:p.red],beta=beta.star.red,link=h,link.deriv=h.1,link.deriv2=h.2,p=p.red)
 ## beta.star.red <- c(beta.star.red,rep(0,p.full-p.red))
 ns <- round(seq(1e2,1e3,len=20))
 by.n <- sapply(ns, function(n) {
     replicate(1e2, {
         x <- rmvnorm(n,mu,Sigma)
+        ## x <- matrix(rexp(n*p.full)
         eta <- as.numeric(x%*%beta.0)
         risk <- h(eta)
         g <- rbinom(n,1,risk)
@@ -10467,6 +10536,53 @@ lm0 <- lm(log(mad)~log(ns))
 coef(lm0)
 curve(exp(coef(lm0)[1]+coef(lm0)[2]*log(x)),add=TRUE)
 
+## check variance from infl function on redcued coef
+require(mvtnorm)
+require(parallel)
+source('misc.R')
+set.seed(1)
+p.full <- 4
+p.red <- 2
+n <- 5e3
+mu <- runif(p.full)
+Sigma <- matrix(runif(p.full^2),p.full)
+Sigma <- Sigma%*%t(Sigma)
+h <- plogis
+h.1 <- function(x)h(x)*(1-h(x))
+h.2 <- function(x)h.1(x)*(1-2*h(x))
+link.name='logit'
+beta.0 <- runif(p.full)/2
+params.full <- list(mu=mu,Sigma=Sigma,beta=beta.0,p=p.full,link=h,link.deriv=h.1,link.deriv2=h.2)
+beta.star.red <- coef.reduced.glm.gaussian(p.red,params.full,15)
+params.red <- list(mu=mu[1:p.red],Sigma=Sigma[1:p.red,1:p.red],beta=beta.star.red,link=h,link.deriv=h.1,link.deriv2=h.2,p=p.red)
+## beta.star.red <- c(beta.star.red,rep(0,p.full-p.red))
+## ns <- round(seq(1e2,1e3,len=20))
+## by.n <- sapply(ns, function(n) {
+z.stats <-     replicate(4e2, {
+    x <- rmvnorm(n,mu,Sigma)
+    eta <- as.numeric(x%*%beta.0)
+    risk <- h(eta)
+    g <- rbinom(n,1,risk)
+    ## beta.hat <- coef(glm(g~x-1,family=binomial(link=link.name)))
+    ## obs <- beta.hat-beta.0
+    ## approx <- infl.glm.gaussian(x,g,params.full,terms.only=FALSE)
+    ## obs-approx
+    x.red <- x[,1:p.red]
+    beta.hat.red <- coef(glm(g~x.red-1,family=binomial(link=link.name)))
+    obs <- beta.hat.red - beta.star.red
+    infl <- infl.glm.gaussian(x.red,g,params.red,terms.only=TRUE)
+    var.hat <- var(t(infl))/n
+    expm::sqrtm(solve(var.hat))%*%obs 
+})
+z.stats <- z.stats[,,]
+op <- par(mfrow=c(1,2))
+qqnorm(z.stats)
+abline(0,1)
+hist(z.stats,prob=TRUE)
+curve(dnorm,add=TRUE)
+par(op)
+
+dd
 
 
 require(mvtnorm)
@@ -10475,7 +10591,7 @@ source('misc.R')
 set.seed(1)
 p.full <- 4
 p.red <- 2
-n <- 3e3
+n <- 5e3
 mu <- runif(p.full)
 Sigma <- matrix(runif(p.full^2),p.full)
 Sigma <- Sigma%*%t(Sigma)
@@ -10502,9 +10618,11 @@ z.stats <- replicate(3e2, {
     auc.hajek.hat <- auc.hajek(x=x.0.full%*%beta.hat.full,y=x.1.full%*%beta.hat.full,F=NULL,G=NULL,auc=auc.hat.full.hat,terms.only=TRUE,IID=TRUE)
     params.hat <- list(mu=colMeans(x),Sigma=cov(x),beta=beta.hat.full,link=h,link.deriv=h.1,link.deriv2=h.2,p=p.full)
     infl.hat <- infl.glm.gaussian(x,g,params.hat)
-    deriv.full <- grad(function(beta)auc.hat(x.0.full%*%beta,x.1.full%*%beta),beta.hat.full)
+    ## deriv.full <- rep(0,p.full)
+    deriv.full <- grad(function(beta)auc.hat(x.0.full%*%beta,x.1.full%*%beta),beta.hat.full,method.args=list(r=6))
     approx <- auc.hajek.hat + as.numeric(deriv.full%*%infl.hat)
     obs / sqrt(var(approx) / length(approx))
+    deriv.full
 })
 qqnorm(z.stats)
 abline(0,1)
@@ -10712,6 +10830,8 @@ plot(ts,vals,asp=1)
 abline(v=0)
 
 dd
+
+
 
 
 ## 15 lda + gaussian covariates but different Sigma's (misspecified lda)
@@ -10971,12 +11091,19 @@ by.n <- sapply(ns, function(n) {
         ## G <- function(y)pnorm((y-t(beta.hat)%*%mu.1)/sqrt(t(beta.hat)%*%Sigma.1%*%beta.hat))
         ## approx <- auc.hajek((x.0%*%beta.hat)[,],(x.1%*%beta.hat)[,],F=F,G=G,auc=auc.lda.gaussian(beta.hat,params),terms.only=FALSE)
         approx <- auc.hajek.lda.gaussian(x,g,beta.hat,params,terms.only=FALSE)
+        ## approx <- auc.hajek.lda.gaussian(x,g,beta.star,params,terms.only=FALSE)
         obs - approx
     })
 })
 mad <- colMeans(abs(by.n))
 plot(ns,mad)
 lm0 <- lm(log(mad)~log(ns))
+coef(lm0)
+curve(exp(coef(lm0)[1]+coef(lm0)[2]*log(x)),add=TRUE)
+
+sds <- apply(by.n,2,sd)
+plot(ns,sds)
+lm0 <- lm(log(sds)~log(ns))
 coef(lm0)
 curve(exp(coef(lm0)[1]+coef(lm0)[2]*log(x)),add=TRUE)
 
@@ -11679,6 +11806,7 @@ abline(h=1-alpha,lty=2)
 
 
 ## 16 redoing 14e, logistic + guassian
+
 ## 16a checking z-stats on reduced data
 require(mvtnorm)
 require(numDeriv)
@@ -12179,10 +12307,41 @@ abline(0,1)
 c(auc(beta.0,params),auc(beta,params))
 
 
+## side issue noticed: seems auc \neq 1/2 when beta.0=0? works with
+## noise. so must be related to estimation of the parameter? but
+## derivative term is 0 as the model is well specified. Seems possible
+## it is just a finite-sample issue.
+require(mvtnorm)
+n <- 1e4
+p <- 4
+mu <- rep(0,p)
+Sigma <- diag(p)
+h <- plogis
+ns <- round(seq(1e3,2e4,len=10))
+by.n <- sapply(ns, function(n) {
+    auc.hats <- replicate(1e1, {
+        x <- matrix(rnorm(n*p),ncol=p)#rmvnorm(n,mu,Sigma)
+        d <- rbinom(n,1,1/2)
+        beta.hat <- coef(glm(d~x-1,family=binomial('logit')))
+        ## beta.hat <- rnorm(p)
+        auc.hat(x[d==0,]%*%beta.hat,x[d==1,]%*%beta.hat)
+        ## beta.hat[1]
+    })
+    ## hist(auc.hats)
+    ## abline(v=mean(auc.hats),col=2)
+    mean(auc.hats)
+})
+plot(ns,by.n,type='o')
+lm0 <- lm(log(by.n)~log(ns))
+coef(lm0)
+lines(ns,exp(fitted(lm0)),col=2)
 
 
 
-## taking beta out of the picture, just mu and sigma
+
+
+
+## 16d taking beta out of the picture, just mu and sigma
 ## logit normal mean of a normal rv with mean and variance given by y | x
 h.cond <- function(x,mu,Sigma,h,lim=Inf) {
     mu.cond <- function(x)mu[2]+Sigma[1,2]/Sigma[1,1]*(x-mu[1])
@@ -12232,8 +12391,8 @@ contour(grid,grid,z,asp=1)#,xlim=range(grid),ylim=range(grid))
 ## contour(grid,grid,z,xlim=range(grid),ylim=range(grid))
 ## print(auc(mu,Sigma))
 ## Sigma[2,2] <- Sigma[2,2]+3
-Sigma[1,2] <- Sigma[2,1] <- sigma.12+5
-Sigma[2,2] <- Sigma[1,2]^2+.01
+Sigma[1,2] <- Sigma[2,1] <- sigma.12+.3
+## Sigma[2,2] <- Sigma[1,2]^2+.01
 ## mu[2] <- mu[2]+2
 z <- outer(grid,grid,f,mu,Sigma/1)
 contour(grid,grid,z,add=TRUE,col=2)
@@ -12293,24 +12452,823 @@ aucs <- sapply(ts, function(t)auc(t*beta.0+(1-t)*beta,params))
 
 
 
-## forcing beta==0
+## 16e forcing beta==0
 require(mvtnorm)
 p <- 4
 n <- 3e2
 mu <- rep(0,p)
-## var.ratio <- 5
-## Sigma <- diag(c(rep(1,p/2),rep(var.ratio,p/2)))
 Sigma <- diag(p)
 h <- plogis
-beta.0 <- c(rep(0,p/2),rep(1,p/2))
-coefs <- replicate(5e2, {
+## beta.0 <- c(rep(0,p/2),rep(1,p/2))
+ratios <- seq(1,10,len=10)
+by.ratio <- sapply(ratios, function(ratio) {
+    beta.0 <- c(rep(1,p/2),rep(1,p/2)*ratio)/max(ratios)
+    beta.0 <- c(rep(1,p/2)/ratio,rep(1,p/2))
+    coefs <- replicate(1e3, {
+        x <- rmvnorm(n,mu,Sigma)
+        ## beta.0 <- rep(1,p)
+        risk <- h(x%*%beta.0)
+        d <- rbinom(n,1,risk)
+        x.red <- x[,1:(p/2)]
+        coef(glm(d~x.red-1,family=binomial('logit')))
+    })
+    mean(coefs[1,])
+    ## hist(coefs[1,])
+    ## abline(v=mean(coefs[1,]),col=2)
+    ## abline(v=0,col=3)
+})
+plot(ratios,by.ratio)
+lm(log(by.ratio) ~ log(ratios))
+
+ln.mean <- function(w,beta,params,lim=Inf) {
+    ## browser()
+    mu <- params$mu; Sigma <- params$Sigma; beta.0 <- params$beta
+    h <- params$h
+    if(all.equal(beta,beta.0)==TRUE)return(h(w))
+    quad.ww <- as.numeric(t(beta)%*%Sigma%*%beta)
+    quad.ww0 <- as.numeric(t(beta.0)%*%Sigma%*%beta)
+    quad.w0w0 <- as.numeric(t(beta.0)%*%Sigma%*%beta.0)
+    mu.cond <- function(w)beta.0%*%mu + quad.ww0/quad.ww*(w-beta%*%mu)
+    sigma.cond <- sqrt((1-quad.ww0^2/quad.ww/quad.w0w0)*quad.w0w0) 
+    ## sapply(w, function(w)integrate(function(w0)plogis(w0)*dnorm(w0,mean=mu.cond(w), sd=sigma.cond),-lim,lim)$val)
+    sapply(w, function(w)integrate(function(w0)h(mu.cond(w)-w0)*dnorm(w0/sigma.cond)/sigma.cond,-lim,lim)$val)
+}
+auc <- function(beta,params,lim=Inf) {
+    ## pdf.index.glm.gaussian <- function(x,g,beta,params,lim=Inf) {
+    ## browser()
+    h <- params$link
+    mu <- params$mu
+    Sigma <- params$Sigma
+    beta.0 <- params$beta
+    f.w <- function(w)dnorm(w,t(beta)%*%mu, sd=sqrt(t(beta)%*%Sigma%*%beta))
+    f.w0 <- function(w0)dnorm(w0,t(beta.0)%*%mu, sd=sqrt(t(beta.0)%*%Sigma%*%beta.0))
+    pi.1 <- integrate(function(w0)h(w0)*f.w0(w0),-Inf,Inf)$val
+    inner <- Vectorize(function(v) integrate(function(w)(1-ln.mean(w,beta,params))*f.w(w),-lim,v)$val)
+    integrate(function(v)inner(v)*ln.mean(v,beta,params)*f.w(v),-lim,lim)$val / (pi.1*(1-pi.1))
+}
+require(mvtnorm)
+source('misc.R')
+set.seed(1)
+p <- 4
+n <- 1e3
+mu <- rep(0,p)
+a <- 5
+Sigma <- diag(p)*sqrt(a)
+h <- plogis
+## beta.0 <- c(rep(1,p/2),rep(1,p/2)*ratio)/max(ratios)
+bs <- seq(1,30,len=20)
+by.b <- sapply(bs, function(b) {
+    ## beta.0 <- c(rep(1,p/2),rep(1,p/2)*b)#/max(bs)
+    ## beta.0 <- c(rep(1,p/2)/b,rep(1,p/2))
+    beta.0 <- c(rep(1,p/2)/b,rep(1,p/2))/a
+    ## params <- list(mu=mu,Sigma=Sigma,beta=beta.0,link=h)
+    aucs <- replicate(3e1, {
+        ## diag(Sigma)[(p/2+1):p] <- 10
+        x <- rmvnorm(n,mu,Sigma)
+        risk <- h(x%*%beta.0)
+        d <- rbinom(n,1,risk)
+        x.red <- x[,1:(p/2)]
+        beta.hat <- coef(glm(d~x.red-1,family=binomial('logit')))
+        beta.hat <- c(beta.hat,rep(0,p/2))
+        ## d <- rbinom(n,1,1/2)
+        ## beta.hat <- coef(glm(d~x-1,family=binomial('logit')))
+        auc.hat(x[d==0,]%*%beta.hat,x[d==1,]%*%beta.hat)
+        ## numDeriv::grad(function(beta)auc.hat(x[d==0,]%*%beta,x[d==1,]%*%beta),x=beta.hat)       
+        ## beta.hat[2]
+    })
+    mean(aucs)
+})
+plot(bs,by.b)
+lm(log(abs(by.b)) ~ log(bs))
+
+
+
+## 16e-1 auc surface in p=2 case
+require(mvtnorm)
+source('misc.R')
+set.seed(1)
+p <- 2
+n <- 1e3
+mu <- rep(0,p)
+a <- 5
+Sigma <- diag(p)*sqrt(a)
+h <- plogis
+## beta.0 <- c(rep(1,p/2),rep(1,p/2)*ratio)/max(ratios)
+b <- 5#seq(1,30,len=20)
+## by.b <- sapply(bs, function(b) {
+## beta.0 <- c(rep(1,p/2),rep(1,p/2)*b)#/max(bs)
+## beta.0 <- c(rep(1,p/2)/b,rep(1,p/2))
+beta.0 <- c(rep(1,p/2)/b,rep(1,p/2))/a
+grid<- seq(-1,1,len=30)
+## grid <- outer(grid.pts,grid.pts)
+## beta <- runif(2)
+zs <- replicate(1e1, {
     x <- rmvnorm(n,mu,Sigma)
-    ## beta.0 <- rep(1,p)
     risk <- h(x%*%beta.0)
     d <- rbinom(n,1,risk)
-    x.red <- x[,1:(p/2)]
-    coef(glm(d~x.red-1,family=binomial('logit')))
+    f <- Vectorize(function(beta1,beta2) {
+        beta <- c(beta1,beta2)
+        auc.hat(x[d==0,]%*%beta,x[d==1,]%*%beta)
+    })
+    outer(grid,grid,f)
+},simplify=FALSE)
+z <- Reduce('+',zs) / length(zs)
+contour(grid,grid,z)
+image(grid,grid,z)
+contour(grid,grid,z,add=TRUE)
+points(beta.0[1],beta.0[2],col=1,cex=3,pch=20)
+
+## check against numerically calculated auc. roughly similar.
+ln.mean <- function(x,beta,params,lim=Inf) {
+    mu <- params$mu; Sigma <- params$Sigma; beta.0 <- params$beta
+    quad.ww <- as.numeric(t(beta)%*%Sigma%*%beta)
+    quad.ww0 <- as.numeric(t(beta.0)%*%Sigma%*%beta)
+    quad.w0w0 <- as.numeric(t(beta.0)%*%Sigma%*%beta.0)
+    Sigma.cond <- sqrt((1-quad.ww0^2/quad.ww/quad.w0w0)*quad.w0w0) 
+    ln.mean <-  sapply(x, function(x)integrate(function(w0)plogis(w0)*dnorm(w0,mean=sum(beta.0*mu) + quad.ww0/quad.ww*(x-sum(beta*mu)), sd=Sigma.cond),-lim,lim)$val)
+}
+## ln.mean^g*(1-ln.mean)^(1-g)*f.w(w)/(E.g^g*(1-E.g)^(1-g))
+auc.logit.gaussian <- function(beta,params,lim=Inf) { # ==auc.glm.gaussian.new from 14c
+    mu <- params$mu; Sigma <- params$Sigma; beta.0 <- params$beta
+    f.w <- function(w)dnorm(w,t(beta)%*%mu, sd=sqrt(t(beta)%*%Sigma%*%beta))
+    f.w0 <- function(w0)dnorm(w0,t(beta.0)%*%mu, sd=sqrt(t(beta.0)%*%Sigma%*%beta.0))
+    E.g <- integrate(function(w0)h(w0)*f.w0(w0),-Inf,Inf)$val
+    inner <- Vectorize(function(v,beta)integrate(function(w)(1-ln.mean(w,beta,params))*ln.mean(v,beta,params)*f.w(w)*f.w(v),-lim,v)$val,vectorize.args='v')
+    integrate(function(v)inner(v,beta),-lim,lim)$val / (E.g*(1-E.g))
+}
+require(mvtnorm)
+source('misc.R')
+set.seed(1)
+p <- 2
+## n <- 1e3
+mu <- rep(0,p)
+a <- 5
+Sigma <- diag(p)*sqrt(a)
+h <- plogis
+## beta.0 <- c(rep(1,p/2),rep(1,p/2)*ratio)/max(ratios)
+b <- 5#seq(1,30,len=20)
+beta.0 <- c(rep(1,p/2)/b,rep(1,p/2))/a
+params <- list(mu=mu,Sigma=Sigma,beta=beta.0)
+grid<- seq(-1,1,len=15)
+f <- Vectorize(function(beta1,beta2) {
+    cat('.')
+    beta <- c(beta1,beta2)
+    ## auc.hat(x[d==0,]%*%beta,x[d==1,]%*%beta)
+    tryCatch(auc.logit.gaussian(beta,params,lim=10),error=function(e)NA)
 })
-hist(coefs[1,])
-abline(v=mean(coefs[1,]),col=2)
-abline(v=0,col=3)
+z <- outer(grid,grid,f)
+contour(grid,grid,z)
+image(grid,grid,z)
+points(beta.0[1],beta.0[2],col=1,cex=3,pch=20)
+## save.image('sessions/16e-1.RData')
+
+dd
+
+
+## 16f checking z-stats on reduced data with the adversarial
+## model. unadjusted delong model performs much better... update: main
+## culprit was numDeriv::grad setting. now looks much closer to the
+## unadjusted delong (though not better than it)
+require(mvtnorm)
+require(numDeriv)
+require(parallel)
+source('misc.R')
+## start <- Sys.time()
+## lim <- 15
+## set.seed(1)
+## p.full <- 4
+## p.red <- 2
+## mu <- rep(0,p.full)
+## a <- 5
+## b <- 5
+## Sigma <- diag(p.full)*sqrt(a)
+## beta.0 <- c(rep(1,p.red)/b,rep(1,p.full-p.red))/a ##!!!!
+## h <- plogis
+## h.1 <- function(x)h(x)*(1-h(x))
+## h.2 <- function(x)h.1(x)*(1-2*h(x))
+## link.name='logit'
+## params.full <- list(mu=mu,Sigma=Sigma,beta=beta.0,link=h,link.deriv=h.1,link.deriv2=h.2)
+## ## beta.star <- as.numeric(coef.reduced.glm.gaussian(p.red,params.full,lim=lim))
+## ## beta.star.red <- c(beta.star.red,rep(0,p.full-p.red))
+## ## beta.star.hat <- rowMeans(replicate(1e3, {
+## ##     x <- rmvnorm(n,mu,Sigma)
+## ##     risk <- h(x%*%beta.0)
+## ##     g <- rbinom(n,1,risk)
+## ##     x.red <- x[,1:p.red]
+## ##     x.0 <- x[g==0,]; x.1<- x[g==1,]    
+## ##     x.0.red <- x.red[g==0,]; x.1.red <- x.red[g==1,]    
+## ##     beta.hat.red <- coef(glm(g~x.red-1,family=binomial(link=link.name)))
+## ## }))
+## params.red <- list(mu=mu[1:p.red],Sigma=Sigma[1:p.red,1:p.red],beta=beta.star,link=h,link.deriv=h.1,link.deriv2=h.2,p=p.red)
+## ## auc.red <- auc.glm.gaussian(beta.star,params.full,lim=lim)
+## auc.red.hats <- replicate(1e4, {
+##     x <- rmvnorm(n,mu,Sigma)
+##     risk <- h(x%*%beta.0)
+##     g <- rbinom(n,1,risk)
+##     x.red <- x[,1:p.red]
+##     x.0 <- x[g==0,]; x.1<- x[g==1,]    
+##     x.0.red <- x.red[g==0,]; x.1.red <- x.red[g==1,]    
+##     beta.hat.red <- coef(glm(g~x.red-1,family=binomial(link=link.name)))
+##     auc.hat(x.0.red%*%beta.hat.red,x.1.red%*%beta.hat.red)
+## })
+## auc.red <- mean(auc.red.hats) # maybe numerical issues. beta.star.red OK but auc.red seems off. estimating.
+## ## save.image('sessions/16f-4.RData')
+load('sessions/16f-4.RData')
+set.seed(1)
+start <- Sys.time()
+## deriv.star <- grad(function(beta)auc.glm.gaussian(c(beta[1:p.red],rep(0,p.full-p.red)),params.full,10),beta.star)
+## ns <- round(seq(1e2,1e3,len=20))
+## by.n <- sapply(ns, function(n) {
+## set.seed(2)
+## z.stats <- replicate(1e2, {
+n <- 1.5e4
+z.stats <- mclapply(1:5e2, mc.cores=detectCores()-3, FUN=function(dd){
+    cat('.')
+    x <- rmvnorm(n,mu,Sigma)
+    risk <- h(x%*%beta.0)
+    g <- rbinom(n,1,risk)
+    x.red <- x[,1:p.red]
+    x.0 <- x[g==0,]; x.1<- x[g==1,]    
+    x.0.red <- x.red[g==0,]; x.1.red <- x.red[g==1,]    
+    beta.hat.red <- coef(glm(g~x.red-1,family=binomial(link=link.name)))
+    ## beta.hat.red <- c(beta.hat.red,rep(0,p.full-p.red))
+    auc.hat.red.hat <- auc.hat(x.0.red%*%beta.hat.red,x.1.red%*%beta.hat.red)
+    obs <- auc.hat.red.hat - auc.red
+    auc.hajek.red <- auc.hajek(x=x.0.red%*%beta.hat.red,y=x.1.red%*%beta.hat.red,F=NULL,G=NULL,auc=auc.hat.red.hat,terms.only=TRUE,IID=TRUE)
+    params.hat.red <- list(mu=colMeans(x.red),Sigma=cov(x.red),beta=beta.hat.red,link=h,link.deriv=h.1,link.deriv2=h.2,p=p.red)
+    infl.hat <- infl.glm.gaussian(x.red,g,params.hat.red)
+    ## deriv.red <- grad(function(beta)auc.hat(x.0.red%*%beta,x.1.red%*%beta),beta.hat.red[1:p.red])
+    ## deriv.red <- grad(function(beta)auc.hat(x.0.red%*%beta,x.1.red%*%beta),beta.star)
+    ## deriv.red <- deriv.star 
+    ## deriv.red <- grad(function(beta)auc.hat(x.0.red%*%beta,x.1.red%*%beta),beta.hat.red[1:p.red],method='simple',method.args=list(eps=1/n^(.5)))
+    deriv.red <- rep(0,p.red)
+    approx <- auc.hajek.red + as.numeric(deriv.red%*%infl.hat) 
+    obs / sqrt(var(approx) / length(approx))
+})
+z.stats <- simplify2array(z.stats)
+Sys.time() - start
+z.stats <- z.stats-mean(z.stats)#!!! centering seems off
+op <- par(mfrow=c(1,2))
+qqnorm(z.stats)
+abline(0,1)
+hist(z.stats,prob=TRUE)
+curve(dnorm,add=TRUE)
+par(op)
+## fpr
+alpha <- .05
+print(mean(abs(z.stats)<qnorm(1-alpha/2)))
+## print(mean(abs(z.stats-mean(z.stats))<qnorm(1-alpha/2)))#!!!
+## L_inf distance from standard normal cdf
+## z.stats <- sort(z.stats)
+## distances <- pnorm(z.stats) - 1:length(z.stats)/length(z.stats)
+## max.dist <- max(abs(distances))
+## max.dist
+var(z.stats)
+
+dd
+
+
+
+## below trying to track down problem with convergence. turned out to
+## be mainly numDeriv::grad
+
+## 16f-1 check influence function on adversarial model
+require(mvtnorm)
+require(parallel)
+source('misc.R')
+set.seed(1)
+p.full <- 4
+p.red <- 2
+n <- 1.5e4
+mu <- rep(0,p.full)
+a <- 20
+b <- 20
+Sigma <- diag(p.full)*sqrt(a)
+beta.0 <- c(rep(1,p.red)/b,rep(1,p.full-p.red))/a
+h.1 <- function(x)h(x)*(1-h(x))
+h.2 <- function(x)h.1(x)*(1-2*h(x))
+link.name='logit'
+## beta.0 <- runif(p.full)/2
+params.full <- list(mu=mu,Sigma=Sigma,beta=beta.0,p=p.full,link=h,link.deriv=h.1,link.deriv2=h.2)
+beta.star.red <- coef.reduced.glm.gaussian(p.red,params.full,15)
+params.red <- list(mu=mu[1:p.red],Sigma=Sigma[1:p.red,1:p.red],beta=beta.star.red,link=h,link.deriv=h.1,link.deriv2=h.2,p=p.red)
+## beta.star.red <- c(beta.star.red,rep(0,p.full-p.red))
+## ns <- round(seq(1e2,1e3,len=20))
+## by.n <- sapply(ns, function(n) {
+z.stats <-     replicate(4e2, {
+    x <- rmvnorm(n,mu,Sigma)
+    eta <- as.numeric(x%*%beta.0)
+    risk <- h(eta)
+    g <- rbinom(n,1,risk)
+    ## beta.hat <- coef(glm(g~x-1,family=binomial(link=link.name)))
+    ## obs <- beta.hat-beta.0
+    ## approx <- infl.glm.gaussian(x,g,params.full,terms.only=FALSE)
+    ## obs-approx
+    x.red <- x[,1:p.red]
+    beta.hat.red <- coef(glm(g~x.red-1,family=binomial(link=link.name)))
+    obs <- beta.hat.red - beta.star.red
+    infl <- infl.glm.gaussian(x.red,g,params.red,terms.only=TRUE)
+    var.hat <- var(t(infl))/n
+    expm::sqrtm(solve(var.hat))%*%obs 
+})
+z.stats <- z.stats[,,]
+op <- par(mfrow=c(1,2))
+qqnorm(z.stats)
+abline(0,1)
+hist(z.stats,prob=TRUE)
+curve(dnorm,add=TRUE)
+par(op)
+
+
+
+
+## 16f-2 check sd of unadjusted estimator with adversrial data. is too
+## large, resulting in too small z-stats, doesn't seem to improve with
+## n possibly getting worse.
+auc.var <- function(x,y) {
+    terms <- auc.hajek(x,y,terms.only=TRUE,IID=TRUE)
+    var(terms) / length(terms)
+}
+## n <- 1e2
+## standardized <- replicate(3e3, {
+##     x <- runif(n); y <- runif(n)
+##     theta.hat <- auc.hat(x,y)
+##     var.hat <- auc.var(x,y)
+##     theta.hat / sqrt(var.hat)
+## })
+## var(standardized)
+require(mvtnorm)
+require(numDeriv)
+require(parallel)
+source('misc.R')
+set.seed(1)
+p.full <- 4
+p.red <- 2
+## n <- 5e3
+mu <- rep(0,p.full)
+a <- 5
+b <- 5
+h <- plogis
+Sigma <- diag(p.full)*sqrt(a)
+beta.0 <- c(0*rep(1,p.red)/b,rep(1,p.full-p.red))/a 
+ns <- round(seq(1e2,5e3,len=30))
+by.n <- sapply(ns, function(n) {
+    cat('.')
+    standardized <- mclapply(1:3e2, mc.cores=detectCores()-3, FUN=function(dd){
+        ## cat('.')
+        x <- rmvnorm(n,mu,Sigma)
+        risk <- h(x%*%beta.0)
+        g <- rbinom(n,1,risk)
+        x.red <- x[,1:p.red]
+        x.0 <- x[g==0,]; x.1<- x[g==1,]    
+        x.0.red <- x.red[g==0,]; x.1.red <- x.red[g==1,]    
+        beta.hat.red <- coef(glm(g~x.red-1,family=binomial(link='logit')))   
+        var.hat <- auc.var(x=x.0.red%*%beta.hat.red,y=x.1.red%*%beta.hat.red)
+        auc.hat(x.0.red%*%beta.hat.red,x.1.red%*%beta.hat.red) / sqrt(var.hat)
+    })
+    standardized <- simplify2array(standardized)
+    sd(standardized)
+})
+plot(ns,by.n)
+## save.image('sessions/16f-1.RData')
+
+dd
+
+
+
+## 16f-3 check hajek part convergence with adversarial data. also check
+## convergence to auc hajek at beta star, besides betahat.
+start <- Sys.time()
+require(mvtnorm)
+require(parallel)
+source('misc.R')
+set.seed(1)
+p.full <- 4
+p.red <- 2
+## n <- 3e2
+mu <- rep(0,p.full)
+a <- 5
+h <- plogis
+Sigma <- diag(p.full)*sqrt(a)
+beta.0 <- c(rep(0,p.red),rep(1,p.full-p.red))/a 
+h <- plogis
+params <- list(mu=mu,Sigma=Sigma,beta=beta.0,link.name='logit')
+beta.star.full <- coef.reduced.glm.gaussian(p.full,params)
+## beta.star.red <- coef.reduced.glm.gaussian(p.red=2,link=h,params)
+## beta.star.red <- c(beta.star.red,rep(0,p.full-p.red))
+## beta <- beta.0
+lim <- 5
+ns <- round(seq(10,3e2,len=20))
+auc.full <- auc.glm.gaussian(beta.star.full,params,lim=5)
+## by.n <- sapply(ns, function(n) {
+by.n <- mclapply(ns, mc.cores=detectCores()-4, FUN=function(n) {
+    cat('.')
+    replicate(10, {
+        tryCatch({
+            x <- rmvnorm(n,mu,Sigma)
+            risk <- h(x%*%beta.0)
+            g <- rbinom(n,1,risk)
+            x.0 <- x[g==0,]
+            x.1 <- x[g==1,]
+            beta.hat <- coef(glm(g~x-1,family=binomial(link=params$link.name)))
+            ## f.0 <- function(x)pdf.index.glm.gaussian(x,g=0,beta=beta.hat,params=params,lim=lim) #1 start
+            ## f.1 <- function(x)pdf.index.glm.gaussian(x,g=1,beta=beta.hat,params=params,lim=lim) 
+            ## F.0 <- Vectorize(function(x)integrate(function(w)f.0(w),-lim,x)$val) 
+            ## F.1 <- Vectorize(function(x)integrate(function(w)f.1(w),-lim,x)$val)
+            ## auc.hajek.hat <- auc.hajek(x=x.0%*%beta.hat,y=x.1%*%beta.hat,F=F.0,G=F.1,auc=NULL,terms.only=FALSE)
+            ## try <- auc.hajek.hat #1 end
+            f.0 <- function(x)pdf.index.glm.gaussian(x,g=0,beta=beta.star.full,params=params,lim=lim) #2 start
+            f.1 <- function(x)pdf.index.glm.gaussian(x,g=1,beta=beta.star.full,params=params,lim=lim)
+            F.0 <- Vectorize(function(x)integrate(function(w)f.0(w),-lim,x)$val)
+            F.1 <- Vectorize(function(x)integrate(function(w)f.1(w),-lim,x)$val)
+            auc.hajek.star <- auc.hajek(x=x.0%*%beta.star.full,y=x.1%*%beta.star.full,F=F.0,G=F.1,auc=auc.full,terms.only=FALSE)
+            try <- auc.hajek.star #2 end
+            auc.hat.full.hat <- auc.hat(x=x.0%*%beta.hat,y=x.1%*%beta.hat)
+            auc.full.hat <- auc.glm.gaussian(beta.hat,params,lim=5)
+            obs <- auc.hat.full.hat - auc.full.hat
+            obs - try
+        }, error=function(e){print(e); NA})
+    })
+})
+by.n <- simplify2array(by.n)
+Sys.time() - start
+## mad <- colMeans(abs(by.n))
+## plot(ns,mad)
+## lm0 <- lm(log(mad)~log(ns))
+## coef(lm0)
+## curve(exp(coef(lm0)[1]+coef(lm0)[2]*log(x)),add=TRUE)
+vars <- apply(by.n,2,var,na.rm=TRUE)
+plot(ns,vars)
+lm0 <- lm(log(vars)~log(ns))
+coef(lm0)
+curve(exp(coef(lm0)[1]+coef(lm0)[2]*log(x)),add=TRUE)
+
+sds <- apply(by.n,2,sd,na.rm=TRUE)
+plot(ns,sds)
+lm0 <- lm(log(sds)~log(ns))
+coef(lm0)
+curve(exp(coef(lm0)[1]+coef(lm0)[2]*log(x)),add=TRUE)
+
+
+## speed improvement for F.0, F.1
+source('misc.R')
+p <- 4
+lim <- 5
+beta <- runif(p)
+params <- list(mu=runif(p),Sigma=diag(runif(p)),beta=runif(p),link.name='logit',link=plogis)
+f.0 <- function(x)pdf.index.logit.gaussian(x,g=0,beta=beta,params=params,lim=lim) #1 start
+F.0 <- Vectorize(function(x)integrate(function(w)f.0(w),-lim,x)$val) 
+x <- runif(100)*3
+start <- Sys.time()
+F.0(x)
+Sys.time() - start
+F.0 <- function(x) {
+    old <- rank(x)
+    y <- c(-lim,sort(x))
+    segments <- sapply(2:length(y), function(i) integrate(function(w)f.0(w),y[i-1],y[i])$val)
+    return(cumsum(segments)[old])
+}
+start <- Sys.time()
+F.0(x)
+Sys.time() - start
+
+## 16f-4 check hajek part convergence with adversarial data at reduced
+## parameter. 1. fine 1/n rate as expected--looking at the
+## nonestimated parameters though: in the hajak part, F.0,F.1, and auc
+## are computed numerically. beta.hat is estimated of course. also
+## needed that lim>=10, with lim=5 doesnt even seem to converge to
+## 0. Also when a,b are larger, the rate drops. 1/n rate is at
+## a=b=1. at a=b=5, more like n^-.78. at a=b=10 breaks down to
+## n^-.15. tried increasing lim to 20, little improvement.
+
+## 2. with estimated parameters (either the F.i or the auc) converges at
+## sqrt(n) rate, as expected.
+
+start <- Sys.time()
+require(mvtnorm)
+require(parallel)
+source('misc.R')
+set.seed(2)
+p.full <- 4
+p.red <- 2
+## n <- 3e2
+mu <- rep(0,p.full)
+a <- 10
+b <- 10
+Sigma <- diag(p.full)*sqrt(a)
+beta.0 <- c(rep(1,p.red)/b,rep(1,p.full-p.red))/a
+h <- plogis
+h.1 <- function(x)h(x)*(1-h(x))
+h.2 <- function(x)h.1(x)*(1-2*h(x))
+link.name='logit'
+params <- list(mu=mu,Sigma=Sigma,beta=beta.0,link.name='logit')
+lim <- 20
+beta.star.red <- coef.reduced.glm.gaussian(p.red,params,lim=lim)
+beta.star.red <- c(beta.star.red,rep(0,p.full-p.red))
+## beta.star.red <- rep(0,p.full)
+## params.red <- list(mu=mu[1:p.red],Sigma=Sigma[1:p.red,1:p.red],beta=beta.0,link=h,link.deriv=h.1,link.deriv2=h.2,p=p.red)
+auc.red <- auc.glm.gaussian(beta.star.red,params)
+ns <- round(seq(5e2,3e3,len=20))
+## params$auc <- auc.glm.gaussian(beta.0,params,lim=5)
+## by.n <- sapply(ns, function(n) {
+by.n <- mclapply(ns, mc.cores=detectCores()-4, FUN=function(n) {
+    cat('.')
+    replicate(30, {
+        tryCatch({
+            x <- rmvnorm(n,mu,Sigma)
+            risk <- h(x%*%beta.0)
+            g <- rbinom(n,1,risk)
+            ## x.red <- x[,1:p.red]
+            x.0 <- x[g==0,]; x.1<- x[g==1,]    
+            ## x.0.red <- x.red[g==0,]; x.1.red <- x.red[g==1,]    
+            beta.hat.red <- coef(glm(g~x[,1:p.red]-1,family=binomial(link='logit')))
+            beta.hat.red <- c(beta.hat.red,rep(0,p.full-p.red))
+            ## ## beta.hat.red <- beta.star.red + c(rnorm(p.red)/n^.5,rep(0,p.full-p.red))
+            ## ## beta.hat.red <- beta.star.red
+            f.0 <- function(x)pdf.index.logit.gaussian(x,g=0,beta=beta.hat.red,params=params,lim=lim) #1 start
+            f.1 <- function(x)pdf.index.logit.gaussian(x,g=1,beta=beta.hat.red,params=params,lim=lim) 
+            ## F.0 <- Vectorize(function(x)integrate(function(w)f.0(w),-lim,x)$val) 
+            ## F.1 <- Vectorize(function(x)integrate(function(w)f.1(w),-lim,x)$val)
+            F.0 <- function(x) {
+                old <- rank(x)
+                y <- c(-lim,sort(x))
+                segments <- sapply(2:length(y), function(i) integrate(function(w)f.0(w),y[i-1],y[i])$val)
+                return(cumsum(segments)[old])
+            }
+            F.1 <- function(x) {
+                old <- rank(x)
+                y <- c(-lim,sort(x))
+                 segments <- sapply(2:length(y), function(i) integrate(function(w)f.1(w),y[i-1],y[i])$val)
+                return(cumsum(segments)[old])
+            }
+            auc.hajek.hat <- auc.hajek(x=x.0%*%beta.hat.red,y=x.1%*%beta.hat.red,F=F.0,G=F.1,auc=auc.red,terms.only=FALSE)
+            ## auc.hajek.hat <- 0#auc.hajek(x=x.0%*%beta.hat.red,y=x.1%*%beta.hat.red,terms.only=FALSE)
+            try <- auc.hajek.hat #1 end
+            auc.hat.red.hat <- auc.hat(x=x.0%*%beta.hat.red,y=x.1%*%beta.hat.red)
+            auc.red.hat <- auc.glm.gaussian(beta.hat.red,params,lim=lim)
+            obs <- auc.hat.red.hat - auc.red.hat
+            obs - try
+        }, error=function(e){print(e); NA})
+    })
+})
+by.n <- simplify2array(by.n)
+Sys.time() - start
+mad <- colMeans(abs(by.n))
+plot(ns,mad)
+lm0 <- lm(log(mad)~log(ns))
+coef(lm0)
+curve(exp(coef(lm0)[1]+coef(lm0)[2]*log(x)),add=TRUE)
+## save.image('sessions/16f-2.RData')
+
+
+## 16f-5 check infl function
+
+
+## infl function conv rate with reduced coefs. checks out at O(1/n)
+require(mvtnorm)
+require(parallel)
+source('misc.R')
+set.seed(1)
+mu <- rep(0,p.full)
+a <- 10
+b <- 10
+Sigma <- diag(p.full)*sqrt(a)
+beta.0 <- c(rep(1,p.red)/b,rep(1,p.full-p.red))/a
+h <- plogis
+h.1 <- function(x)h(x)*(1-h(x))
+h.2 <- function(x)h.1(x)*(1-2*h(x))
+## link.name='logit'
+## params <- list(mu=mu,Sigma=Sigma,beta=beta.0,link.name='logit')
+lim <- 10
+params.full <- list(mu=mu,Sigma=Sigma,beta=beta.0,p=p.full,link=h,link.deriv=h.1,link.deriv2=h.2)
+beta.star.red <- coef.reduced.glm.gaussian(p.red,params.full,lim=5)
+params.red <- list(mu=mu[1:p.red],Sigma=Sigma[1:p.red,1:p.red],beta=beta.star.red,link=h,link.deriv=h.1,link.deriv2=h.2,p=p.red)
+## beta.star.red <- c(beta.star.red,rep(0,p.full-p.red))
+ns <- round(seq(1e2,1e3,len=20))
+by.n <- sapply(ns, function(n) {
+    replicate(1e2, {
+        x <- rmvnorm(n,mu,Sigma)
+        eta <- as.numeric(x%*%beta.0)
+        risk <- h(eta)
+        g <- rbinom(n,1,risk)
+        ## beta.hat <- coef(glm(g~x-1,family=binomial(link=link.name)))
+        ## obs <- beta.hat-beta.0
+        ## approx <- infl.glm.gaussian(x,g,params.full,terms.only=FALSE)
+        ## obs-approx
+        x.red <- x[,1:p.red]
+        beta.hat.red <- coef(glm(g~x.red-1,family=binomial(link=link.name)))
+        obs <- beta.hat.red - beta.star.red
+        approx <- infl.glm.gaussian(x.red,g,params.red,terms.only=FALSE)
+        obs - approx
+    })
+})
+mad <- colMeans(abs(by.n))
+plot(ns,mad)
+lm0 <- lm(log(mad)~log(ns))
+coef(lm0)
+curve(exp(coef(lm0)[1]+coef(lm0)[2]*log(x)),add=TRUE)
+
+
+## 16f-6 check taylor expansion
+
+start <- Sys.time()
+require(mvtnorm)
+require(parallel)
+source('misc.R')
+set.seed(2)
+p.full <- 4
+p.red <- 2
+## n <- 3e2
+mu <- rep(0,p.full)
+a <- 5
+b <- 5
+Sigma <- diag(p.full)*sqrt(a)
+beta.0 <- c(rep(1,p.red)/b,rep(1,p.full-p.red))/a
+h <- plogis
+h.1 <- function(x)h(x)*(1-h(x))
+h.2 <- function(x)h.1(x)*(1-2*h(x))
+link.name='logit'
+params <- list(mu=mu,Sigma=Sigma,beta=beta.0,link.name='logit')
+lim <- 20
+beta.star.red <- coef.reduced.glm.gaussian(p.red,params,lim=lim)
+beta.star.red <- c(beta.star.red,rep(0,p.full-p.red))
+## beta.star.red <- rep(0,p.full)
+## params.red <- list(mu=mu[1:p.red],Sigma=Sigma[1:p.red,1:p.red],beta=beta.0,link=h,link.deriv=h.1,link.deriv2=h.2,p=p.red)
+auc.red <- auc.logit.gaussian(beta.star.red,params)
+deriv <- numDeriv::grad(function(beta)auc.logit.gaussian(beta,params),x=beta.star.red)
+ns <- round(seq(2e2,3e3,len=50))
+## params$auc <- auc.glm.gaussian(beta.0,params,lim=5)
+## by.n <- sapply(ns, function(n) {
+by.n <- mclapply(ns, mc.cores=detectCores()-4, FUN=function(n) {
+    cat('.')
+    replicate(1e2, {
+        tryCatch({
+            x <- rmvnorm(n,mu,Sigma)
+            risk <- h(x%*%beta.0)
+            g <- rbinom(n,1,risk)
+            ## x.red <- x[,1:p.red]
+            x.0 <- x[g==0,]; x.1<- x[g==1,]    
+            ## x.0.red <- x.red[g==0,]; x.1.red <- x.red[g==1,]    
+            beta.hat.red <- coef(glm(g~x[,1:p.red]-1,family=binomial(link='logit')))
+            beta.hat.red <- c(beta.hat.red,rep(0,p.full-p.red))
+            ## ## ## beta.hat.red <- beta.star.red + c(rnorm(p.red)/n^.5,rep(0,p.full-p.red))
+            ## ## ## beta.hat.red <- beta.star.red
+            ## deriv <- 
+            try <- deriv%*%(beta.hat.red-beta.star.red) 
+            ## auc.hat.red.hat <- auc.hat(x=x.0%*%beta.hat.red,y=x.1%*%beta.hat.red)
+            auc.red.hat <- auc.logit.gaussian(beta.hat.red,params,lim=lim)
+            obs <-  auc.red.hat - auc.red
+            obs - try
+        }, error=function(e){print(e); NA})
+    })
+})
+by.n <- simplify2array(by.n)
+Sys.time() - start
+mad <- colMeans(abs(by.n))
+plot(ns,mad)
+lm0 <- lm(log(mad)~log(ns))
+coef(lm0)
+curve(exp(coef(lm0)[1]+coef(lm0)[2]*log(x)),add=TRUE)
+## save.image('sessions/16f-3.RData') overnight sim, bad rate n^-.4
+
+
+
+
+## 16g non-gaussian covariates
+
+## redo 16f checking z-stats using non-gaussian data
+require(mvtnorm)
+require(numDeriv)
+require(parallel)
+source('misc.R')
+## set.seed(21)
+p.full <- 4
+p.red <- 2
+n <- 5e3
+mu <- rep(0,p.full)
+a <- 5
+b <- 5
+Sigma <- diag(p.full)*sqrt(a)
+beta.0 <- c(0*rep(1,p.red)/b,rep(1,p.full-p.red))/a ##!!!!
+h <- plogis
+h.1 <- function(x)h(x)*(1-h(x))
+h.2 <- function(x)h.1(x)*(1-2*h(x))
+link.name='logit'
+params.full <- list(mu=mu,Sigma=Sigma,beta=beta.0,link=h,link.deriv=h.1,link.deriv2=h.2)
+auc.red <- 0
+z.stats <- mclapply(1:1e3, mc.cores=detectCores()-3, FUN=function(dd){
+    ## cat('.')
+    ## x <- rmvnorm(n,mu,Sigma)
+    x <- matrix(rexp(n*p.full),ncol=p.full)
+    risk <- h(x%*%beta.0)
+    g <- rbinom(n,1,risk)
+    x.red <- x[,1:p.red]
+    x.0 <- x[g==0,]; x.1<- x[g==1,]    
+    x.0.red <- x.red[g==0,]; x.1.red <- x.red[g==1,]    
+    beta.hat.red <- coef(glm(g~x.red-1,family=binomial(link=link.name)))
+    ## beta.hat.red <- c(beta.hat.red,rep(0,p.full-p.red))
+    auc.hat.red.hat <- auc.hat(x.0.red%*%beta.hat.red,x.1.red%*%beta.hat.red)
+    obs <- auc.hat.red.hat - auc.red
+    auc.hajek.red <- auc.hajek(x=x.0.red%*%beta.hat.red,y=x.1.red%*%beta.hat.red,F=NULL,G=NULL,auc=auc.hat.red.hat,terms.only=TRUE,IID=TRUE)
+    params.hat.red <- list(mu=colMeans(x.red),Sigma=cov(x.red),beta=beta.hat.red,link=h,link.deriv=h.1,link.deriv2=h.2,p=p.red)
+    infl.hat <- infl.glm(x.red,g,params.hat.red)
+    deriv.red <- grad(function(beta)auc.hat(x.0.red%*%beta,x.1.red%*%beta),beta.hat.red[1:p.red],method='simple',method.args=list(eps=1/n^(.5)))
+    ## deriv.red <- rep(0,p.red)
+    approx <- auc.hajek.red + as.numeric(deriv.red%*%infl.hat) 
+    obs / sqrt(var(approx) / length(approx))
+})
+z.stats <- simplify2array(z.stats)
+var(z.stats)
+hist((z.stats-mean(z.stats))/sd(z.stats),prob=TRUE)
+curve(dnorm,add=TRUE)
+
+dd
+## op <- par(mfrow=c(1,2))
+## qqnorm(z.stats)
+## abline(0,1)
+## hist(z.stats,prob=TRUE)
+## curve(dnorm,add=TRUE)
+## par(op)
+## ## fpr
+## alpha <- .05
+## print(mean(abs(z.stats)<qnorm(1-alpha/2)))
+## ## L_inf distance from standard normal cdf
+## z.stats <- sort(z.stats)
+## distances <- pnorm(z.stats) - 1:length(z.stats)/length(z.stats)
+## max.dist <- max(abs(distances))
+## max.dist
+## var(z.stats)
+
+
+
+## check how gradient estimate converges in cdf case
+
+## n=1. rate seems n^-.25
+require(numDeriv)
+n <- 1e4
+rF <- rnorm
+dF <- dnorm
+## p <- 2
+## mu <- rep(0,p)
+## Sigma <- diag(p)
+x0 <- runif(1)
+ns <- round(seq(1e2,1e4,len=30))
+by.n <- sapply(ns, function(n) {
+    deriv.hat <- replicate(5e2, {
+        x <- rF(n)
+        f <- ecdf(x)
+        grad(f,x=x0,method='simple',method.args=list(eps=1/n^(.5)))
+    })
+})
+true <- dF(x0)
+## hist(deriv.hat)
+## abline(v=dF(x0),col=2)
+## abline(v=mean(deriv.hat),col=3)
+mad <- apply(abs(by.n-true),2,mean)
+plot(mad)
+## sds <- apply(by.n-true,2,sd)
+## plot(sds)
+lm0 <- lm(log(mad)~log(ns))
+coef(lm0)
+
+
+## n=2. same settings to grad, rate stays the same at about n^-.25 
+require(numDeriv)
+require(mvtnorm)
+p <- 2
+n <- 1e6
+mu <- runif(p)
+Sigma <- matrix(runif(p^2),p)
+Sigma <- Sigma%*%t(Sigma)
+pF <- function(q)pmvnorm(lower=-Inf,upper=q,mean=mu,sigma=Sigma)
+rF <- function(n)rmvnorm(n,mu,Sigma)
+r=c(1,2)
+pF <- function(q)pexp(q[1],r[1])*pexp(q[2],r[2])
+rF <- function(n)cbind(rexp(n,rate[1]),rexp(n,rate[2]))
+pF.hat <- function(q,x)mean(x[,1]<q[1] & x[,2]<q[2])
+q0 <- runif(2)
+a <- runif(2) # random direction for gradient
+true <- as.numeric(a%*%grad(function(q)pF(q),q0))
+ns <- round(seq(1e3,2e4,len=30))
+by.n <- sapply(ns, function(n) {
+    deriv.hat <- replicate(1e2, {
+        x <- rF(n)
+        ## f(q0,x)
+        ## as.numeric(pmvnorm(lower=-Inf,upper=q0,mean=mu,sigma=Sigma))
+        grad(function(q)pF.hat(q,x),q0,method='simple',method.args=list(eps=1/n^(.5)))
+        ## grad(function(q)pF.hat(q,x),q0)
+    })
+    a%*%deriv.hat
+})
+## hist(deriv.hat)
+## abline(v=true,col=2)
+## abline(v=mean(deriv.hat),col=3)
+mad <- apply(abs((by.n-true)),2,mean)
+plot(mad)
+## sds <- apply(by.n-true,2,sd)
+## plot(sds)
+lm0 <- lm(log(mad)~log(ns))
+coef(lm0)
+
+
+## n=2

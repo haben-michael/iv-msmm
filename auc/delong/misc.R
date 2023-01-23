@@ -75,7 +75,7 @@ lda.coefs <- function(x.0,x.1) {
 ## }
 
 ## add support for heteroskedasticity
-coefs.lda <- function(x.0,x.1,params) {
+coefs.lda <- function(x.0,x.1,params=NULL) {
     ## x.0 <- x.0[,-1]; x.1 <- x.1[,-1]
     ## browser()
     n.0 <- nrow(x.0); n.1 <- nrow(x.1); n <- n.0+n.1
@@ -539,7 +539,42 @@ infl.lda <- function(x,g,params,terms.only=TRUE) {
     n.1 <- sum(g); n.0 <- n-n.1
     x.0 <- t(x[,g==0]); x.1 <- t(x[,g==1])
     g <- sort(g)
-    mu.0.hat <- rowMeans(x.0);  mu.1.hat <- rowMeans(x.1)
+    mu.0.hat <- rowMeans(x.0);  mu.1.hat <- rowMeans(x.1) # clean up
+    ## pi.1.hat <- n.1/(n.0+n.1)
+    ## infl.0 <-   g/pi.1/(1-pi.1)-1/(1-pi.1) - t(mu.1)%*%solve(Sigma)%*%(x-mu.1) * n/n.1 * g  + t(mu.0)%*%solve(Sigma)%*%(x-mu.0) * n/n.0 * (1-g)
+    infl <- t(g*t(solve(Sigma)%*%(x-mu.1)*n/n.1)  -  (1-g)*t(solve(Sigma)%*%(x-mu.0)*n/n.0))
+    ## infl <- rbind(infl.0,infl)
+    if(terms.only) return(infl) else return(rowMeans(infl))
+}
+
+## (23/1/13) expects x in model matrix format. making hetero/homoskedasticity
+## explicit. adding empirical estimates to allow for params=NULL. 
+infl.lda <- function(x,d,params,var.equal=TRUE,terms.only=TRUE) {
+    ## browser()
+    g <- d # clean up
+    mu.0 <- params$mu.0
+    mu.1 <- params$mu.1
+    pi.0 <- params$pi.0
+    x.0 <- x[g==0,]; x.1 <- x[g==1,]
+    if(is.null(mu.0))mu.0 <- colMeans(x.0)
+    if(is.null(mu.1))mu.1 <- colMeans(x.1)
+    if(is.null(pi.0))pi.0 <- nrow(x.0)/(nrow(x.0)+nrow(x.1))
+    pi.1 <- 1-pi.0
+    if(var.equal) {
+        Sigma <- params$Sigma
+        if(is.null(Sigma))...
+    } else {
+        Sigma.0 <- params$Sigma.0; Sigma.1 <- params$Sigma.1
+        if(is.null(Sigma.0))Sigma.0 <- var(x.0)
+        if(is.null(Sigma.1))Sigma.1 <- var(x.1)
+        Sigma <- pi.0*Sigma.0 + pi.1*Sigma.1
+    }
+    x <- t(x)#[-1,]
+    n <- length(g) # clean up redundancies here
+    n.1 <- sum(g); n.0 <- n-n.1
+    ## x.0 <- t(x[,g==0]); x.1 <- t(x[,g==1])
+    g <- sort(g)
+    ## mu.0.hat <- rowMeans(x.0);  mu.1.hat <- rowMeans(x.1)
     ## pi.1.hat <- n.1/(n.0+n.1)
     ## infl.0 <-   g/pi.1/(1-pi.1)-1/(1-pi.1) - t(mu.1)%*%solve(Sigma)%*%(x-mu.1) * n/n.1 * g  + t(mu.0)%*%solve(Sigma)%*%(x-mu.0) * n/n.0 * (1-g)
     infl <- t(g*t(solve(Sigma)%*%(x-mu.1)*n/n.1)  -  (1-g)*t(solve(Sigma)%*%(x-mu.0)*n/n.0))
@@ -885,40 +920,40 @@ coef.reduced.glm.gaussian <- function(p.red,params,lim=Inf) {
 
 ## inner <- Vectorize(function(w)integrate(function(w0)h(w0)*dnorm(w.0,cond.mean(w,beta),sqrt(cond.var(beta)))/sqrt(cond.var(beta)),-lim,lim)$val)
 
-## ## conditional pdf of the index, beta^tx | g=i, assuming model P(g=i)
-## ## = link(params$beta^t x). test: 14b.
-## pdf.index.glm.gaussian <- function(x,g,beta,params,lim=Inf) {
-##     ## browser()
-##     h <- params$link
-##     w <- x # clean up
-##     mu <- params$mu
-##     Sigma <- params$Sigma
-##     beta.0 <- params$beta
-##     ## p.full <- length(beta.0)
-##     f.w <- function(w)dnorm(w,t(beta)%*%mu, sd=sqrt(t(beta)%*%Sigma%*%beta))
-##     f.w0 <- function(w0)dnorm(w0,t(beta.0)%*%mu, sd=sqrt(t(beta.0)%*%Sigma%*%beta.0))
-##     E.g <- integrate(function(w0)h(w0)*f.w0(w0),-Inf,Inf)$val
-##     if(all.equal(beta,beta.0)==TRUE) return(h(x)^g*(1-h(x))^(1-g)*f.w0(x)/(E.g^g*(1-E.g)^(1-g)))
-##     quad.ww <- as.numeric(t(beta)%*%Sigma%*%beta)
-##     quad.ww0 <- as.numeric(t(beta.0)%*%Sigma%*%beta)
-##     quad.w0w0 <- as.numeric(t(beta.0)%*%Sigma%*%beta.0)
-##     f.w0.cond <- function(w0,w)dnorm(w0, mean=t(beta.0)%*%mu + quad.ww0/quad.ww*(w-t(beta)%*%mu), sd=sqrt((1-quad.ww0^2/quad.ww/quad.w0w0)*quad.w0w0))
-##     f.w.w0.cond <- function(w,w0,g) h(w0)^g*(1-h(w0))^(1-g)*f.w0.cond(w0,w)*f.w(w)/(E.g^g*(1-E.g)^(1-g))
-##     ## f.w.cond <- Vectorize( function(w,g) integrate(function(w0)f.w.w0.cond(w,w0,g),-lim,lim)$val, vectorize.args='w')
-##     ## sapply(w, function(w) integrate(function(w0)f.w.w0.cond(w,w0,g),-lim,lim)$val)
-##     sapply(w, function(w) integrate(function(w0)f.w.w0.cond(w,w0,g),-lim,lim)$val)
-##     ## Sigma.cond <- (1-quad.ww0^2/quad.ww/quad.w0w0)*quad.w0w0
-##     ## f.w0.cond <- function(w0,w)dnorm(w0, mean=t(beta.0)%*%mu + quad.ww0/quad.ww*(w-t(beta)%*%mu), sd=sqrt(Sigma.cond))
-##     ## f.w.w0.cond <- function(w,w0,g) h(w0)^g*(1-h(w0))^(1-g)*f.w0.cond(w0,w)*f.w(w)/(E.g^g*(1-E.g)^(1-g))
-##     ## sapply(w, function(w) integrate(function(w0)h(w0)^g*(1-h(w0))^(1-g)*f.w0.cond(w0,w)*f.w(w)/(E.g^g*(1-E.g)^(1-g)),-lim,lim)$val)
-## }
-## ## pdf.index.glm.gaussian <- Vectorize(pdf.index.glm.gaussian,vectorize.args='x')
+## conditional pdf of the index, beta^tx | g=i, assuming model P(g=i)
+## = link(params$beta^t x). test: 14b.
+pdf.index.glm.gaussian <- function(x,g,beta,params,lim=Inf) {
+    ## browser()
+    h <- params$link
+    w <- x # clean up
+    mu <- params$mu
+    Sigma <- params$Sigma
+    beta.0 <- params$beta
+    ## p.full <- length(beta.0)
+    f.w <- function(w)dnorm(w,t(beta)%*%mu, sd=sqrt(t(beta)%*%Sigma%*%beta))
+    f.w0 <- function(w0)dnorm(w0,t(beta.0)%*%mu, sd=sqrt(t(beta.0)%*%Sigma%*%beta.0))
+    E.g <- integrate(function(w0)h(w0)*f.w0(w0),-Inf,Inf)$val
+    if(isTRUE(all.equal(beta,beta.0))) return(h(x)^g*(1-h(x))^(1-g)*f.w0(x)/(E.g^g*(1-E.g)^(1-g)))
+    quad.ww <- as.numeric(t(beta)%*%Sigma%*%beta)
+    quad.ww0 <- as.numeric(t(beta.0)%*%Sigma%*%beta)
+    quad.w0w0 <- as.numeric(t(beta.0)%*%Sigma%*%beta.0)
+    f.w0.cond <- function(w0,w)dnorm(w0, mean=t(beta.0)%*%mu + quad.ww0/quad.ww*(w-t(beta)%*%mu), sd=sqrt((1-quad.ww0^2/quad.ww/quad.w0w0)*quad.w0w0))
+    f.w.w0.cond <- function(w,w0,g) h(w0)^g*(1-h(w0))^(1-g)*f.w0.cond(w0,w)*f.w(w)/(E.g^g*(1-E.g)^(1-g))
+    ## f.w.cond <- Vectorize( function(w,g) integrate(function(w0)f.w.w0.cond(w,w0,g),-lim,lim)$val, vectorize.args='w')
+    ## sapply(w, function(w) integrate(function(w0)f.w.w0.cond(w,w0,g),-lim,lim)$val)
+    sapply(w, function(w) integrate(function(w0)f.w.w0.cond(w,w0,g),-lim,lim)$val)
+    ## Sigma.cond <- (1-quad.ww0^2/quad.ww/quad.w0w0)*quad.w0w0
+    ## f.w0.cond <- function(w0,w)dnorm(w0, mean=t(beta.0)%*%mu + quad.ww0/quad.ww*(w-t(beta)%*%mu), sd=sqrt(Sigma.cond))
+    ## f.w.w0.cond <- function(w,w0,g) h(w0)^g*(1-h(w0))^(1-g)*f.w0.cond(w0,w)*f.w(w)/(E.g^g*(1-E.g)^(1-g))
+    ## sapply(w, function(w) integrate(function(w0)h(w0)^g*(1-h(w0))^(1-g)*f.w0.cond(w0,w)*f.w(w)/(E.g^g*(1-E.g)^(1-g)),-lim,lim)$val)
+}
+## pdf.index.glm.gaussian <- Vectorize(pdf.index.glm.gaussian,vectorize.args='x')
 
 
 ## conditional pdf of the index, beta^tx | g=i, assuming model P(g=i)
 ## = link(params$beta^t x). test: 14b.
-## !!! this version assumes h is the loistic link
-pdf.index.glm.gaussian <- function(x,g,beta,params,lim=Inf) {
+## !!! this version assumes h is the loistic link, but is faster than the general version
+pdf.index.logit.gaussian <- function(x,g,beta,params,lim=Inf) {
     ## browser()
     h <- params$link
     w <- x # clean up
@@ -928,7 +963,7 @@ pdf.index.glm.gaussian <- function(x,g,beta,params,lim=Inf) {
     f.w <- function(w)dnorm(w,t(beta)%*%mu, sd=sqrt(t(beta)%*%Sigma%*%beta))
     f.w0 <- function(w0)dnorm(w0,t(beta.0)%*%mu, sd=sqrt(t(beta.0)%*%Sigma%*%beta.0))
     E.g <- integrate(function(w0)h(w0)*f.w0(w0),-Inf,Inf)$val
-    if(all.equal(beta,beta.0)==TRUE) return(h(x)^g*(1-h(x))^(1-g)*f.w0(x)/(E.g^g*(1-E.g)^(1-g)))
+    if(isTRUE(all.equal(beta,beta.0))) return(h(x)^g*(1-h(x))^(1-g)*f.w0(x)/(E.g^g*(1-E.g)^(1-g)))
     quad.ww <- as.numeric(t(beta)%*%Sigma%*%beta)
     quad.ww0 <- as.numeric(t(beta.0)%*%Sigma%*%beta)
     quad.w0w0 <- as.numeric(t(beta.0)%*%Sigma%*%beta.0)
@@ -946,27 +981,31 @@ pdf.index.glm.gaussian <- function(x,g,beta,params,lim=Inf) {
 
 
 
-infl.glm.gaussian <- function(x,g,params,terms.only=TRUE) {
-    p <- params$p
-    score <- function(x,g,params) { # x in model matrix format
-        h <- params$link; h.1 <- params$lnk.deriv
-        eta <- as.numeric(x%*%params$beta)
-        t( (g-h(eta))/h(eta)/(1-h(eta))*h.1(eta) * x )
-    }
-    fi <- function(x,g,params) { # x in model matrix format
-        h <- params$link; h.1 <- params$lnk.deriv; h.2 <- params$link.deriv2
-        eta <- as.numeric(x%*%params$beta)
-        denom <- h(eta)*(1-h(eta))
-        -t((h.2(eta)*(g-h(eta))/denom - h.1(eta)/denom^2 * (g*(h.1(eta)-2*h(eta)*h.1(eta))+h.1(eta)*h(eta)^2))*x) %*% x
-    }
-    terms <- solve(fi(x,g,params)[1:p,1:p])%*%score(x,g,params)[1:p,]
-    if (terms.only) return(terms) else return(rowSums(terms))
-}
+## infl.glm.gaussian <- function(x,g,params,terms.only=TRUE) {
+##     p <- params$p
+##     score <- function(x,g,params) { # x in model matrix format
+##         h <- params$link; h.1 <- params$lnk.deriv
+##         eta <- as.numeric(x%*%params$beta)
+##         t( (g-h(eta))/h(eta)/(1-h(eta))*h.1(eta) * x )
+##     }
+##     fi <- function(x,g,params) { # x in model matrix format
+##         h <- params$link; h.1 <- params$lnk.deriv; h.2 <- params$link.deriv2
+##         eta <- as.numeric(x%*%params$beta)
+##         denom <- h(eta)*(1-h(eta))
+##         -t((h.2(eta)*(g-h(eta))/denom - h.1(eta)/denom^2 * (g*(h.1(eta)-2*h(eta)*h.1(eta))+h.1(eta)*h(eta)^2))*x) %*% x
+##     }
+##     terms <- solve(fi(x,g,params)[1:p,1:p])%*%score(x,g,params)[1:p,]
+##     if (terms.only) return(terms) else return(rowSums(terms))
+## }
 
 
-## properly normalizing score
+## properly normalizing score. in the old version, the terms are the
+## terms of the mean (divided by 1/n). routines were expecting just
+## the terms, so infl=mean(terms)
+## TODO: p.red and beta currently stored inside params but
+## not really part of the data generation.
 
-infl.glm.gaussian <- function(x,g,params,terms.only=TRUE) {
+infl.glm <- function(x,g,params,terms.only=TRUE) {
     ## browser()
     p <- params$p
     score <- function(x,g,params) { # x in model matrix format
@@ -981,10 +1020,13 @@ infl.glm.gaussian <- function(x,g,params,terms.only=TRUE) {
         denom <- h(eta)*(1-h(eta))
         -t((h.2(eta)*(g-h(eta))/denom - h.1(eta)/denom^2 * (g*(h.1(eta)-2*h(eta)*h.1(eta))+h.1(eta)*h(eta)^2))*x) %*% x / n
     }
-    terms <- solve(fi(x,g,params)[1:p,1:p])%*%score(x,g,params)[1:p,]
+    ## terms <- solve(fi(x,g,params)[1:p,1:p])%*%score(x,g,params)[1:p,]
+    terms <- solve(fi(x,g,params))%*%score(x,g,params)
     if (terms.only) return(terms) else return(rowMeans(terms))
 }
 
+## deprecate--no assumption made about gaussian covariates 
+infl.glm.gaussian <- infl.glm
 
 
 ## P(x.0%*%beta < x.1%*%beta | g.0=0,g.1=1), where P(g=i|x) = h(params$beta %*% x). test: 14c
@@ -1000,6 +1042,23 @@ auc.glm.gaussian <- function(beta,params,lim=Inf) {
     F.0 <- Vectorize(function(x)integrate(function(w)f.0(w),-lim,x)$val)
     integrate(function(x)F.0(x)*f.1(x),-lim,lim)$val
 }
+
+
+
+## P(x.0%*%beta < x.1%*%beta | g.0=0,g.1=1), where P(g=i|x) = h(params$beta %*% x). test: 14c
+auc.logit.gaussian <- function(beta,params,lim=Inf) {
+    ## h <- link
+    ## mu <- params$mu
+    ## Sigma <- params$Sigma
+    ## beta.0 <- params$beta
+    ## browser()
+    if(length(beta)<length(params$beta)) beta <- c(beta,rep(0,length(params$beta)-length(beta)))
+    f.0 <- function(x)pdf.index.logit.gaussian(x,g=0,beta=beta,params=params,lim=lim)
+    f.1 <- function(x)pdf.index.logit.gaussian(x,g=1,beta=beta,params=params,lim=lim)
+    F.0 <- Vectorize(function(x)integrate(function(w)f.0(w),-lim,x)$val)
+    integrate(function(x)F.0(x)*f.1(x),-lim,lim)$val
+}
+
 
 
 ## h <- link
@@ -1058,3 +1117,23 @@ auc.hajek.lda.gaussian <- function(x,g,beta,params,terms.only=TRUE,IID=FALSE) {
     })
     }
     
+auc.hajek.logit.gaussian <- function(x,g,beta,params,lim=lim,terms.only=TRUE,IID=FALSE) {
+    x.0 <- x[g==0,]; x.1 <- x[g==1,]
+    f.0 <- function(x)pdf.index.logit.gaussian(x,g=0,beta=beta.,params=params,lim=lim) 
+    f.1 <- function(x)pdf.index.logit.gaussian(x,g=1,beta=beta.hat.red,params=params,lim=lim) 
+    F.0 <- Vectorize(function(x)integrate(function(w)f.0(w),-lim,x)$val) 
+    F.1 <- Vectorize(function(x)integrate(function(w)f.1(w),-lim,x)$val)
+    ## F.0 <- function(x) {
+    ##     old <- rank(x)
+    ##     y <- c(-lim,sort(x))
+    ##     segments <- sapply(2:length(y), function(i) integrate(function(w)f.0(w),y[i-1],y[i])$val)
+    ##     return(cumsum(segments)[old])
+    ## }
+    ## F.1 <- function(x) {
+    ##     old <- rank(x)
+    ##     y <- c(-lim,sort(x))
+    ##      segments <- sapply(2:length(y), function(i) integrate(function(w)f.1(w),y[i-1],y[i])$val)
+    ##     return(cumsum(segments)[old])
+    ## }
+    auc.hajek.hat <- auc.hajek(x=x.0%*%beta,y=x.1%*%beta,F=F.0,G=F.1,auc=NULL,terms.only=terms.only,IID=IID)
+}

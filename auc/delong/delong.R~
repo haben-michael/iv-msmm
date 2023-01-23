@@ -11660,7 +11660,8 @@ p <- 8
 ## n <- 5e3
 taylor.part <- 1/10
 ns <- round(seq(3e2,5e3,len=30))
-reps <- 1e3
+ns <- round(seq(3e2,3e3,len=10))
+reps <- 1e2#1e3
 alpha <- .05
 sim0 <- lapply(ns, function(n) sim(n,p,taylor.part,alpha=alpha,reps=reps))
 fpr <- do.call(rbind,lapply(sim0,function(m)m[,'fpr']))
@@ -12078,6 +12079,19 @@ abline(h=1/2,lty=2)
 ## abline(v=beta%*%mu,col=2)
 
 ## 16c-2 see if translates to auc. [doesnt seem to]
+ln.mean <- function(w,beta,params,lim=Inf) {
+    ## browser()
+    mu <- params$mu; Sigma <- params$Sigma; beta.0 <- params$beta
+    h <- params$h
+    if(all.equal(beta,beta.0)==TRUE)return(h(w))
+    quad.ww <- as.numeric(t(beta)%*%Sigma%*%beta)
+    quad.ww0 <- as.numeric(t(beta.0)%*%Sigma%*%beta)
+    quad.w0w0 <- as.numeric(t(beta.0)%*%Sigma%*%beta.0)
+    mu.cond <- function(w)beta.0%*%mu + quad.ww0/quad.ww*(w-beta%*%mu)
+    sigma.cond <- sqrt((1-quad.ww0^2/quad.ww/quad.w0w0)*quad.w0w0) 
+    ## sapply(w, function(w)integrate(function(w0)plogis(w0)*dnorm(w0,mean=mu.cond(w), sd=sigma.cond),-lim,lim)$val)
+    sapply(w, function(w)integrate(function(w0)h(mu.cond(w)-w0)*dnorm(w0/sigma.cond)/sigma.cond,-lim,lim)$val)
+}
 auc <- function(beta,params,lim=Inf) {
     ## pdf.index.glm.gaussian <- function(x,g,beta,params,lim=Inf) {
     ## browser()
@@ -12096,10 +12110,10 @@ p <- 4
 n <- 1e3
 mu <- runif(p)*3
 Sigma <- matrix(runif(p^2),p)
-Sigma <- Sigma%*%t(Sigma)/20
+Sigma <- Sigma%*%t(Sigma)
 h <- plogis
-beta.0 <- runif(p)-2
-beta <- runif(p) 
+beta.0 <- runif(p)
+beta <- runif(p)/30
 ## beta <- beta.0
 params <- list(mu=mu,Sigma=Sigma,beta=beta.0,link=h)
 ## ## make sure above version of auc looks right on data
@@ -12115,9 +12129,9 @@ params <- list(mu=mu,Sigma=Sigma,beta=beta.0,link=h)
 ## abline(v=try,col=2)
 ## abline(v=mean(auc.hats),col=3)
 ## check auc curve as beta varies around beta.0
-a <- rep(1,p)
-ts <- seq(0,1,len=3)/10
-aucs <- sapply(ts, function(t)auc(beta.0+a*t,params,lim=10))
+## a <- rep(1,p)
+ts <- seq(0,1,len=5)
+aucs <- sapply(ts, function(t)auc(beta.0*t+beta*(1-t),params))
 plot(ts,aucs,type='l',asp=1)
 ## save.image('sessions/16c-2.RData') ##randomly found with large slope
 
@@ -12216,22 +12230,22 @@ grid <- seq(-1,1,len=50)*10
 z <- outer(grid,grid,f,mu,Sigma)
 contour(grid,grid,z,asp=1)#,xlim=range(grid),ylim=range(grid))
 ## contour(grid,grid,z,xlim=range(grid),ylim=range(grid))
-print(auc(mu,Sigma))
+## print(auc(mu,Sigma))
 ## Sigma[2,2] <- Sigma[2,2]+3
-Sigma[1,2] <- Sigma[2,1] <- sigma.12-.1
+Sigma[1,2] <- Sigma[2,1] <- sigma.12+5
+Sigma[2,2] <- Sigma[1,2]^2+.01
 ## mu[2] <- mu[2]+2
 z <- outer(grid,grid,f,mu,Sigma/1)
 contour(grid,grid,z,add=TRUE,col=2)
 abline(0,1)
-print(auc(mu,Sigma))
+## print(auc(mu,Sigma))
 
-Sigma[1,2]  <- Sigma[2,1] <- sigma.22
-deltas <- seq(.3,.001,len=10)
+deltas <- seq(.001,.1,len=4)
 aucs <- sapply(deltas, function(delta) {
     Sigma[1,2]  <- Sigma[2,1] <- sigma.22-delta
     auc(mu,Sigma)
 })
-plot(deltas,aucs,asp=1)
+plot(deltas,aucs,asp=1,type='l')
 
 auc <- function(beta,params,lim=Inf) {
     ## pdf.index.glm.gaussian <- function(x,g,beta,params,lim=Inf) {
@@ -12271,4 +12285,32 @@ beta.0 <- c(sqrt(sigma.12),0,sqrt(sigma.22-sigma.12),rep(0,p-3))
 params <- list(mu=mu,Sigma=Sigma,beta=beta.0,link=plogis)
 auc(beta,params)
 
-numDeriv::grad(function(beta)auc(beta,params),beta)
+## numDeriv::grad(function(beta)auc(beta,params),beta)
+## a <- rep(1,p)
+ts <- seq(0,1,len=10)
+aucs <- sapply(ts, function(t)auc(t*beta.0+(1-t)*beta,params))
+
+
+
+
+## forcing beta==0
+require(mvtnorm)
+p <- 4
+n <- 3e2
+mu <- rep(0,p)
+## var.ratio <- 5
+## Sigma <- diag(c(rep(1,p/2),rep(var.ratio,p/2)))
+Sigma <- diag(p)
+h <- plogis
+beta.0 <- c(rep(0,p/2),rep(1,p/2))
+coefs <- replicate(5e2, {
+    x <- rmvnorm(n,mu,Sigma)
+    ## beta.0 <- rep(1,p)
+    risk <- h(x%*%beta.0)
+    d <- rbinom(n,1,risk)
+    x.red <- x[,1:(p/2)]
+    coef(glm(d~x.red-1,family=binomial('logit')))
+})
+hist(coefs[1,])
+abline(v=mean(coefs[1,]),col=2)
+abline(v=0,col=3)
