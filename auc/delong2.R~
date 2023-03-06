@@ -1,0 +1,1160 @@
+h1 <- pnorm
+h2 <- plogis
+a <- .8#runif(1)
+b <- a
+curve(h1(x)^a*(1-h1(x))^(1-a)/h2(x)^b/(1-h2(x))^(1-b),-10,10)
+abline(v=0)
+
+curve(h1(x)*(1-h1(x))/h2(x)/(1-h2(x)),-10,10)
+
+require(numDeriv)
+source('delong/misc.R')
+n <- 1e2
+## h <- pnorm
+p.full <- 6
+p.red <- 3
+build <- numeric()
+while(TRUE) {
+    ## Sigma <- matrix(runif(p.full^2)*1,nrow=p.full)
+## Sigma <- Sigma%*%t(Sigma)
+    Sigma <- diag(runif(p.full))/10
+Sigma.xx <- Sigma[1:p.red,1:p.red]
+Sigma.yy <- Sigma[(p.red+1):(p.full),(p.red+1):(p.full)]
+Sigma.xy <- Sigma[1:p.red,(p.red+1):(p.full)]
+Sigma.yx <- t(Sigma.xy)
+mu <- runif(p.full)
+beta.0 <- runif(p.full)
+beta.x <- beta.0[1:p.red]; beta.y <- beta.0[(p.red+1):p.full]
+beta.x.reduced <- probit.coef.reduced(mu,Sigma,c(0,beta.0),p.reduced=p.red)[-1]
+## print(rbind(coef.reduced.glm.gaussian(p.red,params=list(mu=mu,Sigma=Sigma,beta=beta.0,link=plogis),lim=7),
+## beta.x.reduced))
+beta.red <- coef.reduced.glm.gaussian(p.red,params=list(mu=mu,Sigma=Sigma,beta=beta.0,link=plogis),lim=8)
+deriv <- grad(function(beta)auc.glm.gaussian(beta=beta,params=list(mu=mu,Sigma=Sigma,beta=beta.0,link=plogis),lim=10), x=beta.red)
+dist <- max(abs(beta.x.reduced-beta.red))
+out <- c(dist,max(abs(deriv)))
+print(out)
+build <<- cbind(build,out)
+## out
+}
+## save.image('1.RData')
+
+
+(beta.x + solve(Sigma.xx)%*%Sigma.xy%*%beta.y) / beta.x.reduced
+
+grad(function(beta)auc.glm.gaussian(beta=beta,params=list(mu=mu,Sigma=Sigma,beta=beta.0,link=plogis),lim=10), x=beta.x.reduced) # auc under logit normal model has 0 deriv at the probit coefs. auc under probit logistic data model has 0 deriv at logit coefs?
+
+
+coef.reduced.glm.gaussian(p.red,params=list(mu=mu,Sigma=Sigma,beta=beta.0,link=pnorm),lim=8) - beta.x.reduced
+
+(beta.x + solve(Sigma.xx)%*%Sigma.xy%*%beta.y) / coef.reduced.glm.gaussian(p.red,params=list(mu=mu,Sigma=Sigma,beta=beta.0,link=plogis),lim=7)
+
+beta.red.logit <- coef.reduced.glm.gaussian(p.red,params=list(mu=mu,Sigma=Sigma,beta=beta.0,link=plogis),lim=10)
+grad(function(beta)auc.glm.gaussian(beta=beta,params=list(mu=mu,Sigma=Sigma,beta=beta.0,link=plogis),lim=10), x=beta.red.logit)
+
+
+
+
+
+require(numDeriv)
+source('delong/misc.R')
+n <- 1e2
+## h <- pnorm
+p.full <- 6
+p.red <- 3
+build <- numeric()
+pairs <- replicate(1e1, {
+    ## Sigma <- matrix(runif(p.full^2)*1,nrow=p.full)
+    ## Sigma <- Sigma%*%t(Sigma)
+    Sigma <- diag(runif(p.full))
+    Sigma.xx <- Sigma[1:p.red,1:p.red]
+    Sigma.yy <- Sigma[(p.red+1):(p.full),(p.red+1):(p.full)]
+    Sigma.xy <- Sigma[1:p.red,(p.red+1):(p.full)]
+    Sigma.yx <- t(Sigma.xy)
+    mu <- runif(p.full)
+    beta.0 <- runif(p.full)
+    beta.x <- beta.0[1:p.red]; beta.y <- beta.0[(p.red+1):p.full]
+    beta.probit <- probit.coef.reduced(mu,Sigma,c(0,beta.0),p.reduced=p.red)[-1]
+    ## print(rbind(coef.reduced.glm.gaussian(p.red,params=list(mu=mu,Sigma=Sigma,beta=beta.0,link=plogis),lim=7),
+    ## beta.x.reduced))
+    beta.logit <- coef.reduced.glm.gaussian(p.red,params=list(mu=mu,Sigma=Sigma,beta=beta.0,link=plogis),lim=8)
+    ## deriv <- grad(function(beta)auc.glm.gaussian(beta=beta,params=list(mu=mu,Sigma=Sigma,beta=beta.0,link=plogis),lim=10), x=beta.red)
+    ## dist <- max(abs(beta.x.reduced-beta.red))
+    ## out <- c(dist,max(abs(deriv)))
+    ## print(out)
+    ## build <<- cbind(build,out)
+    ## out
+    beta.probit <- c(beta.probit,rep(0,p.full-p.red))
+    beta.logit <- c(beta.logit,rep(0,p.full-p.red))
+    sapply(list(probit=beta.probit,logit=beta.logit), function(beta) {
+        denom <- sqrt( 1 + t(beta.y)%*%(Sigma.yy - Sigma.yx%*%solve(Sigma.xx)%*%Sigma.xy)%*%beta.y)
+        (Sigma%*%((t(beta)%*%Sigma%*%beta)*beta.0 - (t(beta)%*%Sigma%*%beta.0)*beta))[1:p.red] / denom
+        })
+})
+
+
+
+
+
+
+
+
+## null hypothesis
+
+## 1. LDA
+
+## 1a. hajek rate for diff 
+require(mvtnorm)
+source('delong/misc.R')
+set.seed(1)
+n <- 1e2
+p <- 4
+mu.0 <- runif(p)
+mu.1 <- runif(p)
+Sigma <- matrix(runif(p^2),p)*3
+Sigma <- Sigma%*%t(Sigma)
+beta <- gamma <- solve(Sigma)%*%(mu.1-mu.0)
+qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+params <- list(mu.0=mu.0,mu.1=mu.1,Sigma=Sigma)
+auc <- pnorm(t(beta)%*%(mu.1-mu.0)/sqrt(2*qform))
+ns <- round(seq(50,500,len=10))
+by.n <- sapply(ns, function(n) {
+    obs <- replicate(1e2, {
+        x.0 <- rmvnorm(n,mu.0,Sigma)
+        x.1 <- rmvnorm(n,mu.1,Sigma)
+        ## auc.hat.beta <- auc.hat(x.0%*%beta,x.1%*%beta)
+        ## beta.hat <- gamma.hat <- beta
+        beta.hat <- beta+rnorm(p)/sqrt(n)
+        gamma.hat <- beta+rnorm(p)/sqrt(n)
+        ## diff.coef.hat <-  - auc.lda(gamma.hat,params)
+        hajeks <- sapply(list(beta.hat=beta.hat,gamma.hat=gamma.hat), function(beta) {
+            F.0 <- function(u)pnorm((u-t(beta)%*%mu.0)/sqrt(qform))
+            F.1 <- function(u)pnorm((u-t(beta)%*%mu.1)/sqrt(qform))
+            auc.hajek(as.numeric(x.0%*%beta),as.numeric(x.1%*%beta),F.0,F.1,auc=auc.lda(beta,params),terms.only=FALSE)
+            ## auc.hajek(as.numeric(x.0%*%beta),as.numeric(x.1%*%beta),F.0,F.1,auc=auc,terms.only=FALSE)
+        })
+        diff.hajek.coef <- diff(hajeks)
+    })
+})
+mad <- colMeans(abs(by.n))
+plot(ns,mad)
+lm0 <- lm(log(mad)~log(ns))
+coef(lm0)
+curve(exp(coef(lm0)[1]+coef(lm0)[2]*log(x)),add=TRUE)
+
+
+## 1b. 2nd order taylor expansion of theta(F,G,beta)
+
+source('delong/misc.R')
+set.seed(1)
+p <- 4
+mu.0 <- rep(0,p)
+mu.1  <- mu.diff <- runif(p)
+Sigma <- matrix(runif(p^2),p)*3
+Sigma <- Sigma%*%t(Sigma)
+Sigma.diff <- 2*Sigma
+## qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+## params <- list(mu.0=mu.0,mu.1=mu.1,Sigma=Sigma)
+beta.star <- solve(Sigma)%*%(mu.1-mu.0)
+auc <- function(beta) pnorm(t(beta)%*%(mu.1-mu.0)/as.numeric(sqrt(2*t(beta)%*%Sigma%*%beta)))
+auc.deriv <- function(beta)t(auc.scores.deriv(beta,mu.diff,Sigma.diff))
+## viz.deriv(f=auc,deriv=auc.deriv,dim.x=p,dim.f=1)
+## auc.deriv <- function(beta)auc.scores.deriv(beta,mu.diff,Sigma.diff)
+auc.deriv2 <- function(beta)auc.scores.deriv2.lda(beta,Sigma.diff)
+## viz.deriv(f=auc.deriv,deriv=auc.deriv2,dim.x=p,dim.f=p,x0=beta.star)
+ns <- round(seq(50,500,len=30))
+by.n <- sapply(ns, function(n) {
+    replicate(1e2, {
+        delta.beta <- matrix(rnorm(p) / sqrt(n),ncol=1)
+        f <- auc(beta.star+delta.beta)
+        taylor.0 <- auc(beta.star)
+        taylor.1 <- auc.deriv(beta.star)%*%delta.beta
+        taylor.2 <- t(delta.beta)%*%auc.deriv2(beta.star)%*%delta.beta/2
+        f - taylor.0 - taylor.1 - taylor.2
+        ## taylor.2
+    })
+})
+mad <- colMeans(abs(by.n))
+plot(ns,mad)
+lm0 <- lm(log(mad)~log(ns))
+coef(lm0)
+curve(exp(coef(lm0)[1]+coef(lm0)[2]*log(x)),add=TRUE)
+
+
+
+
+## 1c. 2nd order hajek part at nonrandom beta. O(1/n) as expected.
+
+require(mvtnorm)
+source('delong/misc.R')
+set.seed(1)
+## n <- 1e2
+p <- 4
+mu.0 <- runif(p)
+mu.1 <- runif(p)
+Sigma <- matrix(runif(p^2),p)*3
+Sigma <- Sigma%*%t(Sigma)
+beta <- solve(Sigma)%*%(mu.1-mu.0)
+qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+params <- list(mu.0=mu.0,mu.1=mu.1,Sigma=Sigma)
+auc.beta <- pnorm(t(beta)%*%(mu.1-mu.0)/sqrt(2*qform))
+ns <- round(seq(50,500,len=10))
+by.n <- sapply(ns, function(n) {
+    obs <- replicate(1e2, {
+        x.0 <- rmvnorm(n,mu.0,Sigma)
+        x.1 <- rmvnorm(n,mu.1,Sigma)
+        auc.hat.beta <- auc.hat(x.0%*%beta,x.1%*%beta)
+        ## beta.hat <- gamma.hat <- beta
+        ## beta.hat <- beta+rnorm(p)/sqrt(n)
+        F.0 <- function(u)pnorm((u-t(beta)%*%mu.0)/sqrt(qform))
+        F.1 <- function(u)pnorm((u-t(beta)%*%mu.1)/sqrt(qform))
+        auc.hajek.beta <- auc.hajek(as.numeric(x.0%*%beta),as.numeric(x.1%*%beta),F.0,F.1,auc=auc.beta,terms.only=FALSE)
+        auc.hat.beta - auc.beta - auc.hajek.beta
+    })
+})
+mad <- colMeans(abs(by.n))
+plot(ns,mad)
+lm0 <- lm(log(mad)~log(ns))
+coef(lm0)
+curve(exp(coef(lm0)[1]+coef(lm0)[2]*log(x)),add=TRUE)
+
+
+## 1d. z stats to examine distribution of quadratic hoeffding term
+## ("gaussian chaos")
+require(mvtnorm)
+source('delong/misc.R')
+set.seed(1)
+n <- 1e2
+p <- 4
+mu.0 <- runif(p)
+mu.1 <- runif(p)
+Sigma <- matrix(runif(p^2),p)*3
+Sigma <- Sigma%*%t(Sigma)
+beta <- solve(Sigma)%*%(mu.1-mu.0)
+qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+params <- list(mu.0=mu.0,mu.1=mu.1,Sigma=Sigma)
+auc.beta <- pnorm(t(beta)%*%(mu.1-mu.0)/sqrt(2*qform))
+## ns <- round(seq(50,500,len=10))
+## by.n <- sapply(ns, function(n) {
+obs <- replicate(7e3, {
+    x.0 <- rmvnorm(n,mu.0,Sigma)
+    x.1 <- rmvnorm(n,mu.1,Sigma)
+    auc.hat.beta <- auc.hat(x.0%*%beta,x.1%*%beta)
+    ## beta.hat <- gamma.hat <- beta
+    ## beta.hat <- beta+rnorm(p)/sqrt(n)
+    F.0 <- function(u)pnorm((u-t(beta)%*%mu.0)/sqrt(qform))
+    F.1 <- function(u)pnorm((u-t(beta)%*%mu.1)/sqrt(qform))
+    auc.hajek.beta <- auc.hajek(as.numeric(x.0%*%beta),as.numeric(x.1%*%beta),F.0,F.1,auc=auc.beta,terms.only=FALSE)
+    auc.hat.beta - auc.beta - auc.hajek.beta
+})
+hist(n*obs)
+qqnorm(obs/sd(obs)); abline(0,1)
+
+
+
+n <- 1e4
+try <- rnorm(n)*rnorm(n)
+plot(ecdf(try))
+plot(ecdf(obs/sd(obs)),add=TRUE,col=2)
+plot(ecdf(obs/(sd(obs)+ 5e-4)),add=TRUE,col=3)
+
+grid <- seq(-5,5,len=1e3)/1e3
+lm(ecdf(try)(grid) ~ ecdf(obs)(grid) -1)
+
+plot(grid,ecdf(obs)(grid),type='l')
+
+lines(grid,ecdf(try)(grid))
+
+dd
+
+
+## 1e. 2nd order hajek part at random beta. now actually seems faster
+## than O(1/n). as observed in delong.R.ch [update: no. wasn't looking at the a large enough range of ns.].
+require(mvtnorm)
+source('delong/misc.R')
+start <- Sys.time()
+set.seed(3)
+## n <- 1e2
+p <- 4
+mu.0 <- runif(p)
+mu.1 <- runif(p)
+Sigma <- matrix(runif(p^2),p)*3
+Sigma <- Sigma%*%t(Sigma)
+beta <- solve(Sigma)%*%(mu.1-mu.0)
+qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+params <- list(mu.0=mu.0,mu.1=mu.1,Sigma=Sigma)
+## auc.beta <- pnorm(t(beta)%*%(mu.1-mu.0)/sqrt(2*qform))
+ns <- round(seq(50,500,len=10))
+ns <- round(seq(1e3,5e3,len=15))
+by.n <- sapply(ns, function(n) {
+    obs <- replicate(1e2, {
+        x.0 <- rmvnorm(n,mu.0,Sigma)
+        x.1 <- rmvnorm(n,mu.1,Sigma)
+        ## beta.hat <- gamma.hat <- beta
+        ## beta.hat <- beta+(rchisq(p,1)-1)/n^.5
+        beta.hat <- beta+rnorm(p)/n^.5
+        auc.beta.hat <- pnorm(t(beta.hat)%*%(mu.1-mu.0)/sqrt(2*qform))
+        auc.hat.beta.hat <- auc.hat(x.0%*%beta.hat,x.1%*%beta.hat)
+        F.0 <- function(u)pnorm((u-t(beta.hat)%*%mu.0)/sqrt(qform))
+        F.1 <- function(u)pnorm((u-t(beta.hat)%*%mu.1)/sqrt(qform))
+        auc.hajek.beta.hat <- auc.hajek(as.numeric(x.0%*%beta.hat),as.numeric(x.1%*%beta.hat),F.0,F.1,auc=auc.beta.hat,terms.only=FALSE)
+        auc.hat.beta.hat - auc.beta.hat - auc.hajek.beta.hat
+    })
+})
+Sys.time() - start
+mad <- colMeans(abs(by.n))
+plot(ns,mad)
+lm0 <- lm(log(mad)~log(ns))
+coef(lm0)
+curve(exp(coef(lm0)[1]+coef(lm0)[2]*log(x)),add=TRUE)
+
+
+
+## trying 1e with logit normal model [based on 16f-3]
+
+start <- Sys.time()
+require(mvtnorm)
+require(parallel)
+source('delong/misc.R')
+set.seed(1)
+p.full <- 4
+p.red <- 2
+## n <- 3e2
+mu <- rep(0,p.full)
+a <- 1
+h <- plogis
+Sigma <- diag(p.full)*sqrt(a)
+beta.0 <- c(rep(0,p.red),rep(1,p.full-p.red))/a 
+h <- plogis
+params <- list(mu=mu,Sigma=Sigma,beta=beta.0,link.name='logit')
+beta.star.full <- coef.reduced.glm.gaussian(p.full,params)
+## beta.star.red <- coef.reduced.glm.gaussian(p.red=2,link=h,params)
+## beta.star.red <- c(beta.star.red,rep(0,p.full-p.red))
+## beta <- beta.0
+lim <- 5
+ns <- round(seq(10,3e2,len=20))
+auc.full <- auc.glm.gaussian(beta.star.full,params,lim=5)
+## by.n <- sapply(ns, function(n) {
+by.n <- mclapply(ns, mc.cores=detectCores()-4, FUN=function(n) {
+    cat('.')
+    replicate(10, {
+        tryCatch({
+            x <- rmvnorm(n,mu,Sigma)
+            risk <- h(x%*%beta.0)
+            g <- rbinom(n,1,risk)
+            x.0 <- x[g==0,]
+            x.1 <- x[g==1,]
+            beta.hat <- coef(glm(g~x-1,family=binomial(link=params$link.name)))
+            ## beta.hat <- beta.star.full#+rnorm(p.full)/n
+            auc.beta.hat <- auc.glm.gaussian(beta.hat,params,lim=5)
+            f.0 <- function(x)pdf.index.glm.gaussian(x,g=0,beta=beta.hat,params=params,lim=lim) #1 start
+            f.1 <- function(x)pdf.index.glm.gaussian(x,g=1,beta=beta.hat,params=params,lim=lim) 
+            F.0 <- Vectorize(function(x)integrate(function(w)f.0(w),-lim,x)$val) 
+            F.1 <- Vectorize(function(x)integrate(function(w)f.1(w),-lim,x)$val)
+            auc.hajek.beta.hat <- auc.hajek(x=x.0%*%beta.hat,y=x.1%*%beta.hat,F=F.0,G=F.1,auc=auc.beta.hat,terms.only=FALSE)
+            auc.hat.beta.hat <- auc.hat(x=x.0%*%beta.hat,y=x.1%*%beta.hat)
+            auc.beta.hat <- auc.glm.gaussian(beta.hat,params,lim=5)
+            auc.hat.beta.hat - auc.beta.hat - auc.hajek.beta.hat
+            ## max(abs(beta.hat - beta.star.full))
+        }, error=function(e){print(e); NA})
+    })
+})
+by.n <- simplify2array(by.n)
+Sys.time() - start
+mad <- colMeans(abs(by.n))
+plot(ns,mad)
+lm0 <- lm(log(mad)~log(ns))
+coef(lm0)
+curve(exp(coef(lm0)[1]+coef(lm0)[2]*log(x)),add=TRUE)
+## sds <- apply(by.n,2,sd,na.rm=TRUE)
+## plot(ns,sds)
+## lm0 <- lm(log(sds)~log(ns))
+## coef(lm0)
+## curve(exp(coef(lm0)[1]+coef(lm0)[2]*log(x)),add=TRUE)
+
+
+n <- 1e3
+obs <- replicate(1e3, n*mean(rnorm(n))*mean(rnorm(n)))
+plot(ecdf(obs))
+plot(ecdf(rnorm(1e3)*rnorm(1e3)),col=2,add=TRUE)
+
+
+n <- 1e4
+mu <- runif(1)
+sigma <- runif(1)
+psi <- function(x,y) (x<y) - pnorm((y-mu)/sigma) - pnorm((mu-x)/sigma) + 1/2
+x <- rnorm(n,mu,sigma)
+y <- rnorm(n,mu,sigma)
+## mean(psi(x,y))
+## var(psi(x[1],y))
+## ## var(psi(x[1],y))
+## ## var(x[1]<y)
+## var(pnorm((y-mu)/sigma))
+## mean((x[1]<y)*pnorm((y-mu)/sigma))
+## 1/2*(1-pnorm((x[1]-mu)/sigma)^2)
+## ## integrate(function(y)pnorm((y-mu)/sigma)*dnorm((y-mu)/sigma),x[1],Inf)$val
+## cov((x[1]<y),pnorm((y-mu)/sigma))
+## 1/2*(1-pnorm((x[1]-mu)/sigma)^2) - 1/2*(1-pnorm((x[1]-mu)/sigma))
+## ## 1/2*pnorm((x[1]-mu)/sigma)*(1-pnorm((x[1]-mu)/sigma))
+## var((x[1]<y) - pnorm((y-mu)/sigma))
+## ## 1/3 - pnorm((x[1]-mu)/sigma)*(1-pnorm((x[1]-mu)/sigma))
+(c(var(x[1]<y) , var(pnorm((y-mu)/sigma)), - 2*cov(pnorm((y-mu)/sigma),x[1]<y)))
+(c(pnorm((x[1]-mu)/sigma)*(1-pnorm((x[1]-mu)/sigma)) ,1/12, -(1-pnorm((x[1]-mu)/sigma)^2) +(1-pnorm((x[1]-mu)/sigma)) ))
+var(psi(x[1],y))
+1/12
+## pairs <- sapply(x, function(x.i) c(var(psi(x.i,y)), 1/3 - pnorm((x.i-mu)/sigma)*(1-pnorm((x.i-mu)/sigma))) )
+
+
+n <- 1e2
+mu <- runif(1)
+sigma <- runif(1)
+psi <- function(x,y) (x<y) - pnorm((y-mu)/sigma) - pnorm((mu-x)/sigma) + 1/2
+obs <- replicate(5e2, {
+    x <- rnorm(n,mu,sigma)
+    y <- rnorm(n,mu,sigma)
+    mean(outer(x,y,psi))
+})
+plot(ecdf(n*obs))
+
+
+plot(ecdf(n*obs))
+try <- rnorm(1e4)*rnorm(1e4)
+plot(ecdf(try/2.5),col=2,add=TRUE)
+
+
+
+
+
+
+
+
+
+
+## 1f. 2nd order hajek part--difference of aucs. linear term is O(1/n) but quadratic term seems o(1/n), about n^-1.25. 
+require(mvtnorm)
+source('delong/misc.R')
+start <- Sys.time()
+set.seed(1)
+## n <- 1e2
+p <- 4
+mu.0 <- runif(p)
+mu.1 <- runif(p)
+Sigma <- matrix(runif(p^2),p)
+Sigma <- Sigma%*%t(Sigma)
+beta <- solve(Sigma)%*%(mu.1-mu.0)
+params <- list(mu.0=mu.0,mu.1=mu.1,Sigma=Sigma)
+## auc.beta <- pnorm(t(beta)%*%(mu.1-mu.0)/sqrt(2*qform))
+ns <- round(seq(50,1000,len=5))
+ns <- round(seq(1e3,7.5e3,len=30))
+by.n <- sapply(ns, simplify=FALSE, FUN=function(n) {
+    obs <- replicate(1e2, {
+        x.0 <- rmvnorm(n,mu.0,Sigma)
+        x.1 <- rmvnorm(n,mu.1,Sigma)
+        ## beta.hat <- gamma.hat <- beta
+        ## beta.hat <- beta+(rchisq(p,1)-1)/n^.5
+        beta.hat <- beta+rnorm(p)/n^.5
+        gamma.hat <- beta+rnorm(p)/n^.5
+        terms <- sapply(list(beta.hat,gamma.hat), function(beta.hat) {
+            qform <- as.numeric(t(beta.hat)%*%Sigma%*%beta.hat)
+            auc.beta.hat <- pnorm(t(beta.hat)%*%(mu.1-mu.0)/sqrt(2*qform))
+            auc.hat.beta.hat <- auc.hat(x.0%*%beta.hat,x.1%*%beta.hat)
+            F.0 <- function(u)pnorm((u-t(beta.hat)%*%mu.0)/sqrt(qform))
+            F.1 <- function(u)pnorm((u-t(beta.hat)%*%mu.1)/sqrt(qform))
+            auc.hajek.beta.hat <- auc.hajek(as.numeric(x.0%*%beta.hat),as.numeric(x.1%*%beta.hat),F.0,F.1,auc=auc.beta.hat,terms.only=FALSE)
+            ## auc.hat.beta.hat - auc.beta.hat - auc.hajek.beta.hat
+            ## auc.hat.beta.hat - auc.beta.hat #- auc.hajek.beta.hat
+            ## auc.hajek.beta.hat
+            c(linear=auc.hajek.beta.hat,quad=auc.hat.beta.hat - auc.beta.hat - auc.hajek.beta.hat,obs=auc.hat.beta.hat,term.a=auc.hat.beta.hat-auc.beta.hat,term.b=auc.beta.hat)
+        })
+        ## diff(quad.terms)
+        apply(terms,1,diff)
+    })
+})
+by.n <- simplify2array(by.n)
+Sys.time() - start
+linear <- by.n['linear',,]
+quad <- by.n['quad',,]
+op <- par(mfrow=c(1,3))
+for(term in list(linear,quad,linear+quad)) {
+    mad <- colMeans(abs(term))
+    plot(ns,mad)
+    lm0 <- lm(log(mad)~log(ns))
+    print(coef(lm0))
+    curve(exp(coef(lm0)[1]+coef(lm0)[2]*log(x)),add=TRUE)
+}
+par(op)
+## save.image('1f.RData')
+  
+mad <- colMeans(abs(by.n['obs',,]))
+plot(ns,ns*mad)
+lm(log(mad)~log(ns))
+
+
+mad <- colMeans(abs(by.n['term.a',,]))
+plot(ns,ns*mad)
+lm(log(mad)~log(ns))
+
+
+
+## 1g mixed derivative
+
+## 1g-1 direct formula for hajek term under LDA model (rather than
+## auc.hajek)
+hajek.lda <- function(x,y,beta,params) {
+    mu.0 <- params$mu.0; mu.1 <- params$mu.1; Sigma <- params$Sigma
+    qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+    x <- t(x); y <- t(y) ## expects x,y in model matrix format
+    mean(pnorm(t(beta)%*%(y-mu.0)/sqrt(qform))) + mean(pnorm(t(beta)%*%(mu.1-x)/sqrt(qform))) - 2*pnorm(t(beta)%*%(mu.1-mu.0)/sqrt(2*qform))
+}
+require(mvtnorm)
+require(parallel)
+source('delong/misc.R')
+start <- Sys.time()
+set.seed(1)
+## n <- 1e2
+p <- 4
+mu.0 <- runif(p)
+mu.1 <- runif(p)
+Sigma <- matrix(runif(p^2),p)
+Sigma <- Sigma%*%t(Sigma)
+beta <- solve(Sigma)%*%(mu.1-mu.0)
+params <- list(mu.0=mu.0,mu.1=mu.1,Sigma=Sigma)
+## auc.beta <- pnorm(t(beta)%*%(mu.1-mu.0)/sqrt(2*qform))
+ns <- round(seq(50,1000,len=5))
+ns <- round(seq(1e3,7.5e3,len=30))
+## by.n <- sapply(ns, simplify=FALSE, FUN=function(n) {
+by.n <- mclapply(ns, mc.cores=detectCores()-4, FUN=function(n) {
+    obs <- replicate(1e2, {
+        x.0 <- rmvnorm(n,mu.0,Sigma)
+        x.1 <- rmvnorm(n,mu.1,Sigma)
+        ## beta.hat <- gamma.hat <- beta
+        ## beta.hat <- beta+(rchisq(p,1)-1)/n^.5
+        beta.hat <- beta+rnorm(p)/n^.5
+        gamma.hat <- beta+rnorm(p)/n^.5
+        terms <- sapply(list(beta.hat,gamma.hat), function(beta.hat) {
+            hajek.lda(x.0,x.1,beta.hat,params)
+        })
+        diff(terms)
+    })
+})
+by.n <- simplify2array(by.n)
+Sys.time() - start
+mad <- colMeans(abs(by.n))
+plot(ns,mad)
+lm0 <- lm(log(mad)~log(ns))
+print(coef(lm0))
+curve(exp(coef(lm0)[1]+coef(lm0)[2]*log(x)),add=TRUE)
+
+
+## 1g-2 formula for mixed derivative, deriv of hajek wrt beta
+hajek.lda <- function(x,y,beta,params) {
+    mu.0 <- params$mu.0; mu.1 <- params$mu.1; Sigma <- params$Sigma
+    qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+    x <- t(x); y <- t(y) ## expects x,y in model matrix format
+    mean(pnorm(t(beta)%*%(y-mu.0)/sqrt(qform))) + mean(pnorm(t(beta)%*%(mu.1-x)/sqrt(qform))) - 2*pnorm(t(beta)%*%(mu.1-mu.0)/sqrt(2*qform))
+}
+require(mvtnorm)
+source('delong/misc.R')
+## set.seed(1)
+## n <- 1e2
+p <- 4
+mu.0 <- runif(p)
+mu.1 <- runif(p)
+Sigma <- matrix(runif(p^2),p)
+Sigma <- Sigma%*%t(Sigma)
+params <- list(mu.0=mu.0,mu.1=mu.1,Sigma=Sigma)
+beta <- solve(Sigma)%*%(mu.1-mu.0)
+y <- runif(p)
+## f <- function(beta)pnorm(t(beta)%*%(y-mu.0)/as.numeric(sqrt(t(beta)%*%Sigma%*%beta)))
+## f.prime <- function(beta) {
+##     qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+##     as.numeric(dnorm(t(beta)%*%(y-mu.0)/sqrt(qform))) * ((y-mu.0)/sqrt(qform) - as.numeric(t(beta)%*%(y-mu.0)/qform^(3/2))*t(beta)%*%Sigma)
+## }
+## ## f.prime(beta)
+## viz.deriv(f,f.prime,p,1)
+n <- 1e2
+x.0 <- rmvnorm(n,mu.0,Sigma)
+x.1 <- rmvnorm(n,mu.1,Sigma)
+hajek.lda.deriv <- function(x,y,beta,params) {
+    mu.0 <- params$mu.0; mu.1 <- params$mu.1; Sigma <- params$Sigma
+    qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+    f.prime.pre <- function(u) {
+        colMeans(as.numeric(dnorm(t(beta)%*%u/sqrt(qform))) * (t(u/sqrt(qform)) - t(t(beta)%*%u/qform^(3/2))%*%t(beta)%*%Sigma))
+    }
+    f.prime.pre(t(y)-mu.0) + f.prime.pre(-t(x)+mu.1) -  2*f.prime.pre(matrix((mu.1-mu.0)/sqrt(2),ncol=1))
+}
+## f.prime.pre(t(x.0))
+## f <- function(beta) {
+##     qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+##     f.pre <- function(u) mean(pnorm(t(beta)%*%u/sqrt(qform)) )
+##     f.pre(t(x.1)-mu.0) + f.pre(-t(x.0)+mu.1) -   2*f.pre((mu.1-mu.0)/sqrt(2))
+## }
+## hajek.lda(x.0,x.1,beta,params)
+## f(beta)
+f <- function(beta)hajek.lda(x.0,x.1,beta,params)
+f.prime <- function(beta)hajek.lda.deriv(x.0,x.1,beta,params)
+viz.deriv(f=f,deriv=f.prime,p,1)
+
+
+
+## 1g-3 taylor expansion of hajek in terms of beta, with o(1/n)
+## remainder
+hajek.lda <- function(x,y,beta,params) {
+    mu.0 <- params$mu.0; mu.1 <- params$mu.1; Sigma <- params$Sigma
+    qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+    x <- t(x); y <- t(y) ## expects x,y in model matrix format
+    mean(pnorm(t(beta)%*%(y-mu.0)/sqrt(qform))) + mean(pnorm(t(beta)%*%(mu.1-x)/sqrt(qform))) - 2*pnorm(t(beta)%*%(mu.1-mu.0)/sqrt(2*qform))
+}
+hajek.lda.deriv <- function(x,y,beta,params) {
+    mu.0 <- params$mu.0; mu.1 <- params$mu.1; Sigma <- params$Sigma
+    qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+    f.prime.pre <- function(u) {
+        colMeans(as.numeric(dnorm(t(beta)%*%u/sqrt(qform))) * (t(u/sqrt(qform)) - t(t(beta)%*%u/qform^(3/2))%*%t(beta)%*%Sigma))
+    }
+    f.prime.pre(t(y)-mu.0) + f.prime.pre(-t(x)+mu.1) -  2*f.prime.pre(matrix((mu.1-mu.0)/sqrt(2),ncol=1))
+}
+require(mvtnorm)
+require(parallel)
+source('delong/misc.R')
+start <- Sys.time()
+set.seed(1)
+## n <- 1e2
+p <- 4
+mu.0 <- runif(p)
+mu.1 <- runif(p)
+Sigma <- matrix(runif(p^2),p)
+Sigma <- Sigma%*%t(Sigma)
+beta <- solve(Sigma)%*%(mu.1-mu.0)
+params <- list(mu.0=mu.0,mu.1=mu.1,Sigma=Sigma)
+## auc.beta <- pnorm(t(beta)%*%(mu.1-mu.0)/sqrt(2*qform))
+ns <- round(seq(50,1000,len=5))
+ns <- round(seq(1e3,7.5e3,len=30))
+## by.n <- sapply(ns, simplify=FALSE, FUN=function(n) {
+by.n <- mclapply(ns, mc.cores=detectCores()-4, FUN=function(n) {
+    pairs <- replicate(1e2, {
+        x.0 <- rmvnorm(n,mu.0,Sigma)
+        x.1 <- rmvnorm(n,mu.1,Sigma)
+        ## beta.hat <- gamma.hat <- beta
+        ## beta.hat <- beta+(rchisq(p,1)-1)/n^.5
+        beta.hat <- beta+rnorm(p)/n^.5
+        gamma.hat <- beta+rnorm(p)/n^.5
+        terms <- sapply(list(beta.hat,gamma.hat), function(beta.hat) {
+            hajek.lda(x.0,x.1,beta.hat,params)
+        })
+        true <- diff(terms)
+        ## terms <- sapply(list(beta.hat,gamma.hat), function(beta.hat) {
+        ##     t(beta.hat - beta)%*%hajek.lda.deriv(x.0,x.1,beta,params)
+        ## })
+        ## approx <- diff(terms)
+        approx <- t(gamma.hat - beta.hat) %*% hajek.lda.deriv(x.0,x.1,beta,params)
+        c(true,approx)
+    })
+    pairs[1,] - pairs[2,]
+})
+by.n <- simplify2array(by.n)
+Sys.time() - start
+mad <- colMeans(abs(by.n))
+plot(ns,mad)
+lm0 <- lm(log(mad)~log(ns))
+print(coef(lm0))
+curve(exp(coef(lm0)[1]+coef(lm0)[2]*log(x)),add=TRUE)
+
+
+
+
+## 1g-4 -- copied here from delong.R: 9f variance of u.1
+require(mvtnorm)
+p <- 3
+mu <- runif(p)
+## mu.1 <- runif(p)
+Sigma <- matrix(runif(p^2),nrow=p)
+Sigma <- Sigma%*%t(Sigma)
+beta <- runif(p)
+u.1 <- function(beta,w) {
+    qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+    as.numeric(-dnorm(t(beta)%*%w/sqrt(qform))/sqrt(qform))*(as.numeric(t(beta)%*%w/qform)*Sigma%*%beta-w)
+}
+var.u.1 <- function(beta,mu,Sigma) {
+    qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+    moment.1 <- u.1(beta,mu/sqrt(2))
+    moment.2 <- 1/sqrt(2*pi)*as.numeric(dnorm(sqrt(2/3)*t(beta)%*%mu/sqrt(qform))/sqrt(3)/qform) * (
+        mu%*%t(mu) + Sigma - as.numeric(t(beta)%*%mu/qform) * (mu%*%t(beta)%*%Sigma + Sigma%*%beta%*%t(mu)) + as.numeric((t(beta)%*%mu/qform)^2-1/qform)*Sigma%*%beta%*%t(beta)%*%Sigma
+    )
+    moment.2 - moment.1%*%t(moment.1)
+}
+a <- runif(p)
+Bs <- round(seq(10,5e3,len=30))
+var.try <- var.u.1(beta,mu,Sigma)
+by.B <- sapply(Bs, function(B) {
+    w <- t(rmvnorm(B,mu,Sigma))
+    u.1s <- apply(w,2,function(w.i)u.1(beta,w.i))
+    observed <- as.numeric(t(a)%*%u.1s)
+    ## try <- u.1(beta,mu/sqrt(2))
+    ## hist(a%*%obs)
+    ## abline(v=a%*%try,col=2)
+    var(observed) - t(a)%*%var.try%*%a
+})
+plot(Bs,by.B)
+abline(h=0)
+
+
+
+## 1g-5 relating old delong.R u.1() to hajek.lda.deriv()
+hajek.lda <- function(x,y,beta,params) {
+    mu.0 <- params$mu.0; mu.1 <- params$mu.1; Sigma <- params$Sigma
+    qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+    x <- t(x); y <- t(y) ## expects x,y in model matrix format
+    mean(pnorm(t(beta)%*%(y-mu.0)/sqrt(qform))) + mean(pnorm(t(beta)%*%(mu.1-x)/sqrt(qform))) - 2*pnorm(t(beta)%*%(mu.1-mu.0)/sqrt(2*qform))
+}
+hajek.lda.deriv <- function(x,y,beta,params) {
+    mu.0 <- params$mu.0; mu.1 <- params$mu.1; Sigma <- params$Sigma
+    qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+    f.prime.pre <- function(u) {
+        colMeans(as.numeric(dnorm(t(beta)%*%u/sqrt(qform))) * (t(u/sqrt(qform)) - t(t(beta)%*%u/qform^(3/2))%*%t(beta)%*%Sigma))
+    }
+    f.prime.pre(t(y)-mu.0) + f.prime.pre(-t(x)+mu.1) -  2*f.prime.pre(matrix((mu.1-mu.0)/sqrt(2),ncol=1))
+}
+u.1 <- function(beta,w) {
+    qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+    as.numeric(-dnorm(t(beta)%*%w/sqrt(qform))/sqrt(qform))*(as.numeric(t(beta)%*%w/qform)*Sigma%*%beta-w)
+}
+require(mvtnorm)
+require(parallel)
+source('delong/misc.R')
+start <- Sys.time()
+set.seed(1)
+n <- 1e2
+p <- 4
+mu.0 <- runif(p)
+mu.1 <- runif(p)
+Sigma <- matrix(runif(p^2),p)
+Sigma <- Sigma%*%t(Sigma)
+beta <- runif(p)#solve(Sigma)%*%(mu.1-mu.0)
+params <- list(mu.0=mu.0,mu.1=mu.1,Sigma=Sigma)
+## auc.beta <- pnorm(t(beta)%*%(mu.1-mu.0)/sqrt(2*qform))
+ns <- round(seq(50,1000,len=5))
+ns <- round(seq(1e3,7.5e3,len=30))
+x.0 <- rmvnorm(n,mu.0,Sigma)
+x.1 <- rmvnorm(n,mu.1,Sigma)
+hajek.lda.deriv(x.0,x.1,beta,params)
+rowMeans(apply(t(x.1)-mu.0,2,function(w.i)u.1(beta,w.i))) + rowMeans(apply(-t(x.0)+mu.1,2,function(w.i)u.1(beta,w.i))) - 2*u.1(beta,(mu.1-mu.0)/sqrt(2))
+
+
+
+
+## 1g-6 encapsulate formula for variance of mixed derivative
+## hajek.lda.deriv
+hajek.lda <- function(x,y,beta,params) {
+    mu.0 <- params$mu.0; mu.1 <- params$mu.1; Sigma <- params$Sigma
+    qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+    x <- t(x); y <- t(y) ## expects x,y in model matrix format
+    mean(pnorm(t(beta)%*%(y-mu.0)/sqrt(qform))) + mean(pnorm(t(beta)%*%(mu.1-x)/sqrt(qform))) - 2*pnorm(t(beta)%*%(mu.1-mu.0)/sqrt(2*qform))
+}
+hajek.lda.deriv <- function(x,y,beta,params) {
+    mu.0 <- params$mu.0; mu.1 <- params$mu.1; Sigma <- params$Sigma
+    qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+    f.prime.pre <- function(u) {
+        colMeans(as.numeric(dnorm(t(beta)%*%u/sqrt(qform))) * (t(u/sqrt(qform)) - t(t(beta)%*%u/qform^(3/2))%*%t(beta)%*%Sigma))
+    }
+    f.prime.pre(t(y)-mu.0) + f.prime.pre(-t(x)+mu.1) -  2*f.prime.pre(matrix((mu.1-mu.0)/sqrt(2),ncol=1))
+}
+## u.1 <- function(beta,w) {
+##     qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+##     as.numeric(-dnorm(t(beta)%*%w/sqrt(qform))/sqrt(qform))*(as.numeric(t(beta)%*%w/qform)*Sigma%*%beta-w)
+## }
+## var.u.1 <- function(beta,mu,Sigma) {
+##     qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+##     moment.1 <- u.1(beta,mu/sqrt(2))
+##     moment.2 <- 1/sqrt(2*pi)*as.numeric(dnorm(sqrt(2/3)*t(beta)%*%mu/sqrt(qform))/sqrt(3)/qform) * (
+##         mu%*%t(mu) + Sigma - as.numeric(t(beta)%*%mu/qform) * (mu%*%t(beta)%*%Sigma + Sigma%*%beta%*%t(mu)) + as.numeric((t(beta)%*%mu/qform)^2-1/qform)*Sigma%*%beta%*%t(beta)%*%Sigma
+##     )
+##     moment.2 - moment.1%*%t(moment.1)
+## }
+hajek.lda.deriv.var <- function(beta,params) {
+    u.1 <- function(beta,w) {
+        qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+        as.numeric(-dnorm(t(beta)%*%w/sqrt(qform))/sqrt(qform))*(as.numeric(t(beta)%*%w/qform)*Sigma%*%beta-w)
+    }
+    Sigma <- params$Sigma
+    mu <- with(params, mu.1-mu.0)
+    qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+    moment.1 <- u.1(beta,mu/sqrt(2))
+    moment.2 <- 1/sqrt(2*pi)*as.numeric(dnorm(sqrt(2/3)*t(beta)%*%mu/sqrt(qform))/sqrt(3)/qform) * (
+        mu%*%t(mu) + Sigma - as.numeric(t(beta)%*%mu/qform) * (mu%*%t(beta)%*%Sigma + Sigma%*%beta%*%t(mu)) + as.numeric((t(beta)%*%mu/qform)^2-1/qform)*Sigma%*%beta%*%t(beta)%*%Sigma
+    )
+    moment.2 - moment.1%*%t(moment.1)
+}
+require(mvtnorm)
+require(parallel)
+source('delong/misc.R')
+start <- Sys.time()
+set.seed(1)
+p <- 4
+mu.0 <- runif(p)
+mu.1 <- runif(p)
+Sigma <- matrix(runif(p^2),p)
+Sigma <- Sigma%*%t(Sigma)
+beta <- runif(p)#solve(Sigma)%*%(mu.1-mu.0)
+params <- list(mu.0=mu.0,mu.1=mu.1,Sigma=Sigma)
+a <- runif(p)
+n <- 1e3
+m <- round(n/2)
+## ns <- round(seq(10,5e3,len=30))
+## by.n <- sapply(ns, function(n) {
+## var.try <- var.u.1(beta,mu.1-mu.0,Sigma)*(1/m+1/n)
+var.try <- hajek.lda.deriv.var(beta,params)*(1/m+1/n)
+z.stats <- replicate(1e2, {
+    x.0 <- rmvnorm(m,mu.0,Sigma)
+    x.1 <- rmvnorm(n,mu.1,Sigma)
+    ## w <- t(rmvnorm(B,mu,Sigma))
+    ## u.1s <- apply(w,2,function(w.i)u.1(beta,w.i))
+     t(a) %*%    hajek.lda.deriv(x.0,x.1,beta,params)  / sqrt(t(a)%*%var.try%*%a)
+})
+## (var(obs) - t(a)%*%var.try%*%a) / var(obs)
+## ## var(observed) - t(a)%*%var.try%*%a
+## })
+## plot(ns,by.n)
+## abline(h=0)
+qqnorm(z.stats)
+abline(0,1)
+
+
+
+## 1g-7 sampling to approximate the asy distribution of mixed
+## partial. using noise to generate beta.hat,gamma.hat deviations.
+require(mvtnorm)
+require(parallel)
+source('misc.R')
+start <- Sys.time()
+set.seed(1)
+p <- 4
+mu.0 <- runif(p)
+mu.1 <- runif(p)
+Sigma <- matrix(runif(p^2),p)
+Sigma <- Sigma%*%t(Sigma)
+beta <- solve(Sigma)%*%(mu.1-mu.0)
+params <- list(mu.0=mu.0,mu.1=mu.1,Sigma=Sigma)
+## var.gamma <- var.beta <- diag(p)/n
+## cov.beta.gamma <- matrix(0,p,p)
+## var.beta.gamma <- rbind(cbind(var.beta,cov.beta.gamma),cbind(cov.beta.gamma,var.gamma))
+n <- 1e3
+m <- round(n/2)
+var.beta.gamma <- matrix(runif(4*p^2),2*p)
+var.beta.gamma <- var.beta.gamma%*%t(var.beta.gamma) / n
+## var.beta.gamma <- diag(runif(2*p))/n
+var.hajek <- hajek.lda.deriv.var(beta,params)*(1/m+1/n)
+cov.beta.hajek <- cov.gamma.hajek <- matrix(0,p,p)
+var.beta.gamma.hajek <- rbind(cbind(var.beta.gamma,rbind(cov.beta.hajek,cov.gamma.hajek)),cbind(cov.beta.hajek,cov.gamma.hajek,var.hajek))
+obs <- replicate(1e3, {
+    x.0 <- rmvnorm(m,mu.0,Sigma)
+    x.1 <- rmvnorm(n,mu.1,Sigma)
+    epsilon.beta.gamma <- rmvnorm(1,sigma=var.beta.gamma)
+    beta.hat <- beta+epsilon.beta.gamma[1:p]#rnorm(p)/n^.5
+    gamma.hat <- beta+epsilon.beta.gamma[(p+1):(2*p)]#rnorm(p)/n^.5
+    terms <- sapply(list(beta.hat,gamma.hat), function(beta.hat) {
+        hajek.lda(x.0,x.1,beta.hat,params)
+    })
+    n*diff(terms)
+    ## t(gamma.hat - beta.hat) %*% hajek.lda.deriv(x.0,x.1,beta,params)
+})
+## plot(ecdf(obs))
+## var.coefs <- diag(p)*2/n
+## var.hajek <- hajek.lda.deriv.var(beta,params)*(1/m+1/n)
+## B <- 1e3
+## reference <- n * rowSums(rmvnorm(B,sigma=var.coefs) * rmvnorm(B,sigma=var.hajek))
+## plot(ecdf(reference),add=TRUE,col=2)
+plot(ecdf(obs))
+B <- 1e3
+beta.gamma.hajek.star <- rmvnorm(B,sigma=var.beta.gamma.hajek)
+beta.star <- beta.gamma.hajek.star[,1:p]
+gamma.star <- beta.gamma.hajek.star[,(p+1):(2*p)]
+hajek.star <- beta.gamma.hajek.star[,(2*p+1):(3*p)]
+reference <- n * rowSums((beta.star-gamma.star)*hajek.star)
+plot(ecdf(reference),add=TRUE,col=2)
+
+
+
+## 1h combining 2 parts
+
+## 1h-1 represent target as sum of mixed partial and quad form--verify
+## (target - mixed partial - quadratic taylor term) is o(1/n)
+
+require(mvtnorm)
+source('misc.R')
+source('delong/misc.R')
+start <- Sys.time()
+set.seed(1)
+p <- 4
+mu.0 <- runif(p)
+mu.1 <- runif(p)
+Sigma <- matrix(runif(p^2),p)
+Sigma <- Sigma%*%t(Sigma)
+beta <- solve(Sigma)%*%(mu.1-mu.0)
+params <- list(mu.0=mu.0,mu.1=mu.1,Sigma=Sigma)
+auc.deriv2 <- auc.scores.deriv2.lda(beta,Sigma.diff=2*Sigma)
+ns <- round(seq(50,1000,len=20))
+## ns <- round(seq(1e3,7.5e3,len=30))
+by.n <- sapply(ns, simplify=FALSE, FUN=function(n) {
+    pairs <- replicate(1e2, {
+        x.0 <- rmvnorm(n,mu.0,Sigma)
+        x.1 <- rmvnorm(n,mu.1,Sigma)
+        beta.hat <- beta+rnorm(p)/n^.5
+        gamma.hat <- beta+rnorm(p)/n^.5
+        terms <- sapply(list(beta.hat,gamma.hat), function(beta.hat) {
+            ## qform <- as.numeric(t(beta.hat)%*%Sigma%*%beta.hat)
+            ## auc.beta.hat <- pnorm(t(beta.hat)%*%(mu.1-mu.0)/sqrt(2*qform))
+            auc.hat.beta.hat <- auc.hat(x.0%*%beta.hat,x.1%*%beta.hat)
+            ## F.0 <- function(u)pnorm((u-t(beta.hat)%*%mu.0)/sqrt(qform))
+            ## F.1 <- function(u)pnorm((u-t(beta.hat)%*%mu.1)/sqrt(qform))
+            ## auc.hajek.beta.hat <- auc.hajek(as.numeric(x.0%*%beta.hat),as.numeric(x.1%*%beta.hat),F.0,F.1,auc=auc.beta.hat,terms.only=FALSE)
+            auc.hajek.beta.hat <- t(beta.hat) %*% hajek.lda.deriv(x.0,x.1,beta,params)
+            taylor.quad <- t(beta.hat-beta)%*%auc.deriv2%*%(beta.hat-beta)/2
+            c(obs=auc.hat.beta.hat,approx=auc.hajek.beta.hat+taylor.quad)
+        })
+        apply(terms,1,diff)
+    })
+    pairs['obs',] - pairs['approx',]
+})
+by.n <- simplify2array(by.n)
+Sys.time() - start
+mad <- colMeans(abs(by.n))
+plot(ns,mad)
+lm0 <- lm(log(mad)~log(ns))
+print(coef(lm0))
+curve(exp(coef(lm0)[1]+coef(lm0)[2]*log(x)),add=TRUE)
+
+
+
+
+## 1h-2 sampling to approximate the asy distribution of target. using
+## noise to generate beta.hat,gamma.hat deviations.
+require(mvtnorm)
+require(parallel)
+source('misc.R')
+source('delong/misc.R')
+start <- Sys.time()
+set.seed(1)
+p <- 4
+mu.0 <- runif(p)
+mu.1 <- runif(p)
+Sigma <- matrix(runif(p^2),p)
+Sigma <- Sigma%*%t(Sigma)
+beta <- solve(Sigma)%*%(mu.1-mu.0)
+params <- list(mu.0=mu.0,mu.1=mu.1,Sigma=Sigma)
+auc.deriv2 <- auc.scores.deriv2.lda(beta,Sigma.diff=2*Sigma)
+n <- 3e2
+m <- round(n/2)
+var.beta.gamma <- matrix(runif(4*p^2),2*p)
+var.beta.gamma <- var.beta.gamma%*%t(var.beta.gamma) / n
+## var.beta.gamma <- diag(runif(2*p))/n
+var.hajek <- hajek.lda.deriv.var(beta,params)*(1/m+1/n)
+cov.beta.hajek <- cov.gamma.hajek <- matrix(0,p,p)
+var.beta.gamma.hajek <- rbind(cbind(var.beta.gamma,rbind(cov.beta.hajek,cov.gamma.hajek)),cbind(cov.beta.hajek,cov.gamma.hajek,var.hajek))
+obs <- replicate(2e3, {
+    x.0 <- rmvnorm(m,mu.0,Sigma)
+    x.1 <- rmvnorm(n,mu.1,Sigma)
+    epsilon.beta.gamma <- rmvnorm(1,sigma=var.beta.gamma)
+    beta.hat <- beta+epsilon.beta.gamma[1:p]#rnorm(p)/n^.5
+    gamma.hat <- beta+epsilon.beta.gamma[(p+1):(2*p)]#rnorm(p)/n^.5
+    terms <- sapply(list(beta.hat,gamma.hat), function(beta.hat) {
+        ## hajek.lda(x.0,x.1,beta.hat,params)
+        ## taylor.quad <- t(beta.hat-beta)%*%auc.deriv2%*%(beta.hat-beta)/2
+        auc.hat.beta.hat <- auc.hat(x.0%*%beta.hat,x.1%*%beta.hat)
+    })
+    n*diff(terms)
+    ## t(gamma.hat - beta.hat) %*% hajek.lda.deriv(x.0,x.1,beta,params)
+})
+plot(ecdf(obs))
+B <- 1e3
+beta.gamma.hajek.star <- rmvnorm(B,sigma=var.beta.gamma.hajek)
+beta.star <- beta.gamma.hajek.star[,1:p]
+gamma.star <- beta.gamma.hajek.star[,(p+1):(2*p)]
+hajek.star <- beta.gamma.hajek.star[,(2*p+1):(3*p)]
+reference.hajek <- n * rowSums((beta.star-gamma.star)*hajek.star)
+reference.taylor <-  n * (rowSums((beta.star%*%auc.deriv2)*beta.star)/2 - rowSums((gamma.star%*%auc.deriv2)*gamma.star)/2)
+plot(ecdf(reference.hajek+reference.taylor),add=TRUE,col=2)
+
+
+## 1h-3 moving toward using lda coefs rather than noise
+## betahat/gammahat. checking formulas involved in covariance between
+## betahat/gammahat and mixed partial.
+
+require(mvtnorm)
+n <- 1e3
+p <- 4
+mu <- runif(p)
+Sigma <- matrix(runif(p^2),p)
+Sigma <- Sigma%*%t(Sigma)
+beta <- runif(p)
+q <- as.numeric(t(beta)%*%Sigma%*%beta)
+A.1 <- mu - as.numeric(t(beta)%*%mu/(1+q))*Sigma%*%beta
+A.2 <- t(mu)/sqrt(1+q) - as.numeric(t(beta)%*%mu*(1+q)^(-3/2))*t(beta)%*%Sigma
+try <- as.numeric(dnorm(t(beta)%*%mu/sqrt(1+q))) * ( A.1%*%A.2 + Sigma/sqrt(1+q) - (Sigma%*%beta)%*%t(Sigma%*%beta)/(1+q)^(3/2))
+a <- runif(p)
+w <- rmvnorm(n,mu,Sigma)
+obs <- dnorm(w%*%beta) * (w%*%a)^2
+hist(obs)
+abline(v=t(a)%*%try%*%a,col=2)
+abline(v=mean(obs),col=3)
+A.1 <- mu - as.numeric(t(beta)%*%mu/2)*Sigma%*%beta/q
+A.2 <- t(mu)/sqrt(2) - as.numeric(t(beta)%*%mu*2^(-3/2))*t(beta)%*%Sigma/q
+A <- as.numeric(dnorm(t(beta)%*%mu/sqrt(2*q))) * ( A.1%*%A.2 + Sigma/sqrt(2) - (Sigma%*%beta)%*%t(Sigma%*%beta)/q/2^(3/2))
+obs <- dnorm(w%*%beta/sqrt(q)) * (w%*%a)^2
+hist(obs)
+abline(v=t(a)%*%A%*%a,col=2)
+abline(v=mean(obs),col=3)
+obs <- dnorm(w%*%beta/sqrt(q))/q^(3/2)* w%*%beta * as.numeric((t(a)%*%Sigma%*%beta))*(w%*%a)
+hist(obs)
+abline(v=t(a)%*%  Sigma%*%beta/q^(3/2)*(t(beta)%*%A)   %*%a,col=2)
+abline(v=mean(obs),col=3)
+
+u.1 <- function(beta,w) {
+    qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+    as.numeric(-dnorm(t(beta)%*%w/sqrt(qform))/sqrt(qform))*(as.numeric(t(beta)%*%w/qform)*Sigma%*%beta-w)
+}
+u.1s <- apply(w,1,function(w.i)u.1(beta,w.i))
+obs <- (t(a)%*%u.1s) * t(w%*%a)
+hist(obs)
+mean.try <- 1/sqrt(q)*(diag(p) - 1/q*Sigma%*%beta%*%t(beta)) %*%A
+abline(v=t(a)%*%  mean.try  %*%a,col=2)
+abline(v=mean(obs),col=3)
+
+
+n <- 1e3
+p <- 4
+mu <- runif(p)
+Sigma <- matrix(runif(p^2),p)
+Sigma <- Sigma%*%t(Sigma)
+beta <- runif(p)
+q <- as.numeric(t(beta)%*%Sigma%*%beta)
+A.1 <- mu - as.numeric(t(beta)%*%mu/2)*Sigma%*%beta/q
+A.2 <- t(mu)/sqrt(2) - as.numeric(t(beta)%*%mu*2^(-3/2))*t(beta)%*%Sigma/q
+A <- as.numeric(dnorm(t(beta)%*%mu/sqrt(2*q))) * ( A.1%*%A.2 + Sigma/sqrt(2) - (Sigma%*%beta)%*%t(Sigma%*%beta)/q/2^(3/2))
+mean.try <- 1/sqrt(q)*(diag(p) - 1/q*Sigma%*%beta%*%t(beta)) %*%A
+cov.try <- mean.try - u.1(beta,mu/sqrt(2))%*%t(mu)
+pairs <- replicate(1e2, {
+    a <- runif(p)
+    b <- runif(p)
+    w <- rmvnorm(n,mu,Sigma)
+    u.1s <- apply(w,1,function(w.i)u.1(beta,w.i))
+    obs <- cov(as.numeric(t(a)%*%u.1s),  w%*%b)
+    c(obs=obs,try=a%*%cov.try%*%b)
+})
+plot(pairs[1,],pairs[2,]); abline(0,1)
+
+
+
+require(mvtnorm)
+cov.coefs.hajek.lda <- function(beta,mu,Sigma) {
+    q <- as.numeric(t(beta)%*%Sigma%*%beta)
+    A.1 <- mu - as.numeric(t(beta)%*%mu/2)*Sigma%*%beta/q
+    A.2 <- t(mu)/sqrt(2) - as.numeric(t(beta)%*%mu*2^(-3/2))*t(beta)%*%Sigma/q
+    A <- as.numeric(dnorm(t(beta)%*%mu/sqrt(2*q))) * ( A.1%*%A.2 + Sigma/sqrt(2) - (Sigma%*%beta)%*%t(Sigma%*%beta)/q/2^(3/2))
+    mean.try <- 1/sqrt(q)*(diag(p) - 1/q*Sigma%*%beta%*%t(beta)) %*%A
+    cov.try <- mean.try - u.1(beta,mu/sqrt(2))%*%t(mu)
+}
+u.1 <- function(beta,w) {
+    qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+    as.numeric(-dnorm(t(beta)%*%w/sqrt(qform))/sqrt(qform))*(as.numeric(t(beta)%*%w/qform)*Sigma%*%beta-w)
+}
+n <- 1e3
+m <- round(n/2)
+p <- 4
+mu.1 <- runif(p)
+mu.0 <- runif(p)
+mu <- mu.1-mu.0
+Sigma <- matrix(runif(p^2),p)
+Sigma <- Sigma%*%t(Sigma)
+beta <- runif(p)
+## hajek.lda.deriv(x.0,x.1,beta,params)
+## rowMeans(apply(t(x.1)-mu.0,2,function(w.i)u.1(beta,w.i))) + rowMeans(apply(-t(x.0)+mu.1,2,function(w.i)u.1(beta,w.i)))
+cov.try <- cov.coefs.hajek.lda(beta,mu,Sigma)
+pairs <- replicate(1e2, {
+    a <- runif(p)
+    b <- runif(p)
+    x.0 <- rmvnorm(m,mu.0,Sigma)
+    x.1 <- rmvnorm(n,mu.1,Sigma)
+    ## u.1s <- apply(t(x.1)-mu.0,2,function(w.i)u.1(beta,w.i))
+    ## obs <- cov(as.numeric(t(a)%*%u.1s),  x.1%*%b)
+    u.1s <- apply(-t(x.0)+mu.1,2,function(w.i)u.1(beta,w.i))
+    obs <- cov(as.numeric(t(a)%*%u.1s),  -x.0%*%b)
+    c(obs=obs,try=a%*%cov.try%*%b)
+})
+plot(pairs[1,],pairs[2,]); abline(0,1)
+
+## encapsulated routine for vcov matrix between full coefs and mixed partial
+require(mvtnorm)
+source('misc.R')
+source('delong/misc.R')
+## set.seed(1)
+n <- 5e2
+m <- round(n/4)
+p <- 4
+mu.1 <- runif(p)
+mu.0 <- runif(p)
+mu <- mu.1-mu.0
+Sigma <- matrix(runif(p^2),p)
+Sigma <- Sigma%*%t(Sigma) + diag(p)
+params <- list(mu.0=mu.0,mu.1=mu.1,Sigma=Sigma)
+beta <- runif(p)
+## hajek.lda.deriv(x.0,x.1,beta,params)
+## rowMeans(apply(t(x.1)-mu.0,2,function(w.i)u.1(beta,w.i))) + rowMeans(apply(-t(x.0)+mu.1,2,function(w.i)u.1(beta,w.i)))
+cov.try <- vcov.full.hajek.lda(beta,params)
+a <- runif(p)#%*%solve(Sigma)
+b <- runif(p)
+observed <- replicate(3e2, {
+    cat('.')
+    terms <- replicate(1e2, {
+        x.0 <- rmvnorm(m,mu.0,Sigma)
+        x.1 <- rmvnorm(n,mu.1,Sigma)
+        ## rbind(hajek=hajek.lda.deriv(x.0,x.1,beta,params), coefs=as.numeric(solve(Sigma)%*%(colMeans(x.1)-colMeans(x.0))))
+        rbind(hajek=hajek.lda.deriv(x.0,x.1,beta,params), coefs=as.numeric(coefs.lda(x.0,x.1,params=list(Sigma=Sigma)))
+)
+    })
+    cov(t(a%*%terms['coefs',,]), t(b%*%terms['hajek',,]))
+})
+hist(observed)
+abline(v=a%*%cov.try%*%b * (1/m+1/n),col=2)
+abline(v=mean(observed),col=3)
+
+
+
+
+
+## vcov for 
+require(mvtnorm)
+source('misc.R')
+source('delong/misc.R')
+## set.seed(1)
+n <- 5e2
+m <- round(n/4)
+p <- 4
+mu.1 <- runif(p)
+mu.0 <- runif(p)
+mu <- mu.1-mu.0
+Sigma <- matrix(runif(p^2),p)
+Sigma <- Sigma%*%t(Sigma) + diag(p)
+params <- list(mu.0=mu.0,mu.1=mu.1,Sigma=Sigma)
+beta <- runif(p)
+## hajek.lda.deriv(x.0,x.1,beta,params)
+## rowMeans(apply(t(x.1)-mu.0,2,function(w.i)u.1(beta,w.i))) + rowMeans(apply(-t(x.0)+mu.1,2,function(w.i)u.1(beta,w.i)))
+cov.try <- vcov.full.hajek.lda(beta,params)
+a <- runif(p)#%*%solve(Sigma)
+b <- runif(p)
+observed <- replicate(3e2, {
+    cat('.')
+    terms <- replicate(1e2, {
+        x.0 <- rmvnorm(m,mu.0,Sigma)
+        x.1 <- rmvnorm(n,mu.1,Sigma)
+        ## rbind(hajek=hajek.lda.deriv(x.0,x.1,beta,params), coefs=as.numeric(solve(Sigma)%*%(colMeans(x.1)-colMeans(x.0))))
+        rbind(hajek=hajek.lda.deriv(x.0,x.1,beta,params), coefs=as.numeric(coefs.lda(x.0,x.1,params=list(Sigma=Sigma)))
+)
+    })
+    cov(t(a%*%terms['coefs',,]), t(b%*%terms['hajek',,]))
+})
+hist(observed)
+abline(v=a%*%cov.try%*%b * (1/m+1/n),col=2)
+abline(v=mean(observed),col=3)
+
+
+
+

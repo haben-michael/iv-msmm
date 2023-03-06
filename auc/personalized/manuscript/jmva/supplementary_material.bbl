@@ -1,0 +1,22 @@
+\begin{thebibliography}{}
+
+\bibitem[Goel et~al., 2016]{goel2016}
+Goel, S., Rao, J.~M., and Shroff, R. (2016).
+\newblock Precinct or prejudice? {U}nderstanding racial disparities in new york
+  city’s stop-and-frisk policy.
+\newblock {\em The Annals of Applied Statistics}, 10(1):365--394.
+
+\bibitem[Ridgeway, 2006]{ridgeway2006}
+Ridgeway, G. (2006).
+\newblock Assessing the effect of race bias in post-traffic stop outcomes using
+  propensity scores.
+\newblock {\em Journal of Quantitative Criminology}, 22(1):1--29.
+
+\bibitem[Ridgeway and MacDonald, 2009]{ridgeway2009}
+Ridgeway, G. and MacDonald, J.~M. (2009).
+\newblock Doubly robust internal benchmarking and false discovery rates for
+  detecting racial bias in police stops.
+\newblock {\em Journal of the American Statistical Association},
+  104(486):661--668.
+
+\end{thebibliography}

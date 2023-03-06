@@ -1,0 +1,143 @@
+## TODO:
+## DONE--diff rather than just auc.
+## full oracle (f-test) rather than just derivative oracle.
+## maybe bad power in addition to bad fpr.
+## coefs.lda should take x,g not x.0,x.1
+## different strength of derivative
+## maybe bootstrap estimator for comparison
+
+
+args <- commandArgs(trailingOnly=TRUE)
+n <- as.numeric(args[1])
+reps <- as.numeric(args[2])
+p.full <- as.numeric(args[3])
+p.red <- as.numeric(args[4])
+adjust.size <- as.numeric(args[5])
+## print(adjust.size)
+
+## sampler.init <- function(n,p,adjust.size) {
+##     u <- 4*p*pi*exp(1)*adjust.size^2
+##     pi.0.min <- 1/2*(1-u+sqrt(u*(u+2)))
+##     stopifnot(pi.0.min>1/2)
+##     ## pi.0 <- runif(1,pi.0.min,1)
+##     pi.0 <- (pi.0.min+1)/2
+##     pi.1 <- 1-pi.0
+##     d <- sqrt(2/p)
+##     a <- (1-2*pi.0)^2/16/p/pi/exp(1)
+##     b <- -2*a-pi.0*adjust.size^2
+##     c <- a+(pi.0-1)*adjust.size^2
+##     eps <- min(1/2/a*(-b+c(-1,1)*sqrt(b^2-4*a*c)))
+##     stopifnot(eps>0)
+##     beta.star <- rep(1,p )*d
+##     Sigma.1 <- diag(p) 
+##     Sigma.0 <- diag(c(rep(eps,p/2),rep(2-eps,p/2)) )
+##     Sigma.pi <- pi.0*Sigma.0+pi.1*Sigma.1
+##     Sigma <- Sigma.0+Sigma.1
+##     mu.0 <- rep(0,p)
+##     mu.1 <- (pi.0*Sigma.0+pi.1*Sigma.1)%*%beta.star
+##     params <- list(mu.0=mu.0,mu.1=mu.1,Sigma.0=Sigma.0,Sigma.1=Sigma.1,pi.0=pi.0,beta=beta.star,pi.0=pi.0)
+##     params$deriv.star <- auc.deriv.lda.gaussian(beta.star,params)
+##     params$auc <- auc.lda.gaussian(beta.star,params)
+##     ## n <- 5e3
+##     n.0 <- round(n*pi.0); n.1 <- n-n.0
+##     ## n.0 <- rbinom(1,n,pi.0); n.1 <- n-n.0
+##     stopifnot(n.0<n)
+##     sample <- function() {
+##         x.0 <- rmvnorm(n.0,mu.0,Sigma.0)
+##         x.1 <- rmvnorm(n.1,mu.1,Sigma.1)
+##         x <- rbind(x.0,x.1)
+##         d <- c(rep(0,n.0),rep(1,n.1))
+##         return(list(x=x,d=d))
+##     }
+##     return(list(n.0=n.0,n.1=n.1,params=params,sample=sample))
+## }
+auc.index.linearize <- function(x,d,beta,infl.fn,deriv.fn=NULL) {
+    n <- nrow(x)
+    x.0 <- x[d==0,]; x.1 <- x[d==1,] # clean up
+    if(is.null(deriv.fn)) deriv.fn <- function(x,d,beta)numDeriv::grad(function(u)auc.hat(x.0%*%u,x.1%*%u),beta,method='simple',method.args=list(eps=1/n^(.5)))
+    approx.1 <- auc.hajek(x.0%*%beta,x.1%*%beta,terms.only=TRUE,IID=TRUE)
+    infl.hat <- infl.fn(x,d)
+    deriv.hat <- deriv.fn(x,d,beta)#grad(function(u)auc.hat(x.0%*%u,x.1%*%u),beta.hat)
+    ## sapply(list(deriv.hat.1=deriv.hat.1,deriv.hat.2=deriv.hat.2,deriv.hat.3=deriv.hat.3), function(deriv.hat) {
+    approx.2 <- deriv.hat%*%infl.hat
+    ## obs <- auc.hat(x.0%*%beta.hat,x.1%*%beta.hat) - auc
+    approx <- as.numeric(approx.1+approx.2)
+    ## var(approx) / length(approx)
+}
+suppressPackageStartupMessages({
+    require(mvtnorm)
+    require(parallel)
+    require(numDeriv)
+})
+source('misc.R')
+source('../../misc.R')
+sim <- function(n,p.full,p.red,auc,epsilon=NULL,pi.0=NULL,adjust.size=NULL,reps=3e2) {
+## sim <- function(n,p.full,p.red,adjust.size,alpha=.05,reps=3e2) {
+    ## browser()
+    ## cat('.')
+    sampler <- sampler.init(n,p.full,auc=auc,epsilon=epsilon,pi.0=pi.0)
+    ## sampler <- sampler.init(n,p.full,adjust.size)
+    params.full <- sampler$params
+    params.red <- with(params.full, list(mu.0=mu.0[1:p.red],mu.1=mu.1[1:p.red],Sigma.0=Sigma.0[1:p.red,1:p.red],Sigma.1=Sigma.1[1:p.red,1:p.red],pi.0=pi.0))
+    params.red$beta <- with(params.red,solve(pi.0*Sigma.0+(1-pi.0)*Sigma.1)%*%(mu.1-mu.0)) 
+    params.red$auc <- auc.lda.gaussian(params.red$beta,params.red)
+    params.red$deriv.star <- auc.deriv.lda.gaussian(params.red$beta,params.red) # ==0 for p.red=p.full=2 
+    terms <- replicate(reps, {
+    ## z.stats <- mclapply(1:reps, mc.cores=detectCores()-3, FUN= function(dd){
+        xd <- sampler$sample()
+        ## x <- xd$x; d <- xd$d
+        params.full$x <- xd$x; params.full$d <- xd$d # maybe rename to "dataset"? these arent just params anymore
+        params.red$x <- xd$x[,1:p.red]; params.red$d <- xd$d
+        ## datasets <- list(full=list(x=x,d=d,auc=params.full$auc,deriv.star=params.full$deriv.star),
+                         ## reduced=list(x=x[,1:p.red],d=d,auc=params.red$auc,deriv.star=params.red$deriv.star))
+        out <- lapply(list(full=params.full,red=params.red), function(params) {
+            with(params, {
+                x.0 <- x[d==0,]; x.1 <- x[d==1,]
+                beta.hat <- coefs.lda(x.0,x.1)
+                obs <- auc.hat(x.0%*%beta.hat,x.1%*%beta.hat) #- auc
+                linearized <- lapply(list(delong= function(x,d,beta)rep(0,ncol(x)),oracle=function(x,d,beta)deriv.star, proposed=NULL), function(deriv.fn)
+                    auc.index.linearize(x,d,beta.hat,infl.fn=function(x,d)infl.lda(x,d,params=NULL,var.equal=FALSE),deriv.fn=deriv.fn))
+                linearized <- simplify2array(linearized)
+                list(obs=obs,true=auc,linearized=linearized)
+            })
+        })
+        diff.linearized <- out$full$linearized - out$red$linearized
+        diff.obs <- out$full$obs - out$red$obs
+        diff.true <- out$full$true - out$red$true
+        diff.var.hat <- apply(diff.linearized,2,function(iid)var(iid) / length(iid))
+        ## c(diff.obs) / sqrt(diff.var.hat)
+        c(obs=diff.obs,true=diff.true,diff.var.hat)
+    })
+    ## t(terms)
+    ## z.stats <- simplify2array(z.stats)
+    ## fpr <- rowMeans(abs(z.stats)<qnorm(1-alpha/2))
+}
+p.full <- 8
+p.red <- 6
+n <- 1e3
+## adjust.size <- 1/12
+pi.0 <- .8
+epsilon <- .01
+reps <- 3e2
+auc <- .9
+terms <-  tryCatch(
+    sim(n,p.full,p.red=p.red,auc=auc,epsilon=epsilon,pi.0=pi.0,adjust.size=NULL,reps=3e2) ,
+    ## sim(n,p.full,p.red,adjust.size,alpha=alpha,reps=reps),
+    error=function(e)NA)
+## Sys.time() - start
+## matplot(x=ns,t(fpr),pch=1,type='l',lty=1:3,col=1)
+## legend('bottomleft',legend=rownames(fpr),lty=1:3)
+## abline(h=1-alpha,lty=2)
+
+
+
+filename <- paste0('save',as.integer(abs(rnorm(1))*1e8),'.RData')
+## save(obs=subset(terms,select='obs'),true=subset(terms,select='true'),var.hats=subset(terms,select=-c('obs','true')),n,reps,p.full,p.red,adjust.size,file=filename)
+## save(terms,n,reps,p.full,p.red,adjust.size,file=filename)
+save(terms,n,p.full,p.red,reps,auc,pi.0,file=filename)
+
+
+
+## shell command
+## for n in $(seq 5e2 200 3000); do /usr/bin/Rscript sim.R $n 1e2 8 6 .05; done
+## for n in $(seq 5e2 500 3000); do for reps in 1000; do for adjsize in .05 .1 .12; do /usr/bin/Rscript sim.R $n $reps 8 6 $adjsize; done; done; done&

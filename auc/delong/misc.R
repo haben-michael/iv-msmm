@@ -96,9 +96,20 @@ coefs.lda <- function(x.0,x.1,params=NULL) {
 }
 
 ## TODO case with ties
-auc.hat <- function(x,y,ties=FALSE)if(!ties)mean(outer(x,y,'<')) else NA
+## auc.hat <- function(x,y,ties=FALSE)if(!ties)mean(outer(x,y,'<')) else NA
 ## deprecate
 auc.hat.continuous <- function(x,y)mean(outer(x,y,'<'))
+## support for large vectors that outer can't handle
+auc.hat <- function(x,y,ties=FALSE)
+    if(!ties) {
+        if(as.numeric(length(x))*length(y)<1e8)
+            return(mean(outer(x,y,'<')))
+        else {
+                total <- 0
+                for(i in 1:length(x))total <- total + sum(x[i]<y)
+                return(total/length(x)/length(y))
+            }
+    } else return(NA) ## todo
 
 
 lda.sampler.init <- function(beta,Sigma) {
@@ -228,8 +239,8 @@ auc.scores <- function(coefs,mu.diff,Sigma.diff) {
 
 ## derivative of auc.scores
 auc.scores.deriv <-  function(coefs,mu.diff,Sigma.diff) {
-    quad <- as.numeric(coefs%*%Sigma.diff%*%coefs)
-    -(Sigma.diff%*%coefs %*% (coefs%*%mu.diff/quad) - mu.diff)%*%(1/sqrt(quad)) %*% dnorm(coefs%*%mu.diff/sqrt(quad))
+    quad <- as.numeric(t(coefs)%*%Sigma.diff%*%coefs)
+    -(Sigma.diff%*%coefs %*% (t(coefs)%*%mu.diff/quad) - mu.diff)%*%(1/sqrt(quad)) %*% dnorm(t(coefs)%*%mu.diff/sqrt(quad))
 }
 ## p <- 3
 ## n <- 1e3
@@ -247,7 +258,7 @@ auc.scores.deriv <-  function(coefs,mu.diff,Sigma.diff) {
 
 ## second derivative of auc(beta), but only valid when evaluated at beta==the lda coefs
 auc.scores.deriv2.lda <- function(coefs,Sigma.diff) {
-      quad <- as.numeric(coefs%*%Sigma.diff%*%coefs)
+      quad <- as.numeric(t(coefs)%*%Sigma.diff%*%coefs)
       -dnorm(sqrt(quad)/2)/sqrt(quad)*(Sigma.diff - (Sigma.diff%*%coefs)%*%t(Sigma.diff%*%coefs)/quad)/2
       }
 ## ## source('misc.R')
@@ -322,7 +333,7 @@ auc.hajek <- function(x,y,F=NULL,G=NULL,auc=NULL,terms.only=TRUE,IID=FALSE) {
     if(is.null(F)) F <- ecdf(x)
     if(is.null(G)) G <- ecdf(y)
     if(is.null(auc)) auc <- auc.hat(x,y)
-    terms <- list(control = -(G(x)-(1-auc)), case = F(y)-auc)
+    terms <- list(control = -(G(x)-c(1-auc)), case = F(y)-c(auc))
     if(terms.only) {
         if(IID) {
             ## stopifnot(terms.only)
@@ -829,6 +840,7 @@ viz.cond.exp <- function(x,y,f,n.quantiles=1e2,...) {
 viz.deriv <- function(f,deriv,dim.x,dim.f,x0=NULL,delta=NULL) {
     if(is.null(x0)) x0 <- runif(dim.x)
     if(is.null(delta)) delta <- matrix(runif(dim.x),ncol=1)
+    ## browser()
     a <- matrix(runif(dim.f),ncol=1)
     ts <- seq(0,1,len=1e2)
     fs <- sapply(ts,function(t)t(a)%*%f(x0+t*delta))
@@ -1009,12 +1021,12 @@ infl.glm <- function(x,g,params,terms.only=TRUE) {
     ## browser()
     p <- params$p
     score <- function(x,g,params) { # x in model matrix format
-        h <- params$link; h.1 <- params$lnk.deriv
+        h <- params$link; h.1 <- params$link.deriv
         eta <- as.numeric(x%*%params$beta)
         t( (g-h(eta))/h(eta)/(1-h(eta))*h.1(eta) * x )
     }
     fi <- function(x,g,params) { # x in model matrix format
-        h <- params$link; h.1 <- params$lnk.deriv; h.2 <- params$link.deriv2
+        h <- params$link; h.1 <- params$link.deriv; h.2 <- params$link.deriv2
         n <- nrow(x)
         eta <- as.numeric(x%*%params$beta)
         denom <- h(eta)*(1-h(eta))

@@ -1,0 +1,61 @@
+\begin{thebibliography}{}
+
+\bibitem[\protect\citeauthoryear{DeLong, DeLong, and Clarke-Pearson}{DeLong
+  et~al.}{1988}]{delong1988}
+DeLong, E.~R., D.~M. DeLong, and D.~L. Clarke-Pearson (1988).
+\newblock Comparing the areas under two or more correlated receiver operating
+  characteristic curves: a nonparametric approach.
+\newblock {\em Biometrics\/}, 837--845.
+
+\bibitem[\protect\citeauthoryear{Demler, Pencina, Cook, and
+  D'Agostino~Sr}{Demler et~al.}{2017}]{demler2017}
+Demler, O.~V., M.~J. Pencina, N.~R. Cook, and R.~B. D'Agostino~Sr (2017).
+\newblock Asymptotic distribution of $\delta$auc, nris, and idi based on theory
+  of u-statistics.
+\newblock {\em Statistics in medicine\/}~{\em 36\/}(21), 3334--3360.
+
+\bibitem[\protect\citeauthoryear{Demler, Pencina, and D'Agostino~Sr}{Demler
+  et~al.}{2011}]{demler2011}
+Demler, O.~V., M.~J. Pencina, and R.~B. D'Agostino~Sr (2011).
+\newblock Equivalence of improvement in area under roc curve and linear
+  discriminant analysis coefficient under assumption of normality.
+\newblock {\em Statistics in medicine\/}~{\em 30\/}(12), 1410--1418.
+
+\bibitem[\protect\citeauthoryear{Heller, Seshan, Moskowitz, and
+  G{\"o}nen}{Heller et~al.}{2017}]{heller2017}
+Heller, G., V.~E. Seshan, C.~S. Moskowitz, and M.~G{\"o}nen (2017).
+\newblock Inference for the difference in the area under the roc curve derived
+  from nested binary regression models.
+\newblock {\em Biostatistics\/}~{\em 18\/}(2), 260--274.
+
+\bibitem[\protect\citeauthoryear{Lee}{Lee}{2021}]{lee2021}
+Lee, C.~Y. (2021).
+\newblock Nested logistic regression models and $\delta$auc applications:
+  Change-point analysis.
+\newblock {\em Statistical Methods in Medical Research\/}~{\em 30\/}(7),
+  1654--1666.
+
+\bibitem[\protect\citeauthoryear{McIntosh and Pepe}{McIntosh and
+  Pepe}{2002}]{mcintosh2002}
+McIntosh, M.~W. and M.~S. Pepe (2002).
+\newblock Combining several screening tests: optimality of the risk score.
+\newblock {\em Biometrics\/}~{\em 58\/}(3), 657--664.
+
+\bibitem[\protect\citeauthoryear{Pepe, Kerr, Longton, and Wang}{Pepe
+  et~al.}{2013}]{pepe2013}
+Pepe, M.~S., K.~F. Kerr, G.~Longton, and Z.~Wang (2013).
+\newblock Testing for improvement in prediction model performance.
+\newblock {\em Statistics in medicine\/}~{\em 32\/}(9), 1467--1482.
+
+\bibitem[\protect\citeauthoryear{Pollard}{Pollard}{1984}]{pollard1984}
+Pollard, D. (1984).
+\newblock {\em Convergence of Stochastic Processes}.
+\newblock David Pollard.
+
+\bibitem[\protect\citeauthoryear{Seshan, G{\"o}nen, and Begg}{Seshan
+  et~al.}{2013}]{seshan2013}
+Seshan, V.~E., M.~G{\"o}nen, and C.~B. Begg (2013).
+\newblock Comparing roc curves derived from regression models.
+\newblock {\em Statistics in medicine\/}~{\em 32\/}(9), 1483--1493.
+
+\end{thebibliography}

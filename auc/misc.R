@@ -1,0 +1,82 @@
+hajek.lda <- function(x,y,beta,params) {
+    mu.0 <- params$mu.0; mu.1 <- params$mu.1; Sigma <- params$Sigma
+    qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+    x <- t(x); y <- t(y) ## expects x,y in model matrix format
+    mean(pnorm(t(beta)%*%(y-mu.0)/sqrt(qform))) + mean(pnorm(t(beta)%*%(mu.1-x)/sqrt(qform))) - 2*pnorm(t(beta)%*%(mu.1-mu.0)/sqrt(2*qform))
+}
+hajek.lda.deriv <- function(x,y,beta,params) {
+    mu.0 <- params$mu.0; mu.1 <- params$mu.1; Sigma <- params$Sigma
+    qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+    f.prime.pre <- function(u) {
+        colMeans(as.numeric(dnorm(t(beta)%*%u/sqrt(qform))) * (t(u/sqrt(qform)) - t(t(beta)%*%u/qform^(3/2))%*%t(beta)%*%Sigma))
+    }
+    f.prime.pre(t(y)-mu.0) + f.prime.pre(-t(x)+mu.1) -  2*f.prime.pre(matrix((mu.1-mu.0)/sqrt(2),ncol=1))
+}
+## hajek.lda.deriv.var <- function(beta,params) {
+##     u.1 <- function(beta,w) {
+##         qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+##         as.numeric(-dnorm(t(beta)%*%w/sqrt(qform))/sqrt(qform))*(as.numeric(t(beta)%*%w/qform)*Sigma%*%beta-w)
+##     }
+##     Sigma <- params$Sigma
+##     mu <- with(params, mu.1-mu.0)
+##     qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+##     moment.1 <- u.1(beta,mu/sqrt(2))
+##     moment.2 <- 1/sqrt(2*pi)*as.numeric(dnorm(sqrt(2/3)*t(beta)%*%mu/sqrt(qform))/sqrt(3)/qform) * (
+##         mu%*%t(mu) + Sigma - as.numeric(t(beta)%*%mu/qform) * (mu%*%t(beta)%*%Sigma + Sigma%*%beta%*%t(mu)) + as.numeric((t(beta)%*%mu/qform)^2-1/qform)*Sigma%*%beta%*%t(beta)%*%Sigma
+##     )
+##     moment.2 - moment.1%*%t(moment.1)
+## }
+## vcov.full.hajek.lda <- function(beta,params) {
+##     mu <- with(params, mu.1-mu.0); Sigma <- params$Sigma
+##     u.1 <- function(beta,w) {
+##         qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+##         as.numeric(-dnorm(t(beta)%*%w/sqrt(qform))/sqrt(qform))*(as.numeric(t(beta)%*%w/qform)*Sigma%*%beta-w)
+##     }
+##     q <- as.numeric(t(beta)%*%Sigma%*%beta)
+##     A.1 <- mu - as.numeric(t(beta)%*%mu/2)*Sigma%*%beta/q
+##     A.2 <- t(mu)/sqrt(2) - as.numeric(t(beta)%*%mu*2^(-3/2))*t(beta)%*%Sigma/q
+##     A <- as.numeric(dnorm(t(beta)%*%mu/sqrt(2*q))) * ( A.1%*%A.2 + Sigma/sqrt(2) - (Sigma%*%beta)%*%t(Sigma%*%beta)/q/2^(3/2))
+##     mean.try <- 1/sqrt(q)*(diag(p) - 1/q*Sigma%*%beta%*%t(beta)) %*%A
+##     cov.try <- solve(Sigma)%*%(mean.try - u.1(beta,mu/sqrt(2))%*%t(mu)) 
+## }
+vcov.lda <- function(beta,p.reduced,params) {
+    hajek.lda.deriv.var <- function(beta,params) {
+        u.1 <- function(beta,w) {
+            qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+            as.numeric(-dnorm(t(beta)%*%w/sqrt(qform))/sqrt(qform))*(as.numeric(t(beta)%*%w/qform)*Sigma%*%beta-w)
+        }
+        Sigma <- params$Sigma
+        mu <- with(params, mu.1-mu.0)
+        qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+        moment.1 <- u.1(beta,mu/sqrt(2))
+        moment.2 <- 1/sqrt(2*pi)*as.numeric(dnorm(sqrt(2/3)*t(beta)%*%mu/sqrt(qform))/sqrt(3)/qform) * (
+            mu%*%t(mu) + Sigma - as.numeric(t(beta)%*%mu/qform) * (mu%*%t(beta)%*%Sigma + Sigma%*%beta%*%t(mu)) + as.numeric((t(beta)%*%mu/qform)^2-1/qform)*Sigma%*%beta%*%t(beta)%*%Sigma
+        )
+        moment.2 - moment.1%*%t(moment.1)
+    }
+    vcov.full.hajek.lda <- function(beta,params) {
+        mu <- with(params, mu.1-mu.0); Sigma <- params$Sigma
+        u.1 <- function(beta,w) {
+            qform <- as.numeric(t(beta)%*%Sigma%*%beta)
+            as.numeric(-dnorm(t(beta)%*%w/sqrt(qform))/sqrt(qform))*(as.numeric(t(beta)%*%w/qform)*Sigma%*%beta-w)
+        }
+        q <- as.numeric(t(beta)%*%Sigma%*%beta)
+        A.1 <- mu - as.numeric(t(beta)%*%mu/2)*Sigma%*%beta/q
+        A.2 <- t(mu)/sqrt(2) - as.numeric(t(beta)%*%mu*2^(-3/2))*t(beta)%*%Sigma/q
+        A <- as.numeric(dnorm(t(beta)%*%mu/sqrt(2*q))) * ( A.1%*%A.2 + Sigma/sqrt(2) - (Sigma%*%beta)%*%t(Sigma%*%beta)/q/2^(3/2))
+        mean.try <- 1/sqrt(q)*(diag(p) - 1/q*Sigma%*%beta%*%t(beta)) %*%A
+        cov.try <- solve(Sigma)%*%(mean.try - u.1(beta,mu/sqrt(2))%*%t(mu)) 
+    }
+    p.red <- p.reduced
+    cov.beta.hajek <- matrix(0,p,p)
+    cov.beta.hajek[1:p.red,1:p.red] <- vcov.full.hajek.lda(beta,params)[1:p.red,1:p.red] #* (1/m+1/n)
+    cov.gamma.hajek <- vcov.full.hajek.lda(beta,params)# * (1/m+1/n)
+    var.gamma <- solve(Sigma) #* (1/m+1/n)
+    var.beta <- matrix(0,p,p)
+    var.beta[1:p.red,1:p.red] <- solve(Sigma[1:p.red,1:p.red]) #* (1/m+1/n)
+    cov.beta.gamma <- solve(Sigma[1:p.red,1:p.red]) %*% Sigma[1:p.red,] %*% solve(Sigma) #* (1/m+1/n)
+    cov.beta.gamma <- rbind(cov.beta.gamma,matrix(0,p.red,p))
+    vcov.beta.gamma <- rbind(cbind(var.beta,cov.beta.gamma),cbind(t(cov.beta.gamma),var.gamma))
+    var.hajek <- hajek.lda.deriv.var(beta,params)#*(1/m+1/n)
+    vcov.beta.gamma.hajek <- rbind(cbind(vcov.beta.gamma,rbind(cov.beta.hajek,cov.gamma.hajek)), cbind(t(cov.beta.hajek),t(cov.gamma.hajek),var.hajek)) 
+}

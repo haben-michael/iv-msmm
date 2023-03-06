@@ -1,0 +1,41 @@
+\begin{thebibliography}{}
+
+\bibitem[Emir et~al., 2000]{emir2000}
+Emir, B., Wieand, S., Jung, S.-H., and Ying, Z. (2000).
+\newblock Comparison of diagnostic markers with repeated measurements: a
+  non-parametric {ROC} curve approach.
+\newblock {\em Statistics in Medicine}, 19(4):511--523.
+
+\bibitem[Hanley, 1988]{hanley1988}
+Hanley, J.~A. (1988).
+\newblock The robustness of the ``binormal'' assumptions used in fitting {ROC}
+  curves.
+\newblock {\em Medical decision making}, 8(3):197--203.
+
+\bibitem[Lee, 2019]{lee2019}
+Lee, A.~J. (2019).
+\newblock {\em U-statistics: Theory and Practice}.
+\newblock Routledge.
+
+\bibitem[Michael et~al., 2019]{michael2019}
+Michael, H., Tian, L., and Ghebremichael, M. (2019).
+\newblock The {ROC} curve for regularly measured longitudinal biomarkers.
+\newblock {\em Biostatistics}, 20(3):433--451.
+
+\bibitem[Obuchowski, 1997]{obuchowski1997}
+Obuchowski, N.~A. (1997).
+\newblock Nonparametric analysis of clustered {ROC} curve data.
+\newblock {\em Biometrics}, pages 567--578.
+
+\bibitem[Sen, 1960]{sen1960}
+Sen, P.~K. (1960).
+\newblock On some convergence properties of {U}-tatistics.
+\newblock {\em Calcutta Statistical Association Bulletin}, 10(1-2):1--18.
+
+\bibitem[Wu and Wang, 2011]{wu2011}
+Wu, Y. and Wang, X. (2011).
+\newblock Optimal weight in estimating and comparing areas under the receiver
+  operating characteristic curve using longitudinal data.
+\newblock {\em Biometrical journal}, 53(5):764--778.
+
+\end{thebibliography}

@@ -1,0 +1,4 @@
+\beamer@sectionintoc {1}{Background/Motivation}{2}{0}{1}
+\beamer@sectionintoc {2}{Problem}{6}{0}{2}
+\beamer@sectionintoc {3}{Proposed solution for the alternative}{11}{0}{3}
+\beamer@sectionintoc {4}{Remarks on testing the null}{25}{0}{4}

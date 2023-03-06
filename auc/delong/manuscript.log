@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2019/dev/Debian) (preloaded format=pdflatex 2020.9.15)  20 JAN 2023 20:21
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2019/dev/Debian) (preloaded format=pdflatex 2020.9.15)  4 MAR 2023 22:30
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -215,6 +215,23 @@ File: pdftex.def 2018/01/08 v1.0l Graphics/color driver for pdftex
 \Gin@req@height=\dimen129
 \Gin@req@width=\dimen130
 )
+(/usr/share/texlive/texmf-dist/tex/latex/xcolor/xcolor.sty
+Package: xcolor 2016/05/11 v2.12 LaTeX color extensions (UK)
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics-cfg/color.cfg
+File: color.cfg 2016/01/02 v1.6 sample color configuration
+)
+Package xcolor Info: Driver file: pdftex.def on input line 225.
+Package xcolor Info: Model `cmy' substituted by `cmy0' on input line 1348.
+Package xcolor Info: Model `hsb' substituted by `rgb' on input line 1352.
+Package xcolor Info: Model `RGB' extended on input line 1364.
+Package xcolor Info: Model `HTML' substituted by `rgb' on input line 1366.
+Package xcolor Info: Model `Hsb' substituted by `hsb' on input line 1367.
+Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1368.
+Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1369.
+Package xcolor Info: Model `Gray' substituted by `gray' on input line 1370.
+Package xcolor Info: Model `wave' substituted by `hsb' on input line 1371.
+)
 (/usr/share/texlive/texmf-dist/tex/latex/subfig/subfig.sty
 Package: subfig 2005/06/28 ver: 1.3 subfig package
 
@@ -260,22 +277,27 @@ Package: enumitem 2019/02/04 v3.8 Customized lists
 )
 \c@theorem=\count124
 \c@example=\count125
+\c@subexample=\count126
 
-(./manuscript.aux)
+(./manuscript.aux
+
+LaTeX Warning: Label `example:auc:glm' multiply defined.
+
+)
 \openout1 = `manuscript.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 79.
-LaTeX Font Info:    ... okay on input line 79.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 79.
-LaTeX Font Info:    ... okay on input line 79.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 79.
-LaTeX Font Info:    ... okay on input line 79.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 79.
-LaTeX Font Info:    ... okay on input line 79.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 79.
-LaTeX Font Info:    ... okay on input line 79.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 79.
-LaTeX Font Info:    ... okay on input line 79.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 87.
+LaTeX Font Info:    ... okay on input line 87.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 87.
+LaTeX Font Info:    ... okay on input line 87.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 87.
+LaTeX Font Info:    ... okay on input line 87.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 87.
+LaTeX Font Info:    ... okay on input line 87.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 87.
+LaTeX Font Info:    ... okay on input line 87.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 87.
+LaTeX Font Info:    ... okay on input line 87.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -313,16 +335,16 @@ LaTeX Font Info:    ... okay on input line 79.
 
 (/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count126
+\scratchcounter=\count127
 \scratchdimen=\dimen140
 \scratchbox=\box30
-\nofMPsegments=\count127
-\nofMParguments=\count128
+\nofMPsegments=\count128
+\nofMParguments=\count129
 \everyMPshowfont=\toks29
-\MPscratchCnt=\count129
+\MPscratchCnt=\count130
 \MPscratchDim=\dimen141
-\MPnumerator=\count130
-\makeMPintoPDFobject=\count131
+\MPnumerator=\count131
+\makeMPintoPDFobject=\count132
 \everyMPtoPDFconversion=\toks30
 ) (/usr/share/texlive/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
 Package: epstopdf-base 2016/05/15 v2.6 Base part for package epstopdf
@@ -374,12 +396,12 @@ e
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: subfig package v1.3 is loaded.
 Package caption Info: End \AtBeginDocument code.
-LaTeX Font Info:    Try loading font information for U+msa on input line 80.
+LaTeX Font Info:    Try loading font information for U+msa on input line 88.
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 80.
+LaTeX Font Info:    Try loading font information for U+msb on input line 88.
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
@@ -389,60 +411,70 @@ LaTeX Warning: No \author given.
 
 [1
 
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2]
-Overfull \hbox (31.1389pt too wide) detected at line 261
-\OML/cmm/m/it/12 P\OT1/cmr/m/n/12 (\OML/cmm/m/it/12 ^^R\OT1/cmr/m/n/12 (\OML/cm
-m/m/it/12 ^^NF; ^^NG; ^^L \OT1/cmr/m/n/12 + \OML/cmm/m/it/12 ^^N^^L\OT1/cmr/m/n
-/12 ) \OML/cmm/m/it/12 > n[]^^O\OT1/cmr/m/n/12 ) \OMS/cmsy/m/n/12 ^^T \OML/cmm/
-m/it/12 P\OT1/cmr/m/n/12 ([] \OML/cmm/m/it/12 d\OMS/cmsy/m/n/12 j\OML/cmm/m/it/
-12 F[] \OMS/cmsy/m/n/12 ^^@ \OML/cmm/m/it/12 F\OMS/cmsy/m/n/12 j\OT1/cmr/m/n/12
- (\OML/cmm/m/it/12 x\OT1/cmr/m/n/12 ) \OML/cmm/m/it/12 > n[][]\OT1/cmr/m/n/12 )
- + \OML/cmm/m/it/12 P\OT1/cmr/m/n/12 ([] \OML/cmm/m/it/12 d\OMS/cmsy/m/n/12 j\O
-ML/cmm/m/it/12 G[] \OMS/cmsy/m/n/12 ^^@ \OML/cmm/m/it/12 G\OMS/cmsy/m/n/12 j\OT
-1/cmr/m/n/12 (\OML/cmm/m/it/12 x\OT1/cmr/m/n/12 ) \OML/cmm/m/it/12 > n[][]\OT1/
-cmr/m/n/12 ) \OMS/cmsy/m/n/12 ! \OT1/cmr/m/n/12 0
- []
-
-
-Overfull \hbox (102.05833pt too wide) detected at line 293
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2] [3]
+Overfull \hbox (31.0355pt too wide) detected at line 369
 []
  []
 
-[3]
-Overfull \hbox (31.0355pt too wide) detected at line 331
+[4]
+Overfull \hbox (31.0355pt too wide) detected at line 410
 []
  []
 
-[4] [5] [6] [7] [8]
-LaTeX Font Info:    Try loading font information for U+bbm on input line 658.
- (/usr/share/texlive/texmf-dist/tex/latex/bbm-macros/ubbm.fd
+[5] [6] [7] [8] [9] [10]
+Overfull \hbox (20.51222pt too wide) detected at line 929
+[]
+ []
+
+LaTeX Font Info:    Try loading font information for U+bbm on input line 937.
+(/usr/share/texlive/texmf-dist/tex/latex/bbm-macros/ubbm.fd
 File: ubbm.fd 1999/03/15 V 1.2 Font definition for bbm font - TH
-) [9] AED endfloat: Processing end Figures and Tables [10] (./manuscript.aux) )
- 
+) [11]
+\openout3 = `manuscript.fff'.
+
+
+(manuscript.fff) (./manuscript.bbl [12])
+AED endfloat: Processing end Figures and Tables [13] (./manuscript.fff
+<./sim/lda/sim.png, id=57, 481.8pt x 481.8pt>
+File: ./sim/lda/sim.png Graphic file (type png)
+<use ./sim/lda/sim.png>
+Package pdftex.def Info: ./sim/lda/sim.png  used on input line 2.
+(pdftex.def)             Requested size: 481.79881pt x 481.79881pt.
+
+Overfull \hbox (12.0438pt too wide) in paragraph at lines 2--3
+[][] 
+ []
+
+) [14 <./sim/lda/sim.png>] (./manuscript.aux)
+
+LaTeX Warning: There were multiply-defined labels.
+
+ ) 
 Here is how much of TeX's memory you used:
- 5904 strings out of 494561
- 87241 string characters out of 6177454
- 173204 words of memory out of 5000000
- 9480 multiletter control sequences out of 15000+600000
- 12798 words of font info for 51 fonts, out of 8000000 for 9000
+ 6472 strings out of 494561
+ 94202 string characters out of 6177454
+ 186328 words of memory out of 5000000
+ 10030 multiletter control sequences out of 15000+600000
+ 13846 words of font info for 54 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 44i,10n,42p,808b,198s stack positions out of 5000i,500n,10000p,200000b,80000s
- </home/haben/.texlive2018/texmf-var/fonts/pk/ljfour/public/bbm/bbm12.600pk></u
-sr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/sha
-re/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/tex
-live/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texlive/t
-exmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-di
-st/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/font
-s/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texlive/texmf-dist/fonts/type1
-/public/amsfonts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/
-amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts
-/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cm
-sy8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm
-10.pfb>
-Output written on manuscript.pdf (10 pages, 146002 bytes).
+ 44i,14n,43p,808b,355s stack positions out of 5000i,500n,10000p,200000b,80000s
+ </home/haben/.texlive2018/texmf-var/fonts/pk/ljfour/public/bbm/bbm12.600pk><
+/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/s
+hare/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/t
+exlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texlive
+/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-
+dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fo
+nts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texlive/texmf-dist/fonts/typ
+e1/public/amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/publi
+c/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsf
+onts/cm/cmsy6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm
+/cmsy8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12
+.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.
+pfb>
+Output written on manuscript.pdf (14 pages, 193442 bytes).
 PDF statistics:
- 86 PDF objects out of 1000 (max. 8388607)
- 61 compressed objects within 1 object stream
+ 105 PDF objects out of 1000 (max. 8388607)
+ 73 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 6 words of extra memory for PDF output out of 10000 (max. 10000000)
 
