@@ -1,16 +1,22 @@
-\begin{table}[ht]
-\centering
-\begin{tabular}{lll |rrr}
-  \hline
-             &           & n & \multicolumn{1}{l}{  1000} & \multicolumn{1}{l}{  2000} & \multicolumn{1}{l}{  3000} \\
-  adjust.size & estimator &   & \multicolumn{1}{l}{      } & \multicolumn{1}{l}{      } & \multicolumn{1}{l}{      } \\
-   \hline
-0.05        & delong    &   & 0.860 & 0.888 & 0.909 \\
-              & oracle    &   & 0.899 & 0.915 & 0.931 \\
-              & proposed  &   & 0.950 & 0.948 & 0.955 \\
-  0.1         & delong    &   & 0.432 & 0.523 & 0.667 \\
-              & oracle    &   & 0.987 & 0.968 & 0.970 \\
-              & proposed  &   & 0.907 & 0.903 & 0.935 \\
-   \hline
-\end{tabular}
+\begin{table}
+  \centering
+  \input{sim//auc_full/table_lda_auc.tex}
+  \caption{Full model AUC: Coverage with interval length in parentheses.}
+  \label{table:auc}
+\end{table}
+\efloatseparator
+ 
+\begin{table}
+  \centering
+  \input{sim//auc_red/table_lda_auc.tex}
+  \caption{Reduced model AUC: Coverage with interval length in parentheses.}
+  \label{table:auc}
+\end{table}
+\efloatseparator
+ 
+\begin{table}
+  \centering
+  \input{sim//delta/table_lda_aucdiff.tex}
+  \caption{Difference in AUCs: Coverage with interval length in parentheses.}
+  \label{table:auc}
 \end{table}

@@ -1,0 +1,48 @@
+This is BibTeX, Version 0.99d (TeX Live 2019/dev/Debian)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: manuscript.aux
+The style file: apalike.bst
+Database file #1: auc.bib
+Warning--I didn't find a database entry for "pearl2004"
+You've used 15 entries,
+            1935 wiz_defined-function locations,
+            577 strings with 6117 characters,
+and the built_in function-call counts, 5946 in all, are:
+= -- 606
+> -- 188
+< -- 12
++ -- 64
+- -- 60
+* -- 518
+:= -- 1017
+add.period$ -- 45
+call.type$ -- 15
+change.case$ -- 103
+chr.to.int$ -- 15
+cite$ -- 15
+duplicate$ -- 219
+empty$ -- 444
+format.name$ -- 83
+if$ -- 1159
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 16
+newline$ -- 78
+num.names$ -- 45
+pop$ -- 70
+preamble$ -- 1
+purify$ -- 104
+quote$ -- 0
+skip$ -- 174
+stack$ -- 0
+substring$ -- 526
+swap$ -- 24
+text.length$ -- 1
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 88
+warning$ -- 0
+while$ -- 59
+width$ -- 0
+write$ -- 196
+(There was 1 warning)

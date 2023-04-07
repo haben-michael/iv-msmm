@@ -1,0 +1,1466 @@
+## ## 1 binning method
+
+
+## ## 1a check p values are uniform
+
+## ## find an exact CI for theta=contrast%*%p, p a length m prob vector,
+## ## based on (n_1,\ldots,n_m) ~ multinomial(n,p)
+
+## require(parallel)
+
+## start <- Sys.time()
+## n <- 1e2
+## m <- 4
+## save.file <- filename <- NULL#paste0('n',n,'_m',m,'.RData')
+## p.resolution <- 3e3
+## theta.resolution <- 1e2
+## n.ref.samples <- 3e1 
+## c <- contrast  <- (0:(m-1))/(m-1)
+## T <- function(p.obs,p,contrast) {
+##     ## browser()
+##     var.contrast <- t(contrast)%*%(diag(as.numeric(p.obs)) - p.obs%*%t(p.obs))%*%contrast
+##     abs(contrast%*%(p.obs-p)) / sqrt(var.contrast)
+## }
+
+## ## p.vals <- replicate(1e2, {
+## p.vals <- mclapply(1:2e2, mc.cores=detectCores()-3, FUN=function(ii) {
+## ## p.vals <- lapply(1:2e1, FUN=function(ii) {
+##     cat('.')
+##     ## p.true <- runif(m); p.true <- p.true / sum(p.true)
+##     p.true <- rep(.1,m-1); p.true <- c(p.true,1-sum(p.true))
+##     theta.true <- p.true%*%contrast
+##     p.hat <- rmultinom(1,n,p.true) / n
+##     theta.hat <- contrast%*%p.hat
+
+##     ## source('utils.R',local=TRUE)
+##     ## sample points p uniformly on simplex, associate a theta to teach p
+
+##     p <- matrix(rexp(m*p.resolution),ncol=m)
+##     p <- p / rowSums(p)
+
+##     theta <- p%*%contrast
+
+##     ## associate a p-value to each p
+
+##     p.val.mc <- function(p,p.hat,T,reps) {
+##         ## if(sum(p)!=1)browser()
+##         if(!isTRUE(all.equal(sum(p),1)))return(NA)
+##         p.star <- rmultinom(n.ref.samples,n,prob=p) / n
+##         ## stopifnot(!(1 %in% p.star))
+##         ## if(1 %in% p.star)browser()
+##         T.star <- apply(p.star,2,T,p=p,contrast=contrast)
+##         mean(T.star >= as.numeric(T(p.hat,p,contrast)))
+##     }
+
+##     p.val <- apply(p,1,p.val.mc,p.hat=p.hat,T=T,reps=n.ref.samples)
+##     mc <- data.frame(theta=theta,p.val=p.val)
+
+##     if(!is.null(save.file) ) {
+##         if(file.exists(save.file)) {
+##             load(save.file)
+##             mc  <- rbind(mc,mc.saved)
+##         }
+##         mc.saved <- mc
+##         save(mc.saved,file=save.file)
+##     }
+
+
+##     ## generate grid of theta values, associate p-value to each theta
+##     ## value using nbhd of p values
+
+##     theta.grid <- seq(min(contrast),max(contrast),len=theta.resolution)
+##     mc$theta.bin <- cut(mc$theta,breaks=theta.grid)
+##     p.val.theta.binned <- aggregate(data.frame(p.val.bin.max=mc$p.val),by=list(theta.bin=mc$theta.bin),FUN=max)
+##     ## p.val.theta <- merge(data.frame(theta=mc$theta,theta.bin=theta.binned),p.val.theta.binned)
+##     mc <- merge(mc,p.val.theta.binned)
+    
+##     ## print(summary(as.numeric(table(theta.binned))))
+##     ## bin.sizes <- table(mc$theta.bin)
+##     ## median(bin.sizes)
+##     ## hist(bin.sizes)
+##     ## hist(mc$p.val.bin.max)
+    
+##     ## plot(p.val ~ theta, data=p.val.theta); abline(h=.05,v=theta.true)
+##     ## p.val.true <- with(p.val.theta, p.val[which.max(theta > as.numeric(theta.true))])
+##     theta.bin.true <- cut(theta.true,breaks=theta.grid)
+##     ## if(!theta.bin.true %in% p.val.theta.bin$theta.bin) browser()
+##     bin.size.true <- sum(theta.bin.true==mc$theta.bin)
+##     if(bin.size.true==0)print('!!')
+##     if(bin.size.true==0)return(NA)
+##     p.val.true  <- with(p.val.theta.binned, p.val.bin.max[theta.bin==theta.bin.true])
+##     ## p.val.true <- with(mc,p.val.bin.max[which(theta.bin==theta.bin.true)])
+##     ## print(bin.size.true)
+##     ## print(p.val.true)
+##     cat(bin.size.true,' ',p.val.true,'\n')
+##     ## print('---')
+##     ## if(is.na(p.val.true)) browser()
+##     p.val.true
+## })
+## p.vals <- simplify2array(p.vals)
+
+## plot(ecdf(p.vals))
+## abline(0,1)
+## print(mean(p.vals<=.05))
+## print(mean(p.vals<=.05,na.rm=TRUE))
+
+## print(Sys.time() - start)
+
+
+
+
+## ## 1a encapsulate coverage testing
+
+## test.coverage.exact.2 <- function(theta.try,p.hat,c,n,alpha=.05,n.ref.samples=1e2,T,theta.resolution,p.resolution) {
+##     m <- length(c)
+##     p <- matrix(rexp(m*p.resolution),ncol=m)
+##     p <- p / rowSums(p)
+##     theta <- p%*%c
+
+##     ## associate a p-value to each p
+##     ## p.val <- apply(p,1,p.val.mc,p.hat=p.hat,T=T,reps=n.ref.samples)
+##     p.val <- apply(p,1,p.val.mc,p.obs=p.hat,n=n,n.ref.samples=n.ref.samples,c,T=test.stat.1)
+##     mc <- data.frame(theta=theta,p.val=p.val)
+
+##     ## generate grid of theta values, associate p-value to each theta
+##     ## value using nbhd of p values
+##     theta.grid <- seq(min(c),max(c),len=theta.resolution)
+##     mc$theta.bin <- cut(mc$theta,breaks=theta.grid)
+##     p.val.theta.binned <- aggregate(data.frame(p.val.bin.max=mc$p.val),by=list(theta.bin=mc$theta.bin),FUN=max)
+##     mc <- merge(mc,p.val.theta.binned)
+
+##     theta.bin.try <- cut(theta.try,breaks=theta.grid)
+##     ## if(!theta.bin.true %in% p.val.theta.bin$theta.bin) browser()
+##     bin.size.try <- sum(theta.bin.try==mc$theta.bin)
+##     ## if(bin.size.true==0)print('!!')
+##     if(bin.size.try==0)return(NA)
+##     p.val.try  <- with(p.val.theta.binned, p.val.bin.max[theta.bin==theta.bin.try])
+##     p.val.try > alpha
+## }
+
+
+
+## require(parallel)
+## source('utils.R')
+## start <- Sys.time()
+## n <- 4e1
+## m <- 4
+## p.resolution <- 3e3
+## theta.resolution <- 1e2
+## n.ref.samples <- 3e1 
+## p.resolution <- 1e3
+## theta.resolution <- 1e2
+## n.ref.samples <- 1e1 
+## c <- contrast  <- (0:(m-1))/(m-1)
+## p.true <- rep(.1,m-1); p.true <- c(p.true,1-sum(p.true))
+## theta.true <- p.true%*%c
+## ## cover.flag <- replicate(1e2, {
+## cover.flag <- mclapply(1:2e2, mc.cores=detectCores()-3, FUN=function(ii) {
+##     ## p.vals <- lapply(1:2e1, FUN=function(ii) {
+##     cat('.')    
+##     x <- rmultinom(1,n,p.true)
+##     p.hat <- x / n
+##     ## theta.hat <- c%*%p.hat
+##     test.coverage.exact.2(theta.try=theta.true,p.hat=p.hat,c=c,n=n,alpha=alpha,n.ref.samples=n.ref.samples,T=test.stat.1,theta.resolution=theta.resolution,p.resolution=p.resolution)
+##     ## source('utils.R',local=TRUE)
+##     ## sample points p uniformly on simplex, associate a theta to teach p
+
+## })
+## cover.flag <- simplify2array(cover.flag)
+## print(Sys.time() - start)
+## print(mean(is.na(cover.flag)))
+## print(mean(cover.flag,na.rm=TRUE))
+
+
+
+
+
+
+
+## ## 2 epsilon method
+
+
+## ## find an exact CI for theta=contrast%*%p, p a length m prob vector,
+## ## based on (n_1,\ldots,n_m) ~ multinomial(n,p)
+
+## require(parallel)
+
+## start <- Sys.time()
+## n <- 1e1
+## m <- 4
+## save.file <- filename <- NULL#paste0('n',n,'_m',m,'.RData')
+## epsilon <- .0005
+## p.resolution <- 1e4
+## theta.resolution <- 5e2
+## n.ref.samples <- 1e1 
+## c <- contrast  <- (0:(m-1))/(m-1)
+## T <- function(p.obs,p,contrast) {
+##     ## browser()
+##     var.contrast <- t(contrast)%*%(diag(as.numeric(p.obs)) - p.obs%*%t(p.obs))%*%contrast
+##     abs(contrast%*%(p.obs-p)) / sqrt(var.contrast)
+## }
+
+## ## p.vals <- replicate(1e2, {
+## p.vals <- mclapply(1:2e2, mc.cores=detectCores(), FUN=function(ii) {
+## ## p.vals <- lapply(1:2e1, FUN=function(ii) {
+##     cat('.')
+##     ## p.true <- runif(m); p.true <- p.true / sum(p.true)
+##     p.true <- rep(.05,m-1); p.true <- c(p.true,1-sum(p.true))
+##     theta.true <- p.true%*%contrast
+##     p.hat <- rmultinom(1,n,p.true) / n
+##     theta.hat <- contrast%*%p.hat
+
+##     ## source('utils.R',local=TRUE)
+##     ## sample points p uniformly on simplex, associate a theta to teach p
+
+##     p <- matrix(rexp(m*p.resolution),ncol=m)
+##     p <- p / rowSums(p)
+
+##     theta <- p%*%contrast
+
+##     ## associate a p-value to each p
+
+##     p.val.mc <- function(p,p.hat,T,reps) {
+##         ## if(sum(p)!=1)browser()
+##         if(!isTRUE(all.equal(sum(p),1)))return(NA)
+##         p.star <- rmultinom(n.ref.samples,n,prob=p) / n
+##         ## stopifnot(!(1 %in% p.star))
+##         ## if(1 %in% p.star)browser()
+##         T.star <- apply(p.star,2,T,p=p,contrast=contrast)
+##         mean(T.star >= as.numeric(T(p.hat,p,contrast)))
+##     }
+
+##     p.val <- apply(p,1,p.val.mc,p.hat=p.hat,T=T,reps=n.ref.samples)
+##     mc <- data.frame(theta=theta,p.val=p.val)
+
+##     if(!is.null(save.file) ) {
+##         if(file.exists(save.file)) {
+##             load(save.file)
+##             mc  <- rbind(mc,mc.saved)
+##         }
+##         mc.saved <- mc
+##         save(mc.saved,file=save.file)
+##     }
+
+
+##     nbhd.idx <- which(abs(mc$theta-c(theta.true)) < epsilon)
+##     if(length(nbhd.idx)==0)print('!!')
+##     if(length(nbhd.idx)==0)return(NA)
+##     p.val.true <- max(mc$p.val[nbhd.idx])
+    
+## })
+## p.vals <- simplify2array(p.vals)
+
+## plot(ecdf(p.vals))
+## abline(0,1)
+## print(mean(p.vals<=.05))
+
+## print(Sys.time() - start)
+
+
+
+
+## ## 3 sampling on hyperplane intersecting solid "alternate" simplex
+## ## (increasing coordinates simplex)
+
+## ## 3a
+
+## m <- 2
+## B <- 1e2
+## c <- contrast  <- (0:(m-1))/(m-1)
+## ## c <- contrast  <- runif(m); c <- sort(c/sum(c)); c <- c*runif(1,1,1/c[m])
+## c <- contrast  <- runif(m); c <- c/sum(c); c <- c*runif(1,1,1/max(abs(c)))
+## u.min <- (1-c[m])/sum(c[-m])
+## ## stopifnot(u.min>=0 && u.min<=1)
+## xs <- replicate(1e2, {
+##     u <- sort(runif(m,u.min,1))
+##     x <- u / c(u%*%c)
+## })
+## plot(x=0,type='n',xlim=c(-3,3),ylim=c(-3,3))
+## abline(a=1/c[2],b=-c[1]/c[2])
+## abline(a=0,b=1,col=2)
+## abline(h=c(0,1),v=c(0,1),lty=2)
+## points(xs[1,],xs[2,],pch='x')
+## ## xs <- rbind(xs[1,],apply(xs,2,diff))
+## ## plot(x=0,type='n',xlim=c(0,3),ylim=c(0,3))
+## ## ## abline(a=1/c[2],b=-c[1]/c[2])
+## ## abline(a=1,b=-1,col=2)
+## ## points(xs[1,],xs[2,],pch='x')
+
+## ## check formula for transformation matrices between unit and rank
+## ## simplexes
+## f <- diag(5)
+## f[row(f)==col(f)+1] <- -1
+## f.inv <- diag(5)
+## f.inv[row(f.inv)>=col(f.inv)] <- 1
+
+## unit.to.rank <- function(x,m=nrow(x)) {
+##     M <- diag(m)
+##     M[row(M)>=col(M)] <- 1
+##     M%*%x
+## }
+## rank.to.unit <- function(x.bar,m=nrow(x.bar)) {
+##     M <- diag(m)
+##     M[row(M)==col(M)+1] <- -1
+##     M%*%x.bar
+## }
+
+
+## ## check formula for transformed hyperplane
+## m <- 5
+## d <- runif(m)
+## x <- matrix(runif(1e2*(m-1)),nrow=m-1)
+## x <- rbind(x,(1-t(d[-m])%*%x)/d[m])
+## ## t(d)%*%x
+## x.bar <- unit.to.rank(x)
+## d.bar <- c(-diff(d),d[m])
+## t(d.bar)%*%x.bar
+
+
+## m <- 5
+## c <- sort(runif(m+1))
+## ## d <- runif(m)
+## d <- (c[1:m]-c[m+1])/(1-c[m+1])
+## x <- matrix(runif(1e2*(m-1)),nrow=m-1)
+## x <- rbind(x,(1-t(d[-m])%*%x)/d[m])
+## ## t(d)%*%x
+## x.bar <- unit.to.rank(x)
+## d.bar <- c(-diff(d),d[m])
+## t(d.bar)%*%x.bar
+## d.bar-(-diff(c)/(1-c[m+1]))
+
+## ## sampling on rank simplex and transforming back
+## m <- 3
+## theta <- 1
+## c <- contrast <- (0:(m-1))/theta
+## d <- (c[1:(m-1)]-c[m])/(1-c[m])
+## d.bar <- c(-diff(d),d[m-1])
+## u.min <- (1-d.bar[m-1])/sum(d.bar[-(m-1)])
+## stopifnot(u.min>=0 && u.min<=1)
+## x.bar <- replicate(1e2, {
+##     u <- sort(runif(m-1,u.min,1))
+##     u / c(u%*%d.bar)
+## })
+## plot(x=0,type='n',xlim=c(-3,3),ylim=c(-3,3))
+## abline(a=1/d.bar[2],b=-d.bar[1]/d.bar[2])
+## abline(a=0,b=1,col=2)
+## abline(h=c(0,1),v=c(0,1),lty=2)
+## points(x.bar[1,],x.bar[2,],pch='x')
+## x <- rank.to.unit(x.bar)
+## plot(x=0,type='n',xlim=c(-3,3),ylim=c(-3,3))
+## ## plot(x=0,type='n',xlim=c(0,3),ylim=c(0,3))
+## ## abline(a=1/c[2],b=-c[1]/c[2])
+## abline(a=1,b=-1,col=2)
+## abline(h=c(0,1),v=c(0,1),lty=2)
+## points(x[1,],x[2,],pch='x')
+
+
+
+## ## 3b sample on intersection of solid simplex S^m with hyperplane c^t
+## ## x=1. Assume 0<=c_1 <= ... <= c_m.. 2-d and 3-d visualization. 
+
+## ## rsimplex.hp <- function(n,theta,L=(0:(m-1))/(m-1)/theta) { 
+## shape <- .1
+## m <- 3
+## c <- (0:(m-1))/(m-1)
+## c <- sort(runif(m))
+## ## if(L[m]<=1 || is.infinite(L[m]))return(NA)
+## ## d <- (L[1:(m-1)]-L[m])/(1-L[m])
+## ## d.bar <- c(-diff(d),d[m-1])
+## u.min <- (1-c[m])/sum(c[-m])
+## ## if(u.min<0 || u.min>1)return(NA)
+## stopifnot(u.min<=1)
+## u.min <- max(0,u.min)
+## x <- replicate(3e3, {
+##     ## u <- sort(runif(m,u.min,1))
+##     u <- 1-rbeta(m,shape,shape)*(1-u.min)
+##     u <- sort(u)
+##     u / c(u%*%c)
+## })
+## ## plot(x=0,type='n',xlim=c(-1.5,1.5),ylim=c(-1.5,1.5))
+## ## abline(a=1/c[2],b=-c[1]/c[2])
+## ## abline(a=0,b=1,col=2)
+## ## abline(h=c(0,1),v=c(0,1),lty=2)
+## ## points(x[1,],x[2,],pch=1,cex=.5)
+## ## open3d()
+## plot3d(x[1,],x[2,],x[3,])
+
+
+## ## 3b-1 encapsulate
+
+## rsimplex.hp <- function(n,c=(0:3)/3,shape=1) { 
+##     ## shape <- .1
+##     m <- length(c)
+##     ## c <- (0:(m-1))/(m-1)
+##     ## c <- sort(runif(m))
+##     ## if(L[m]<=1 || is.infinite(L[m]))return(NA)
+##     ## d <- (L[1:(m-1)]-L[m])/(1-L[m])
+##     ## d.bar <- c(-diff(d),d[m-1])
+##     u.min <- (1-c[m])/sum(c[-m])
+##     ## if(u.min<0 || u.min>1)return(NA)
+##     stopifnot(u.min<=1)
+##     u.min <- max(0,u.min)
+##     x <- replicate(3e3, {
+##         ## u <- sort(runif(m,u.min,1))
+##         u <- 1-rbeta(m,shape,shape)*(1-u.min)
+##         u <- sort(u)
+##         u / c(u%*%c)
+##     })
+## }
+
+## ## 3c full simulation, similar to #1 and #2 above
+
+## require(parallel)
+## start <- Sys.time()
+## n <- 1e2
+## m <- 7
+## theta.resolution <- 5e2
+## p.resolution <- 1e1
+## n.ref.samples <- 1e2
+## L <- c   <- (0:(m-1))/(m-1)
+## T <- function(p.obs,p,L) {
+##     ## browser()
+##     var.L <- t(L)%*%(diag(as.numeric(p.obs)) - p.obs%*%t(p.obs))%*%L
+##     abs(L%*%(p.obs-p)) / sqrt(var.L)
+## }
+## ## associate a p-value to each p
+## p.val.mc <- function(p,p.hat,T,reps,L=(0:(m-1))/(m-1)) {
+##     ## browser()
+##     ## if(sum(p)!=1)browser()
+##     if(!isTRUE(all.equal(sum(p),1)))return(NA)
+##     p.star <- rmultinom(n.ref.samples,n,prob=p) / n
+##     ## stopifnot(!(1 %in% p.star))
+##     ## if(1 %in% p.star)browser()
+##     T.star <- apply(p.star,2,T,p=p,L=L)
+##     T.hat <- as.numeric(T(p.hat,p,L))
+##     mean(T.star >= T.hat)
+## }
+## rsimplex.hp <- function(n,theta,L=(0:(m-1))/(m-1)/theta) {   
+##     rank.to.unit <- function(x.bar,m=nrow(x.bar)) {
+##         M <- diag(m)
+##         M[row(M)==col(M)+1] <- -1
+##         M%*%x.bar
+##     }
+##     ## browser()
+##     c <- L # clean up
+##     ## c <- contrast <- (0:(m-1))/(m-1)/theta
+##     if(L[m]<=1 || is.infinite(L[m]))return(NA)
+##     d <- (L[1:(m-1)]-L[m])/(1-L[m])
+##     d.bar <- c(-diff(d),d[m-1])
+##     u.min <- (1-d.bar[m-1])/sum(d.bar[-(m-1)])
+##     ## if(u.min<0 || u.min>1)return(NA)
+##     if(u.min>1)return(NA)
+##     u.min <- max(0,u.min)
+##     x.bar <- replicate(n, {
+##         u <- sort(runif(m-1,u.min,1))
+##         u / c(u%*%d.bar)
+##     })
+##     x <- rank.to.unit(x.bar)
+##     rbind(x,1-colSums(x))
+## }
+## ## p.true <- runif(m); p.true <- p.true / sum(p.true)
+## p.true <- rep(.01,m-1); p.true <- c(p.true,1-sum(p.true))
+## theta.true <- as.numeric(p.true%*%L)
+
+## p.vals <- replicate(3e2, {
+## ## p.vals <- mclapply(1:1e2, mc.cores=detectCores()-3, FUN=function(ii) {
+## ## p.vals <- lapply(1:2e1, FUN=function(ii) {
+##     cat('.')
+##     p.hat <- rmultinom(1,n,p.true) / n
+##     theta.hat <- L%*%p.hat
+
+##     ## generate grid of theta values, associate p-value to each theta
+##     ## value using nbhd of p values
+
+##     ## theta.grid <- seq(min(L),max(L),len=theta.resolution)
+##     ## p.by.theta <- sapply(theta.grid, rsimplex.hp,n=p.resolution,theta=theta.true)
+##     ## p.val.bins <- lapply(p.by.theta, function(p){
+##     ##     if(isTRUE(is.na(p)))return(NA)
+##     ##     apply(p,2,p.val.mc,p.hat=p.hat,T=T,reps=n.ref.samples)
+##     ##     })
+##     ## p.val <- sapply(p.val.bins,max)
+##     ## idx.max <- which.max(theta.grid>=theta.true)
+##     ## idx.min <- rev(which(theta.grid<=theta.true))[1]
+##     ## p.val.true <- mean(p.val[c(idx.max,idx.min)],na.rm=TRUE)
+
+##     p <- rsimplex.hp(n=p.resolution,theta=theta.true)
+##     p.vals.simplex <- apply(p,2,p.val.mc,p.hat=p.hat,T=T,reps=n.ref.samples)
+##     max(p.vals.simplex)
+
+##     ## p.val.mc(p.true,p.hat=p.hat,T=T,reps=n.ref.samples)
+## })
+## p.vals <- simplify2array(p.vals)
+
+## plot(ecdf(p.vals))
+## abline(0,1)
+## print(mean(p.vals<=.05))
+## print(mean(p.vals<=.05,na.rm=TRUE))
+
+## print(Sys.time() - start)
+
+
+
+
+## ## 3c-1 refactoring
+
+
+## require(parallel)
+## source('utils.R')
+## set.seed(1)
+## start <- Sys.time()
+## n <- 1e2
+## m <- 2
+## theta.resolution <- .2e2
+## p.resolution <- 3e1
+## n.ref.samples <- 1e2
+## c   <- (0:(m-1))/(m-1)
+## p.true <- rep(.01,m-1); p.true <- c(p.true,1-sum(p.true))
+## stopifnot(sum(p.true<0)==0)
+## theta.true <- as.numeric(p.true%*%c)
+## T <- function(p.obs,p,c) {
+##     ## browser()
+##     var.c <- t(c)%*%(diag(as.numeric(p.obs)) - p.obs%*%t(p.obs))%*%c
+##     abs(c%*%(p.obs-p)) / sqrt(var.c)
+## }
+## p.vals <- replicate(1e2, {
+## ## p.vals <- mclapply(1:1e2, mc.cores=detectCores()-3, FUN=function(ii) {
+## ## p.vals <- lapply(1:2e1, FUN=function(ii) {
+##     cat('.')
+##     p.hat <- rmultinom(1,n,p.true) / n
+##     theta.hat <- c%*%p.hat
+
+##     ## generate grid of theta values, associate p-value to each theta
+##     ## value using nbhd of p values
+
+##     f <- function(p) {
+##         p.star <- rmultinom(n.ref.samples,n,prob=p) / n
+##         T.star <- apply(p.star,2,T,p=p,c=c)
+##         T.hat <- as.numeric(T(p.hat,p,c))
+##         mean(T.star >= T.hat)
+##     }
+
+##     theta.grid <- seq(min(c),max(c),len=theta.resolution)
+##     p.by.theta <- lapply(theta.grid, function(theta) {
+##         d <- (c[1:(m-1)]-c[m])/(theta-c[m])
+##         d.bar <- c(-diff(d),d[m-1])
+##         p.by.theta.bar <- rsimplex.hp(n=p.resolution,c=d.bar,shape=1)
+##         if(m==2)p.by.theta.bar <- matrix(p.by.theta.bar,nrow=1)
+##         p.by.theta <- rank.to.unit(p.by.theta.bar)
+##         p.by.theta <- rbind(p.by.theta,1-colSums(p.by.theta))
+##     })#rsimplex.hp(n=p.resolution,c=c))
+
+    
+##     p.val.bins <- lapply(p.by.theta, function(p){
+##         if(isTRUE(is.na(p)))return(NA)
+##         apply(p,2,f)#p.val.mc,p.hat=p.hat,T=T,reps=n.ref.samples)
+##         })
+##     p.val <- sapply(p.val.bins, max)
+##     idx.max <- which.max(theta.grid>=theta.true)
+##     idx.min <- rev(which(theta.grid<=theta.true))[1]
+##     p.val.true <- mean(p.val[c(idx.max,idx.min)],na.rm=TRUE)
+
+##     ## ## just the p : c^t p = theta.true
+## d <- (c[1:(m-1)]-c[m])/(theta.true-c[m])
+##     d.bar <- c(-diff(d),d[m-1])
+##     p.by.theta.bar <- rsimplex.hp(n=p.resolution,c=d.bar,shape=1)
+##     if(m==2)p.by.theta.bar <- matrix(p.by.theta.bar,nrow=1)
+##     p.by.theta <- rank.to.unit(p.by.theta.bar)
+##     p.by.theta <- rbind(p.by.theta,1-colSums(p.by.theta))
+##     p.vals.simplex <- apply(p.by.theta,2,f)
+##     max(p.vals.simplex)
+        
+##     ## ## just at p.true
+##     ## p.val.mc(p.true,p.hat=p.hat,T=T,reps=n.ref.samples)
+## })
+## p.vals <- simplify2array(p.vals)
+
+## plot(ecdf(p.vals))
+## abline(0,1)
+## print(mean(p.vals<=.05))
+## print(mean(p.vals<=.95))
+
+## print(Sys.time() - start)
+
+
+
+## ## 3c-2 refactoring again--separating out entire routine to generate p grid
+
+
+## require(parallel)
+## source('utils.R')
+## set.seed(1)
+## start <- Sys.time()
+## n <- 1e2
+## m <- 2
+## theta.resolution <- 1e2
+## p.resolution <- 1
+## n.ref.samples <- 1e2
+## c   <- (0:(m-1))/(m-1)
+## p.true <- rep(.01,m-1); p.true <- c(p.true,1-sum(p.true))
+## stopifnot(sum(p.true<0)==0)
+## theta.true <- as.numeric(p.true%*%c)
+## T <- function(p.obs,p,c) {
+##     ## browser()
+##     var.c <- t(c)%*%(diag(as.numeric(p.obs)) - p.obs%*%t(p.obs))%*%c
+##     abs(c%*%(p.obs-p)) / sqrt(var.c)
+## }
+
+## sample.p <- function(theta,c,p.resolution,shape=1) {
+##     m <- length(c)
+##     d <- (c[1:(m-1)]-c[m])/(theta-c[m])
+##     d.bar <- c(-diff(d),d[m-1])
+##     p.by.theta.bar <- rsimplex.hp(n=p.resolution,c=d.bar,shape=shape)
+##     if(m==2)p.by.theta.bar <- matrix(p.by.theta.bar,nrow=1)
+##     p.by.theta <- rank.to.unit(p.by.theta.bar)
+##     p.by.theta <- rbind(p.by.theta,1-colSums(p.by.theta))
+## }
+## p.vals <- replicate(1e2, {
+## ## p.vals <- mclapply(1:1e2, mc.cores=detectCores()-3, FUN=function(ii) {
+## ## p.vals <- lapply(1:2e1, FUN=function(ii) {
+##     cat('.')
+##     p.hat <- rmultinom(1,n,p.true) / n
+##     theta.hat <- c%*%p.hat
+
+##     ## generate grid of theta values, associate p-value to each theta
+##     ## value using nbhd of p values
+
+##     f <- function(p) {
+##         p.star <- rmultinom(n.ref.samples,n,prob=p) / n
+##         T.star <- apply(p.star,2,T,p=p,c=c)
+##         T.hat <- as.numeric(T(p.hat,p,c))
+##         mean(T.star >= T.hat)
+##     }
+
+##     ## theta.grid <- seq(min(c),max(c),len=theta.resolution)
+##     ## p.by.theta <- lapply(theta.grid, function(theta) {
+##     ##     sample.p(theta,c=c,p.resolution=p.resolution,shape=1)
+##     ## })
+
+    
+##     ## p.val.bins <- lapply(p.by.theta, function(p){
+##     ##     if(isTRUE(is.na(p)))return(NA)
+##     ##     apply(p,2,f)#p.val.mc,p.hat=p.hat,T=T,reps=n.ref.samples)
+##     ##     })
+##     ## p.val <- sapply(p.val.bins, max)
+##     ## idx.max <- which.max(theta.grid>=theta.true)
+##     ## idx.min <- rev(which(theta.grid<=theta.true))[1]
+##     ## p.val.true <- mean(p.val[c(idx.max,idx.min)],na.rm=TRUE)
+
+##     ## just the p : c^t p = theta.true
+##     p.by.theta <- sample.p(theta.true,c=c,p.resolution=p.resolution,shape=1)
+##     p.vals.simplex <- apply(p.by.theta,2,f)
+##     max(p.vals.simplex)
+    
+##     ## ## just at p.true
+##     ## p.val.mc(p.true,p.hat=p.hat,T=T,reps=n.ref.samples)
+## })
+## p.vals <- simplify2array(p.vals)
+
+## plot(ecdf(p.vals))
+## abline(0,1)
+## print(mean(p.vals<=.05))
+## print(mean(p.vals<=.95))
+
+## print(Sys.time() - start)
+
+
+
+
+## ## 3d visualization
+
+
+## require(parallel)
+## source('utils.R')
+## ## set.seed(1)
+## start <- Sys.time()
+## n <- 3e2
+## m <- 4
+## theta.resolution <- 3e2
+## p.resolution <- 3e1
+## n.ref.samples <- 1e2
+## c   <- (0:(m-1))/(m-1)
+## ## c <- sort(runif(2))
+## ## c <- c(-runif(1),1) / runif(1) 
+## p.true <- rep(.1,m-1); p.true <- c(p.true,1-sum(p.true))
+## stopifnot(sum(p.true<0)==0)
+## theta.true <- as.numeric(p.true%*%c)
+## T <- function(p.obs,p,c) {
+##     ## browser()
+##     var.c <- t(c)%*%(diag(as.numeric(p.obs)) - p.obs%*%t(p.obs))%*%c
+##     abs(c%*%(p.obs-p)) / sqrt(var.c)
+## }
+## ## p.vals <- replicate(1e2, {
+## ## p.vals <- mclapply(1:1e2, mc.cores=detectCores()-3, FUN=function(ii) {
+## ## p.vals <- lapply(1:2e1, FUN=function(ii) {
+## cat('.')
+## p.hat <- rmultinom(1,n,p.true) / n
+## theta.hat <- c%*%p.hat
+## ## generate grid of theta values, associate p-value to each theta
+## ## value using nbhd of p values
+## f <- function(p) {
+##     p.star <- rmultinom(n.ref.samples,n,prob=p) / n
+##     T.star <- apply(p.star,2,T,p=p,c=c)
+##     T.hat <- as.numeric(T(p.hat,p,c))
+##     mean(T.star >= T.hat)
+## }
+## theta.grid <- seq(min(c)+.01,max(c)-.01,len=theta.resolution)
+## p.bins <- lapply(theta.grid, function(theta) {
+##     d <- (c[1:(m-1)]-c[m])/(theta-c[m])
+##     d.bar <- c(-diff(d),d[m-1])
+##     p.bins.bar <- rsimplex.hp(n=p.resolution,c=d.bar,shape=1)
+##     if(m==2)p.bins.bar <- matrix(p.bins.bar,nrow=1)
+##     p.bins <- rank.to.unit(p.bins.bar)
+##     p.bins <- rbind(p.bins,1-colSums(p.bins))
+## })#rsimplex.hp(n=p.resolution,c=c))
+## p.val.bins <- lapply(p.bins, function(p){
+##     if(isTRUE(is.na(p)))return(NA)
+##     apply(p,2,f)#p.val.mc,p.hat=p.hat,T=T,reps=n.ref.samples)
+## })
+## p.val <- sapply(p.val.bins, max)
+## idx.max <- which.max(theta.grid>=theta.true)
+## idx.min <- rev(which(theta.grid<=theta.true))[1]
+## p.val.true <- mean(p.val[c(idx.max,idx.min)],na.rm=TRUE)
+## plot(x=0,type='n',xlim=c(-.1,1.1),ylim=c(-.1,1.1))
+## ## abline(a=1,b=-1,lty=2)
+## ## abline(h=c(0,1),v=c(0,1),lty=2)
+## ## ## col <- heat.colors(10)[10-round(p.val*10)]
+## ## ## with(list(xy=do.call(cbind,p.bins)), points(xy[1,],xy[2,],col=col))
+## ## ## points(p.true[1],p.true[2],pch='x')
+## ## xy <- do.call
+## xy <- do.call(rbind,lapply(p.bins,t))
+## p.vals <- unlist(p.val.bins)
+## col <- heat.colors(10)[10-round(p.vals*10)]
+## points(xy[,1],xy[,2],col=col)
+## points(p.true[1],p.true[2],pch='x')
+
+
+## 4 new sampling strategy
+
+## ## 4a sampling in hyperplane orthogonal to a vector R^3
+
+## m <- 2
+## c <- runif(m)
+## c <- sort(c-mean(c)+runif(1)*.05)
+## c.p <- c[c>0]; c.m <- -c[c<0]
+## stopifnot(length(c.p)*length(c.m)>0)
+## us <- replicate(1e3, {
+##     u.p <- runif(length(c.p))
+##     u.m <- runif(length(c.m))
+##     ## u.p <- rbeta(length(c.p),.01,.01)
+##     ## u.m <- rbeta(length(c.m),.01,.01)
+##     u.m <- u.m * u.p%*%c.p / (u.m%*%c.m)
+##     ## c <- c(-c.m,c.p)
+##     u <- c(u.m,u.p)
+## })
+## plot(us[1,],us[2,],asp=1)
+
+
+## ## R3
+## require(rgl)
+## m <- 3
+## c <- runif(m)
+## c <- sort(c-mean(c)+runif(1)*.05)
+## c.p <- c[c>0]; c.m <- -c[c<0]
+## stopifnot(length(c.p)*length(c.m)>0)
+## us <- replicate(1e3, {
+##     u.p <- runif(length(c.p))
+##     u.m <- runif(length(c.m))
+##     ## u.p <- rbeta(length(c.p),.01,.01)
+##     ## u.m <- rbeta(length(c.m),.01,.01)
+##     u.m <- u.m * c(u.p%*%c.p / (u.m%*%c.m))
+##     ## c <- c(-c.m,c.p)
+##     u <- c(u.m,u.p)
+## })
+## ## sum(abs(t(c)%*%us))
+## ## plot(us[1,],us[2,],asp=1)
+## plot3d(t(us))
+## arrow3d(c(0,0,0),c)
+
+
+## ## does u stay >=0 after projecting out c? seems so.
+## m <- 3
+## c <- runif(m)
+## c <- sort(c-mean(c)+runif(1)*.05)
+## c.p <- c[c>0]; c.m <- -c[c<0]
+## stopifnot(length(c.p)*length(c.m)>0)
+## c <- (0:(m-1))/(m-1) - 1
+## us <- replicate(1e4, {
+##     u <- runif(m)
+##     u - (u%*%c)/(c%*%c)*c
+## })
+## ## plot(us[1,],us[2,],asp=1)
+## ## abline(a=0,b=c[2]/c[1])
+## ## abline(h=0,v=0,lty=2)
+## mean(us<0)
+
+## dd
+
+## ## 4b checking with actual coefficient vectors
+
+## ## R3
+## require(rgl)
+## m <- 3
+## c0 <- sort(runif(m))*2
+## ## c <- sort(c-mean(c)+runif(1)*.05)
+## c <- c0 - 1
+## c.p <- c[c>0]; c.m <- -c[c<0]
+## stopifnot(length(c.p)*length(c.m)>0)
+## us <- replicate(1e3, {
+##     u.p <- runif(length(c.p))
+##     u.m <- runif(length(c.m))
+##     u.p <- rbeta(length(c.p),.01,.01)
+##     u.m <- rbeta(length(c.m),.01,.01)
+##     u.m <- u.m * c(u.p%*%c.p / (u.m%*%c.m))
+##     ## c <- c(-c.m,c.p)
+##     u <- c(u.m,u.p)
+## })
+## us <- t(us)
+## us <- us / rowSums(us)
+## sum(abs(us%*%c0-1))
+## sum(abs(rowSums(us)-1))
+## ## plot(us[1,],us[2,],asp=1)
+## close3d()
+## open3d()
+## plot3d(us,xlim=c(0,1),ylim=c(0,1),zlim=c(0,1))
+## planes3d(1,1,1,-1,col=2)
+## planes3d(c0[1],c0[2],c0[3],-1,col=3)
+## ## arrow3d(c(0,0,0),c)
+
+
+
+## ## encapsulate
+## require(rgl)
+## sample.p <- function(n,c,shape) {
+##     d <- c - 1
+##     d.p <- d[d>0]; d.m <- -d[d<0]
+##     stopifnot(length(d.p)*length(d.m)>0)
+##     us <- replicate(n, {
+##         u.p <- rbeta(length(d.p),shape,shape)
+##         u.m <- rbeta(length(d.m),shape,shape)
+##         u.m <- u.m * c(u.p%*%d.p / (u.m%*%d.m))
+##         ## c <- c(-c.m,c.p)
+##         u <- c(u.m,u.p)
+##     })
+##     us <- t(us)
+##     us <- us / rowSums(us)
+##     ## sum(abs(us%*%c0-1))
+##     ## sum(abs(rowSums(us)-1))
+## }
+## m <- 3
+## c <- sort(runif(m))*2
+## p <- sample.p(n=1e2,c=c,shape=1)
+## close3d()
+## open3d()
+## plot3d(p,xlim=c(0,1),ylim=c(0,1),zlim=c(0,1))
+## planes3d(1,1,1,-1,col=2)
+## planes3d(c[1],c[2],c[3],-1,col=3)
+
+
+
+
+
+
+## 4c simulation
+
+## require(parallel)
+## source('utils.R')
+## set.seed(1)
+## start <- Sys.time()
+## n <- 1e2
+## m <- 2
+## theta.resolution <- 2e2
+## p.resolution <- 10
+## n.ref.samples <- 1e2
+## c   <- (0:(m-1))/(m-1)
+## p.true <- rep(.1,m-1); p.true <- c(p.true,1-sum(p.true))
+## stopifnot(sum(p.true<0)==0)
+## theta.true <- as.numeric(p.true%*%c)
+## T <- function(p.obs,p,c) {
+##     ## browser()
+##     var.c <- t(c)%*%(diag(as.numeric(p.obs)) - p.obs%*%t(p.obs))%*%c
+##     abs(c%*%(p.obs-p)) / sqrt(var.c)
+## }
+## ## p.vals <- replicate(1e2, {
+## p.vals <- mclapply(1:2e2, mc.cores=detectCores()-3, FUN=function(ii) {
+## ## p.vals <- lapply(1:2e1, FUN=function(ii) {
+##     cat('.')
+##     p.hat <- rmultinom(1,n,p.true) / n
+##     theta.hat <- c%*%p.hat
+
+##     ## generate grid of theta values, associate p-value to each theta
+##     ## value using nbhd of p values
+
+##     mc <- function(p) {
+##         p.star <- rmultinom(n.ref.samples,n,prob=p) / n
+##         T.star <- apply(p.star,2,T,p=p,c=c)
+##         T.hat <- as.numeric(T(p.hat,p,c))
+##         mean(T.star >= T.hat)
+##     }
+
+##     theta.grid <- seq(min(c)+.01,max(c)-.01,len=theta.resolution)
+##     p.by.theta <- lapply(theta.grid, function(theta) {
+##         sample.p(n=p.resolution,c=c/theta,shape=1)
+##     })
+
+    
+##     p.val.bins <- lapply(p.by.theta, function(p){
+##         if(isTRUE(is.na(p)))return(NA)
+##         apply(p,2,mc)#p.val.mc,p.hat=p.hat,T=T,reps=n.ref.samples)
+##         })
+##     p.val <- sapply(p.val.bins, max)
+##     idx.max <- which.max(theta.grid>=theta.true)
+##     idx.min <- rev(which(theta.grid<=theta.true))[1]
+##     p.val.true <- mean(p.val[c(idx.max,idx.min)],na.rm=TRUE)
+
+##     ## ## just the p : c^t p = theta.true
+##     ## p.by.theta <- sample.p(n=p.resolution,c=c/theta.true,shape=1)
+##     ## p.vals.simplex <- apply(p.by.theta,2,mc)
+##     ## max(p.vals.simplex)
+    
+##     ## ## just at p.true
+##     ## p.val.mc(p.true,p.hat=p.hat,T=T,reps=n.ref.samples)
+## })
+## p.vals <- simplify2array(p.vals)
+
+## plot(ecdf(p.vals))
+## abline(0,1)
+## print(mean(p.vals<=.05))
+## print(mean(p.vals<=.95))
+
+## print(Sys.time() - start)
+
+
+
+## ## 4d routine to test coverage
+
+## test.coverage <- function(p.try,p.hat,c,n,alpha=.05,n.ref.samples=1e2,T,theta.resolution,shape=1) {    
+##     theta.try <- c%*%p.try
+##     mc <- function(p) {
+##         p.star <- rmultinom(n.ref.samples,n,prob=p) / n
+##         T.star <- apply(p.star,2,T,p=p,c=c)
+##         T.hat <- as.numeric(T(p.hat,p,c))
+##         mean(T.star >= T.hat)
+##     }
+
+##     ## theta.grid <- seq(min(c)+.001,max(c)-.001,len=theta.resolution) # clean
+##     ## p.by.theta <- lapply(theta.grid, function(theta) {
+##     ##     sample.p(n=p.resolution,c=c/theta,shape=shape)
+##     ## })
+    
+##     ## p.val.bins <- lapply(p.by.theta, function(p){
+##     ##     if(isTRUE(is.na(p)))return(NA)
+##     ##     apply(p,2,mc)#p.val.mc,p.hat=p.hat,T=T,reps=n.ref.samples)
+##     ##     })
+##     ## p.val <- sapply(p.val.bins, max)
+##     ## idx.max <- which.max(theta.grid>=theta.true)
+##     ## idx.min <- rev(which(theta.grid<=theta.true))[1]
+##     ## p.val.true <- mean(p.val[c(idx.max,idx.min)],na.rm=TRUE)
+
+##     ## just the p : c^t p = theta.true
+##     p.by.theta <- sample.p(n=p.resolution,c=c/theta.try,shape=shape)
+##     p.vals.simplex <- apply(p.by.theta,2,mc)
+##     max(p.vals.simplex) > alpha
+    
+##     ## ## just at p.true
+##     ## p.val.mc(p.true,p.hat=p.hat,T=T,reps=n.ref.samples)
+## }
+
+## require(parallel)
+## source('utils.R')
+## set.seed(1)
+## start <- Sys.time()
+## n <- 1e2
+## m <- 2
+## theta.resolution <- 2e2
+## p.resolution <- 10
+## n.ref.samples <- 1e2
+## c   <- (0:(m-1))/(m-1)
+## p.true <- rep(.1,m-1); p.true <- c(p.true,1-sum(p.true))
+## stopifnot(sum(p.true<0)==0)
+## theta.true <- as.numeric(p.true%*%c)
+## T <- function(p.obs,p,c) {
+##     ## browser()
+##     var.c <- t(c)%*%(diag(as.numeric(p.obs)) - p.obs%*%t(p.obs))%*%c
+##     abs(c%*%(p.obs-p)) / sqrt(var.c)
+## }
+## ## p.vals <- replicate(1e2, {
+## cover <- mclapply(1:2e2, mc.cores=detectCores()-3, FUN=function(ii) {
+## ## p.vals <- lapply(1:2e1, FUN=function(ii) {
+##     cat('.')
+##     x <- rmultinom(1,n,p.true) 
+##     test.coverage(p.try=p.true,p.hat=x/n,c=c,n=n,alpha=.05,n.ref.samples=n.ref.samples,T=T,theta.resolution=theta.resolution,shape=1)
+## })
+## cover <- unlist(cover)
+## mean(cover)
+
+## print(Sys.time() - start)
+
+
+## ## 4e coverage simulation
+
+## source('utils.R')
+## m <- 3
+## ## n <- .1e2
+## c <- (0:(m-1))/(m-1)
+## ns <- round(seq(10,5e1,len=5))
+## p.trues <- sapply(seq(.1,1/m,len=15),function(x)c(rep(x,m-1),1-(m-1)*x))
+## by.n <- sapply(ns, function(n) {
+##     cat('.')
+##     by.p.true <- apply(p.trues, 2, function(p.true) {
+##         ## print(p.true)
+##         cover.flag <- replicate(3e2, {
+##             ## browser()
+##             ## cat('.')
+##             x <- rmultinom(1,n,p.true)
+##             ## test.coverage.asy(p.try=p.true,p.hat=x/n,c=c,n=n)
+##             test.coverage.exact(p.try=p.true,p.hat=x/n,c=c,n=n,alpha=.05,n.ref.samples=1e1,T=test.stat.1,theta.resolution=20,p.resolution=2,shape=1)
+##         })
+##         mean(cover.flag)
+##     })
+## })
+## ## plot(p.trues[1,],by.p.true,type='l')
+## matplot((by.n),x=p.trues[1,],type='l',pch=1,lty=1)
+
+## ## 5 mle, comparison with proposed
+
+
+## ## 5a check formula for asy variance
+## m <- 3
+## n <- .3e2
+## c <- runif(m)
+## p.true <- runif(m); p.true <- p.true/sum(p.true)
+## p.true <- rep(.1,m-1); p.true <- c(p.true,1-sum(p.true))
+## z.stats <- replicate(1e3, {
+##     x <- rmultinom(1,n,p.true)
+##     p.hat <- x / n
+##     ## var.mle <- (diag(as.numeric(p.true)) - p.true%*%t(p.true)) / n
+##     ## (c%*%(p.hat - p.true)) / sqrt(t(c)%*%var.mle%*%c)
+##     var.mle.hat <- (diag(as.numeric(p.hat)) - p.hat%*%t(p.hat)) / n
+##     (c%*%(p.hat - p.true)) / sqrt(t(c)%*%var.mle.hat%*%c)
+## })
+## qqnorm(z.stats); abline(0,1)
+## mean(abs(z.stats)<=qnorm(1-alpha/2))
+
+## ## routine to test coverage, small coverage simulation
+## test.coverage <- function(p.try,p.hat,c,n,alpha=.05) {
+##     var.mle.hat <- (diag(as.numeric(p.hat)) - p.hat%*%t(p.hat)) / n
+##     z.stat <- (c%*%(p.hat - p.try)) / sqrt(t(c)%*%var.mle.hat%*%c)
+##     abs(z.stat) <= qnorm(1-alpha/2)
+## }
+## m <- 3
+## n <- .3e2
+## c <- runif(m)
+## c <- (0:(m-1))/(m-1)
+## ## p.true <- runif(m); p.true <- p.true/sum(p.true)
+## p.true <- rep(.1,m-1); p.true <- c(p.true,1-sum(p.true))
+## cover <- replicate(1e3, {
+##     x <- rmultinom(1,n,p.true)
+##     test.coverage(p.try=p.true,p.hat=x/n,c=c,n=n)
+## })
+## mean(cover)
+
+## ## 5b coverage simulation
+
+## source('utils.R')
+## m <- 3
+## ## n <- .1e2
+## c <- (0:(m-1))/(m-1)
+## ns <- round(seq(10,5e1,len=5))
+## p.trues <- sapply(seq(.1,1/m,len=15),function(x)c(rep(x,m-1),1-(m-1)*x))
+## by.n <- sapply(ns, function(n) {
+##     by.p.true <- apply(p.trues, 2, function(p.true) {
+##         cover.flag <- replicate(3e2, {
+##             ## cat('.')
+##             x <- rmultinom(1,n,p.true)
+##             test.coverage.asy(p.try=p.true,p.hat=x/n,c=c,n=n)
+##         })
+##         mean(cover.flag)
+##     })
+## })
+## ## plot(p.trues[1,],by.p.true,type='l')
+## matplot((by.n),x=p.trues[1,],type='l',pch=1,lty=1)
+
+
+## 5c comparison of exact and asy CIs
+require(parallel)
+source('utils.R')
+start <- Sys.time()
+m <- 7
+alpha <- .05
+## n <- .1e2
+c <- (0:(m-1))/(m-1)
+ns <- round(seq(10,5e1,len=5))
+ns <- c(10,30,50)
+ns <- 10
+p.trues <- sapply(seq(.01,1/m,len=15),function(x)c(rep(x,m-1),1-(m-1)*x))
+## by.n <- lapply(ns, function(n) {
+by.n <- mclapply(ns, mc.cores=detectCores()-3, FUN=function(n) {
+    cat('------')
+    by.p.true <- apply(p.trues, 2, function(p.true) {
+        print(p.true)
+        theta.true <- as.numeric( p.true%*%c )
+        cover.flag <- replicate(5e1, {
+            ## browser()
+            ## cat('.')
+            x <- rmultinom(1,n,p.true)
+            ## test.coverage.asy(theta.try=theta.true,p.hat=x/n,c=c,n=n)
+            cover.exact <- test.coverage.exact(theta.try=theta.true,p.hat=x/n,c=c,n=n,alpha=alpha,n.ref.samples=1e2,test.stat=test.stat.1,p.sampler=p.sampler.1,theta.resolution=0,p.resolution=3e0,shape=1)
+            ## cover.exact <- test.coverage.exact(theta.try=theta.true,p.hat=x/n,c=c,n=n,alpha=alpha,n.ref.samples=5e1,T=test.stat.1,theta.resolution=200,p.resolution=20,shape=1)
+            cover.asy <- test.coverage.asy(theta.try=theta.true,p.hat=x/n,c=c,n=n,alpha=alpha)
+            c(exact=cover.exact,asy=cover.asy)
+        })
+        rowMeans(cover.flag,na.rm=TRUE) # clean up
+    })
+})
+by.n <- simplify2array(by.n)
+Sys.time() - start
+dimnames(by.n)[[3]] <- ns
+## matplot((by.n['asy',,]),x=p.trues[1,],type='l',pch=1,lty=1,ylim=c(min(by.n),1))
+## matplot((by.n['exact',,]),x=p.trues[1,],type='l',pch=1,lty=2,add=TRUE)
+## abline(h=1-alpha)
+## png('coverage.png', width = 1024, height = 768, pointsize=15)
+op <- par(mfrow=c(1,length(ns)))
+for(n in ns) {
+    plot(p.trues[1,],by.n['asy',,as.character(n)],,type='l',ylim=c(min(by.n),1),xlab='distance from boundary of param space',ylab='coverage',main=paste0('n=',n))
+    lines(p.trues[1,],by.n['exact',,as.character(n)],lty=2)
+    abline(h=1-alpha)
+    legend('bottomright',lty=1:2,legend=c('MLE/Wald-type','proposed'))
+}
+par(op)
+## dev.off()
+## save.image('sessions/5c.RData') # 1.6 hr sim
+
+## 5d comparison of exact and asy CIs. Same as 5c but using refactored
+## multinom.linear.
+require(parallel)
+source('utils.R')
+start <- Sys.time()
+m <- 4
+alpha <- .05
+## n <- .1e2
+c <- (0:(m-1))/(m-1)
+ns <- round(seq(10,5e1,len=5))
+ns <- c(10,30,50)
+p.trues <- sapply(seq(.01,1/m,len=15),function(x)c(rep(x,m-1),1-(m-1)*x))
+## by.n <- lapply(ns, function(n) {
+by.n <- mclapply(ns, mc.cores=detectCores()-3, FUN=function(n) {
+    cat('------')
+    by.p.true <- apply(p.trues, 2, function(p.true) {
+        print(p.true)
+        theta.true <- as.numeric( p.true%*%c )
+        cover.flag <- replicate(5e2, {
+            ## browser()
+            ## cat('.')
+            x <- rmultinom(1,n,p.true)
+            ## test.coverage.asy(theta.try=theta.true,p.hat=x/n,c=c,n=n)
+            ## cover.exact <- test.coverage.exact(theta.try=theta.true,p.hat=x/n,c=c,n=n,alpha=alpha,n.ref.samples=5e1,test.stat=test.stat.1,p.sampler=p.sampler.2,theta.resolution=20,p.resolution=2,shape=1)
+            ml <- multinom.linear(p.obs=x/n,c=c,n=n,theta=theta.true,n.ref.samples=50,test.stat=test.stat.1,p.sampler=p.sampler.2,theta.resolution,p.resolution=1e2)
+            cover.exact <- test.multinom.linear(ml,theta.null=theta.true)$p.val >= alpha
+            ## if(cover.exact.1!=cover.exact)browser()
+            ## cover.exact <- test.coverage.exact(theta.try=theta.true,p.hat=x/n,c=c,n=n,alpha=alpha,n.ref.samples=5e1,T=test.stat.1,theta.resolution=200,p.resolution=20,shape=1)
+            cover.asy <- test.coverage.asy(theta.try=theta.true,p.hat=x/n,c=c,n=n,alpha=alpha)
+            c(exact=cover.exact,asy=cover.asy)
+        })
+        rowMeans(cover.flag,na.rm=TRUE) # clean up
+    })
+})
+by.n <- simplify2array(by.n)
+Sys.time() - start
+dimnames(by.n)[[3]] <- ns
+## matplot((by.n['asy',,]),x=p.trues[1,],type='l',pch=1,lty=1,ylim=c(min(by.n),1))
+## matplot((by.n['exact',,]),x=p.trues[1,],type='l',pch=1,lty=2,add=TRUE)
+## abline(h=1-alpha)
+## png('coverage.png', width = 1024, height = 768, pointsize=15)
+op <- par(mfrow=c(1,3))
+for(n in ns) {
+    plot(p.trues[1,],by.n['asy',,as.character(n)],,type='l',ylim=c(min(by.n),1),xlab='distance from boundary of param space',ylab='coverage',main=paste0('n=',n))
+    lines(p.trues[1,],by.n['exact',,as.character(n)],lty=2)
+    abline(h=1-alpha)
+    legend('bottomright',lty=1:2,legend=c('MLE/Wald-type','proposed'))
+}
+par(op)
+## dev.off()
+## save.image('sessions/5d.RData') # 1.6 hr sim
+
+
+## 6 sampling method using vertex enumeration
+
+require(vertexenum)
+require(rgl)
+m <- 4
+c <- runif(m); c <- c-mean(c)
+A <- rbind(-c,-diag(m),diag(m))
+b <- c(rep(0,m+1),rep(1,m))
+vv <- enumerate.vertices(A=A,b=b,warn=TRUE)
+
+close3d()
+open3d()
+plot3d(x=runif(2),y=runif(2),z=runif(2),xlim=c(0,1),ylim=c(0,1),zlim=c(0,1))
+planes3d(c[1],c[2],c[3],0,col=2)
+for(i in 1:nrow(vv)) {
+    print(vv[i,])
+    arrow3d(c(0,0,0),vv[i,],thickness=.02,width=.1,s=.1)
+}
+
+
+m <- 4
+c <- runif(m); c <- c-mean(c)
+A <- rbind(-c,-diag(m),rep(1,m))
+b <- c(rep(0,m+1),1)
+vv <- enumerate.vertices(A=A,b=b,warn=TRUE)
+
+## vertices of the original problem, ignoring orthcomplement etc
+require(vertexenum)
+require(rgl)
+m <- 4
+c <- runif(m); c <- (c-mean(c))/.2
+## c <- c(-1,1,0)/.5
+A <- rbind(c,-diag(m),rep(1,m))
+b <- c(1,rep(0,m),1)
+vv <- enumerate.vertices(A=A,b=b,warn=TRUE)
+idx <- vv%*%c==1 & vv%*%rep(1,m)==1
+idx <- abs(vv%*%c-1 + rowSums(vv)-1) < 1e-7
+vv
+close3d()
+open3d()
+plot3d(x=runif(2),y=runif(2),z=runif(2),xlim=c(0,1),ylim=c(0,1),zlim=c(0,1))
+planes3d(c[1],c[2],c[3],-1,col=2)
+planes3d(1,1,1,-1,col=3)
+for(i in which(idx))    arrow3d(c(0,0,0),vv[i,],thickness=.02,width=.1,s=.1)
+
+## transforming intersection to simplex, sampling, transforming back
+## vertices of the original problem, ignoring orthcomplement etc
+require(vertexenum)
+require(rgl)
+m <- 3
+c <- runif(m); c <- (c-mean(c))/.2
+## c <- c(-1,1,0)/.5
+A <- rbind(c,-diag(m),rep(1,m))
+b <- c(1,rep(0,m),1)
+vv <- enumerate.vertices(A=A,b=b,warn=TRUE)
+## idx <- vv%*%c==1 & vv%*%rep(1,m)==1
+idx <- which(abs(vv%*%c-1 + rowSums(vv)-1) < 1e-7)
+stopifnot(length(idx)==m-1)
+origin <- vv[idx[1],]
+M <- t(vv[idx[-1],,drop=FALSE])
+M <- M-origin
+u <- matrix(rexp((m-2+1)*20),ncol=m-2+1)
+u <- u[,-(m-2+1),drop=FALSE]/rowSums(u)
+u <- t(origin + M%*%t(u))
+close3d()
+open3d()
+## plot3d(x=runif(2),y=runif(2),z=runif(2),xlim=c(0,1),ylim=c(0,1),zlim=c(0,1))
+plot3d(x=runif(2),y=runif(2),z=runif(2),xlim=c(0,1),ylim=c(0,1),zlim=c(0,1))
+## plot3d(u)
+## planes3d(c[1],c[2],c[3],-1,col=2)
+planes3d(1,1,1,-1,col=3)
+for(i in (idx))    arrow3d(c(0,0,0),vv[i,],thickness=.02,width=.1,s=.1)
+## arrow3d(origin,origin+as.numeric(M))
+points3d(u)
+
+## transforming intersection to simplex, sampling, transforming back,
+## but now using rank simplex. visualize in 3d. --buggy
+require(vertexenum)
+require(rgl)
+m <- 3
+shape <- 1
+c <- runif(m); c <- (c-mean(c))/.2
+## c <- c(-1,1,0)/.5
+A <- rbind(c,-diag(m),rep(1,m))
+b <- c(1,rep(0,m),1)
+vv <- enumerate.vertices(A=A,b=b,warn=TRUE)
+## idx <- vv%*%c==1 & vv%*%rep(1,m)==1
+idx <- which(abs(vv%*%c-1 + rowSums(vv)-1) < 1e-7)
+stopifnot(length(idx)==m-1)
+origin <- vv[idx[1],]
+M.rank.to.prob <- diag(m-2)
+M.rank.to.prob[row(M.rank.to.prob)==col(M.rank.to.prob)+1] <- -1
+M <- t(vv[idx[-1],,drop=FALSE])
+M <- M%*%M.rank.to.prob
+M <- M-origin
+## u <- matrix(rexp((m-2+1)*20),ncol=m-2+1)
+## u <- u[,-(m-2+1),drop=FALSE]/rowSums(u)
+u <- matrix(rbeta((m-2)*200,shape,shape),ncol=m-2)
+u <- apply(u,1,sort,simplify=FALSE)
+u <- do.call(rbind,u)
+u <- t(origin + M%*%t(u))
+close3d()
+open3d()
+## plot3d(x=runif(2),y=runif(2),z=runif(2),xlim=c(0,1),ylim=c(0,1),zlim=c(0,1))
+plot3d(x=runif(2),y=runif(2),z=runif(2),xlim=c(0,1),ylim=c(0,1),zlim=c(0,1))
+## plot3d(u)
+## planes3d(c[1],c[2],c[3],-1,col=2)
+planes3d(1,1,1,-1,col=3)
+for(i in (idx))    arrow3d(c(0,0,0),vv[i,],thickness=.02,width=.1,s=.1)
+## arrow3d(origin,origin+as.numeric(M))
+points3d(u)
+
+
+## encapsulate--buggy
+require(rgl)
+sample.p <- function(n,c,shape,tol=1e-7) {
+    m <- length(c)
+    scale <- 1
+    A <- rbind(c,-diag(m),rep(1,m))
+    ## b <- c(1,rep(0,m),scale)
+    b <- c(1,rep(0,m),scale)
+    vv <- vertexenum::enumerate.vertices(A=A,b=b,warn=TRUE)
+    idx <- which(abs(vv%*%c-1 + rowSums(vv)-scale) < tol)
+    ## idx <- which(abs(vv%*%c + rowSums(vv)-scale) < tol)
+    ww <- vv[idx,]
+    ## stopifnot(length(idx)==m-1)
+    print(length(idx))
+    ## print(length(idx)-(m-1))
+    ## if(length(idx)-(m-1)>0)
+        ## if(sum(eigen(ww%*%t(ww))$val>tol)-(m-1)!=0)browser()
+    ## if(length(idx)!=m-1)browser()
+    if(length(idx)!=m-1)return(NA)
+    origin <- vv[idx[1],]
+    M.rank.to.prob <- diag(m-2)
+    M.rank.to.prob[row(M.rank.to.prob)==col(M.rank.to.prob)+1] <- -1
+    M <- t(vv[idx[-1],,drop=FALSE])
+    M <- (M-origin)
+    M <- M%*%M.rank.to.prob 
+    ## u <- matrix(rexp((m-2+1)*20),ncol=m-2+1)
+    ## u <- u[,-(m-2+1),drop=FALSE]/rowSums(u)
+    u <- matrix(rbeta((m-2)*n,shape,shape),ncol=m-2)
+    u <- apply(u,1,sort,simplify=FALSE)
+    u <- do.call(rbind,u)
+    u <- (origin + M%*%t(u)) / scale
+}
+m <- 10
+shape <- 1
+pairs <- replicate(1e2, {
+    c <- runif(m); c <- (c-mean(c))/.2
+    u <- sample.p(1e2,c,shape=10)
+})
+
+
+## transforming intersection to simplex, sampling, transforming back,
+## but now using rank simplex. visualize in 3d.
+require(vertexenum)
+require(rgl)
+m <- 3
+shape <- 1
+c <- runif(m); c <- (c-mean(c))/.2
+## c <- c(-1,1,0)/.5
+A <- rbind(c,-diag(m),rep(1,m))
+b <- c(1,rep(0,m),1)
+vv <- enumerate.vertices(A=A,b=b,warn=TRUE)
+## idx <- vv%*%c==1 & vv%*%rep(1,m)==1
+idx <- which(abs(vv%*%c-1 + rowSums(vv)-1) < 1e-7)
+## vv <- vv[idx,]
+w <- matrix(rexp(100*nrow(vv[idx,])),ncol=nrow(vv[idx,]))
+w <- w/rowSums(w)
+u <- w%*%vv[idx,]
+## stopifnot(length(idx)==m-1)
+## origin <- vv[idx[1],]
+## M.rank.to.prob <- diag(m-2)
+## M.rank.to.prob[row(M.rank.to.prob)==col(M.rank.to.prob)+1] <- -1
+## M <- t(vv[idx[-1],,drop=FALSE])
+## M <- M%*%M.rank.to.prob
+## M <- M-origin
+## ## u <- matrix(rexp((m-2+1)*20),ncol=m-2+1)
+## ## u <- u[,-(m-2+1),drop=FALSE]/rowSums(u)
+## u <- matrix(rbeta((m-2)*200,shape,shape),ncol=m-2)
+## u <- apply(u,1,sort,simplify=FALSE)
+## u <- do.call(rbind,u)
+## u <- t(origin + M%*%t(u))
+clear3d()
+## plot3d(x=runif(2),y=runif(2),z=runif(2),xlim=c(0,1),ylim=c(0,1),zlim=c(0,1))
+plot3d(x=runif(2),y=runif(2),z=runif(2),xlim=c(0,1),ylim=c(0,1),zlim=c(0,1))
+## plot3d(u)
+planes3d(c[1],c[2],c[3],-1,col=2,alpha=.3)
+planes3d(1,1,1,-1,col=3,alpha=.3)
+for(i in (idx))    arrow3d(c(0,0,0),vv[i,],thickness=.02,width=.1,s=.1)
+## arrow3d(origin,origin+as.numeric(M))
+points3d(u)
+
+
+## encapsulate
+require(rgl)
+sample.p <- function(n,c,tol=1e-7) {
+    m <- length(c)
+    A <- rbind(c,-diag(m),rep(1,m))
+    b <- c(1,rep(0,m),1)
+    vv <- vertexenum::enumerate.vertices(A=A,b=b,warn=TRUE)
+    ## idx <- vv%*%c==1 & vv%*%rep(1,m)==1
+    idx <- which(abs(vv%*%c-1 + rowSums(vv)-1) < tol)
+    ## vv <- vv[idx,]
+    w <- matrix(rexp(n*nrow(vv[idx,])),ncol=nrow(vv[idx,]))
+    w <- w/rowSums(w)
+    u <- w%*%vv[idx,]
+}
+m <- 3
+c <- runif(m); c <- (c-mean(c))/.2
+u <- sample.p(1e2,c)
+clear3d()
+## plot3d(x=runif(2),y=runif(2),z=runif(2),xlim=c(0,1),ylim=c(0,1),zlim=c(0,1))
+plot3d(type='n',x=0,y=0,z=0,xlim=c(0,1),ylim=c(0,1),zlim=c(0,1))
+## plot3d(u)
+planes3d(c[1],c[2],c[3],-1,col=2,alpha=.3)
+planes3d(1,1,1,-1,col=3,alpha=.3)
+## arrow3d(origin,origin+as.numeric(M))
+points3d(u)
+
+
+## 7 library
+source('utils.R')
+n <- 8
+m <- 3
+p <- runif(m); p <- p/sum(p)
+p.obs <- rmultinom(1,n,p) / n
+c <- runif(m)
+test.stat <- test.stat.1
+p.sampler <- p.sampler.2
+theta.resolution <- 1e1
+theta <- seq(min(c)+.001,max(c)-.001,len=theta.resolution) 
+p.resolution <- 1e2
+n.ref.samples <- 1e2
+test.output <- multinom.linear(p.obs,c,n,theta,n.ref.samples=1e2,test.stat,p.sampler,theta.resolution,p.resolution) 
+
+plot.multinom.linear <- function(test.output,alpha=.05){
+    theta <- test.output$theta
+    p <- test.output$p
+    p.val.theta <- test.output$p.val.theta
+    plot(theta,p.val.theta,ylim=c(0,1),xlab='theta',ylab='p-value')
+    abline(h=alpha)
+    }
+plot.multinom.linear(test.output)
+
+
+plot3d.multinom.linear <- function(test.output,alpha=.05,palette=heat.colors(10)){
+    theta <- test.output$theta
+    p <- test.output$p
+    p.val.p <- test.output$p.val.p
+    p <- do.call(rbind,p)
+    p.val.p <- do.call(base:::c,p.val.p)
+
+    n.colors <- length(palette)
+    p.val.binned <- cut(p.val.p,breaks=n.colors)
+    col <- palette[p.val.binned]
+    rgl::clear3d()
+    rgl::plot3d(p,col=col)
+
+    rgl::legend3d('topright',col=palette,pch=1,legend=levels(p.val.binned))
+}
+plot3d.multinom.linear(test.output)
+
+
+## instantiates class htest excpt for "statistic" entry, since
+## multinom.linear doesnt currently expose the test statistics, only
+## the p-values; spec:https://search.r-project.org/CRAN/refmans/EnvStats/html/htest.object.html
+test.multinom.linear <- function(test.output,theta.null) {
+    ## theta <- test.output$theta
+    ## p <- test.output$p
+    ## p.val.theta <- test.output$p.val.theta
+    idx <- which.min(abs(test.output$theta-c(theta.null)))
+    p.val.null <- test.output$p.val.theta[idx]
+    
+    out <- with(test.output,
+                list(null.value=c(theta=theta.null),alternative='two-sided',method='Monte carlo exact test',estimate=c(p=as.numeric(p.obs)),data.name=data.name,statistic=NA,parameters=c(),p.value=p.val.null)
+                )
+    class(out) <- 'htest'
+    return(out)
+}
+
+test.multinom.linear(test.output=test.output,theta.null=c%*%p)$p.val

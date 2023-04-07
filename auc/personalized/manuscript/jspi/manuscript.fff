@@ -1,0 +1,26 @@
+\begin{figure}[!tbp]
+  \centering
+  \subfloat[]{\includegraphics[width=0.5\textwidth]{220816a.pdf}\label{fig:comparison:a}}
+  \hfill
+  \subfloat[]{\includegraphics[width=0.5\textwidth]{211223b.pdf}\label{fig:comparison:b}}
+  \caption{Two visualizations contrasting the individual and
+    population AUCs. Each gives rug plots of fifteen clusters of data, each cluster sampled IID
+    according to a bivariate normal model, with the unclustered
+    data combined at the bottom. Case observations are represented with ``$-$'' and
+    control observations with ``$|$''. On the left, the personalized AUC is
+    informative and the population AUC uninformative. The reverse situation is
+    presented on the right.}  \label{fig:comparison}
+\end{figure}
+\efloatseparator
+ 
+\begin{figure}[!tbp]
+  \centering
+  % \subfloat[Bivariate normal model \eqref{model:binormal}]{\includegraphics[width=0.5\textwidth]{../sim/220813/a/220813.pdf}}
+  \subfloat[Bivariate normal model \eqref{model:binormal}]{\includegraphics[width=0.5\textwidth]{220813a.pdf}}
+  \hfill
+  % \subfloat[Bivariate normal model with censoring \eqref{model:censored binormal}]{\includegraphics[width=0.5\textwidth]{../sim/220813/b/220813.pdf}}
+  \subfloat[Bivariate normal model with censoring \eqref{model:censored binormal}]{\includegraphics[width=0.5\textwidth]{220813b.pdf}}
+  \caption{Empirical power function of the test of $H_0:\aucpop=\aucindiv$ versus $\aucpop<\aucindiv$ using the
+     asymptotic estimator given in Section
+     \ref{section:asymptotics}. In the bivariate normal model with or without censoring, the null is equivalent to $H_0:|\aucpop-1/2|=|\aucindiv-1/2|,$ equal informativity.}  \label{fig:power}
+\end{figure}

@@ -1,0 +1,88 @@
+\begin{thebibliography}{}
+
+\bibitem[Emir et~al., 2000]{emir2000}
+Emir, B., Wieand, S., Jung, S.-H., and Ying, Z. (2000).
+\newblock Comparison of diagnostic markers with repeated measurements: a
+  non-parametric {ROC} curve approach.
+\newblock {\em Statistics in Medicine}, 19(4):511--523.
+
+\bibitem[Goel et~al., 2016]{goel2016}
+Goel, S., Rao, J.~M., and Shroff, R. (2016).
+\newblock Precinct or prejudice? {U}nderstanding racial disparities in new york
+  city’s stop-and-frisk policy.
+\newblock {\em The Annals of Applied Statistics}, 10(1):365--394.
+
+\bibitem[Hanley, 1988]{hanley1988}
+Hanley, J.~A. (1988).
+\newblock The robustness of the ``binormal'' assumptions used in fitting {ROC}
+  curves.
+\newblock {\em Medical decision making}, 8(3):197--203.
+
+\bibitem[Lee, 2019]{lee2019}
+Lee, A.~J. (2019).
+\newblock {\em U-statistics: Theory and Practice}.
+\newblock Routledge.
+
+\bibitem[Lee and Dehling, 2005]{lee2005}
+Lee, M.-L.~T. and Dehling, H.~G. (2005).
+\newblock Generalized two-sample u-statistics for clustered data.
+\newblock {\em Statistica Neerlandica}, 59(3):313--323.
+
+\bibitem[Liu et~al., 2005]{liu2005}
+Liu, H., Li, G., Cumberland, W.~G., Wu, T., et~al. (2005).
+\newblock Testing statistical significance of the area under a receiving
+  operating characteristics curve for repeated measures design with
+  bootstrapping.
+\newblock {\em Journal of Data Science}, 3(3):257--278.
+
+\bibitem[Michael et~al., 2019]{michael2019}
+Michael, H., Tian, L., and Ghebremichael, M. (2019).
+\newblock The {ROC} curve for regularly measured longitudinal biomarkers.
+\newblock {\em Biostatistics}, 20(3):433--451.
+
+\bibitem[Obuchowski, 1997]{obuchowski1997}
+Obuchowski, N.~A. (1997).
+\newblock Nonparametric analysis of clustered {ROC} curve data.
+\newblock {\em Biometrics}, pages 567--578.
+
+\bibitem[Pearl, 2014]{pearl2014}
+Pearl, J. (2014).
+\newblock Comment: {U}nderstanding {S}impson’s paradox.
+\newblock {\em The American Statistician}, 68(1):8--13.
+
+\bibitem[Ridgeway, 2006]{ridgeway2006}
+Ridgeway, G. (2006).
+\newblock Assessing the effect of race bias in post-traffic stop outcomes using
+  propensity scores.
+\newblock {\em Journal of Quantitative Criminology}, 22(1):1--29.
+
+\bibitem[Ridgeway and MacDonald, 2009]{ridgeway2009}
+Ridgeway, G. and MacDonald, J.~M. (2009).
+\newblock Doubly robust internal benchmarking and false discovery rates for
+  detecting racial bias in police stops.
+\newblock {\em Journal of the American Statistical Association},
+  104(486):661--668.
+
+\bibitem[Rosner and Grove, 1999]{rosner1999}
+Rosner, B. and Grove, D. (1999).
+\newblock {Use of the Mann--Whitney U-test for clustered data}.
+\newblock {\em Statistics in medicine}, 18(11):1387--1400.
+
+\bibitem[Sen, 1960]{sen1960}
+Sen, P.~K. (1960).
+\newblock On some convergence properties of {U}-tatistics.
+\newblock {\em Calcutta Statistical Association Bulletin}, 10(1-2):1--18.
+
+\bibitem[Toledano, 2003]{toledano2003}
+Toledano, A.~Y. (2003).
+\newblock Three methods for analysing correlated roc curves: a comparison in
+  real data sets from multi-reader, multi-case studies with a factorial design.
+\newblock {\em Statistics in medicine}, 22(18):2919--2933.
+
+\bibitem[Wu and Wang, 2011]{wu2011}
+Wu, Y. and Wang, X. (2011).
+\newblock Optimal weight in estimating and comparing areas under the receiver
+  operating characteristic curve using longitudinal data.
+\newblock {\em Biometrical journal}, 53(5):764--778.
+
+\end{thebibliography}

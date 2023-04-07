@@ -70,21 +70,22 @@
 % \def\input@path{{input/}{figs/}}
 % \graphicspath{{./figs/}}
 \newtoggle{commenttoggle}
-\toggletrue{commenttoggle}
+\togglefalse{commenttoggle}
 \newcommand{\comment}[1]{
   \iftoggle{commenttoggle}{
     {\normalsize{\color{red}{ #1}}\normalsize}
   }
   {}
 }
+\begin{document}
+\author{Alexis Doyle, Haben Michael}
 \title{Nonparametric Estimation of the AUC of an Index with Estimated Parameters}
-% \author[1]{Haben Michael}
-% \author[2]{Lu Tian}
+% \author[1]{Lu Tian}
+% \author[2]{Haben Michael}
 % \affil[1]{University of Massachusetts}
 % \affil[2]{Stanford University}
 \date{}
 
-\begin{document}
 \maketitle
 % ((previously: ``auc of an estimated index'' but that isn't actually the target of estimation))
 
@@ -105,7 +106,7 @@ $\t\beta x$ as an ``index'' and its AUC as an ``index AUC.''
 In medical fields, comparison of markers often takes the form of comparing two sets of
 patient characteristics $x$ and $y$, with indexes $\t\beta x,\t\gamma y$. The
 characteristics are often nested, $x\subset y$, as when investigating
-the impact on discrimination of additionatal factors $y \backslash
+the impact on discrimination of additional factors $y \backslash
 x$. The difference in AUCs has been described by experts as
 one of the most widely used measures of discrimination \citep{demler2017}. \comment{should be ``difference'' in discrimination I think?}
 
@@ -117,7 +118,7 @@ directly compare the coefficients $\beta$ and $\gamma$ under a
 model. The result of this comparison may conflict with the comparison
 of AUCs. A series of papers in the 2010s noted the ``baffling'' and
 ``perplexing'' contradictions between the two methods, calling into
-question the validity of $\Delta$AUC \citep{seshan2013}\comment{johnny cite}. While the
+question the validity of $\Delta$AUC \citep{seshan2013,tzoulaki2009}. While the
 source of the contradiction was soon identified, remedies have been
 slower to
 arrive.% unexpected behavior when comparing $\aucdiff$ to tests on the indexes
@@ -136,6 +137,17 @@ to compare nested logistic regression models [11, 12, 13, 14, 15, 16,
 17]))
 }
 
+
+
+\comment{papers suggeting new biomarkers:Dolin HH, Papadimos TJ, Stepkowski S et al.
+  A novel
+  combination of biomarkers to herald the onset of sepsis prior
+  to the manifestation of symptoms. SHOCK 2018; 49(4): 364–
+  370.
+  13. Gruenewald TL, E T, Seeman et al.
+  Combinations of
+  biomarkers predictive of later life mortality. Proc Natl Acad
+  Sci U S A 2006; 103(38): 14158–14163.}
 \section{Background/setting}\label{section:background}
 
 
@@ -185,7 +197,7 @@ $\hat\gamma$ imply inconsistent
 models (see Example \ref{example:diff:parametric}). % E.g., logistic models with nonzero covariates omitted from the
 % reduced model
  Nevertheless inference is
-sought \comment{cite applied papers}, particularly 1. whether the difference
+sought (see \citet{seshan2013} for numerous references), particularly 1. whether the difference
 in the AUCs of the two markers $\t{\hat\beta} x$ and
 $\t{\hat\gamma} x$ is in some limiting sense nonzero, and if so 2. the
 magnitude of the difference. Assume here that limiting sense is the
@@ -282,8 +294,18 @@ function. However, unless computing the null distribution of the
 $\aucdiffhat$ calls for fewer modeling assumptions, improved efficiency,
 or some other advantage, may as well test risk functions.
 
-As we don't offer any such improvements over testing the risk, we only consider
-the alternative case $\aucdiff\neq 0$ in the remainder.
+As we don't offer any such improvements over testing the risk, we only
+consider the alternative case $\aucdiff\neq 0$ in the
+remainder. Experts currently recommend first testing for equality of
+risks, as just described, and upon a finding that $\aucdiff\neq 0$
+producing confidence intervals for $\aucdiff$ (e.g.,
+\citet{demler2017}). The focus in this paper on the alternative
+$\aucdiff\neq 0$ has the goal of enabling practitioners to carry out this recommended
+course. \comment{``Therefore, the recommended strategy is to establish
+  the significance of the regression coefficient first and then
+  evaluate improvement in model performance by producing confidence
+  intervals for measures of performance such as $\Delta$AUC, NRIs, and
+  IDI.'' --demler 2017}
 
 2. A second issue is that $\hat\beta,\hat\gamma$ are estimated from
 the data, so that the observations on which the statistic \eqref{defn:aucdiffhat} is based
@@ -377,7 +399,7 @@ The CLT may be applied to get the asymptotic distribution of
 $\aucdiffhat$ in situations that the term \eqref{method:adjustment term} is
 negligible, e.g., if $\hat\beta=\beta$ were not estimated (see Section \ref{section:examples}
 for additional scenarios when \eqref{method:adjustment term} is
-negligible)). The approach of \citet{delong1988} in such situations is to estimate
+negligible). The approach of \citet{delong1988} in such situations is to estimate
 $\F,\G$ above using the empirical CDFs $\hat\F,\hat\G$,
 giving rise to the standard Delong statistic for inference on the
 $\aucdiff$,
@@ -406,7 +428,7 @@ Putting the two parts together,
 \begin{align}
   &\auc(\hat\F,\hat\G,\hat\beta) - \auc(\F,\G,\beta)\\
   &=\frac{1}{\m+\n}\sum_{i=1}^{\m+\n}\left(-\frac{\{\D[i]=0\}}{\P(\D=0)}(1-\G(\t{\star\beta}\W[i])-\auc(\F,\G,\star\beta)) + \frac{\{\D[i]=1\}}{\P(\D=1)}(\F(\t{\star\beta}\W[i])-\auc(\F,\G,\star\beta))\right) \\
-  &+ \frac{\partial}{\partial\beta}\t{\auc(\F,\G,\beta)}\sum_{i=1}^{\m+\n}\infl[\hat\beta](\W[i]) + o_P((\N)^{-1/2}) \label{method:iid representation}
+  &+ \frac{\partial}{\partial\beta}\t{\auc(\F,\G,\beta)}\frac{1}{\m+\n}\sum_{i=1}^{\m+\n}\infl[\hat\beta](\W[i]) + o_P((\N)^{-1/2}) \label{method:iid representation}
 \end{align}
 \comment{maybe combine into one sum}
 
@@ -672,7 +694,7 @@ logistic link, identity, etc.
   % \frac{f(w\mid \D=1)}{f(w\mid \D=0)} \sim \sum_{i=1}^n(\theta_{i1}-\theta_{i0})^tx_i
    \frac{f(w\mid \D=1)}{f(w\mid \D=0)} \sim \t{(\theta_1-\theta_0)}w
 \end{align}
-With the usual LDA estimators, $\star\beta={\star{\Sigma}}^{-1}\Delta\star{\mu}$, where $\Delta\star{\mu}=A_1'-A_0'$ and $\star\Sigma$ is diagonal with entries $\pi_0A_{i0}''+\pi_1A_{i1}'',i=1,\ldots,p, \pi_0=1-\pi_1=\P(D=0)$. If 1. the population variances are equal, $\pi_0A_{i0}''+\pi_1A_{i1}''$ doesn't depend on $i$, and 2. $\theta_i$ is the mean $A_i'$, then $\t{\star{\beta}}w \sim \t{(A_1'-A_0')}w \sim \risk[\W](w)$.
+With the usual LDA estimators, $\star\beta={\star{\Sigma}}^{-1}\Delta\star{\mu}$, where $\Delta\star{\mu}=A_1'-A_0'$ and $\star\Sigma$ is diagonal with entries $\pi_0A_{i0}''+\pi_1A_{i1}'',i=1,\ldots,p, \pi_0=1-\pi_1=\P(D=0)$. If 1. the population variances are equal, i.e., $\pi_0A_{i0}''+\pi_1A_{i1}''$ doesn't depend on $i$, and 2. $\theta_i$ is the mean $A_i'$, then $\t{\star{\beta}}w \sim \t{(A_1'-A_0')}w \sim \risk[\W](w)$.
 % \begin{align}
 %   \hat\beta \to_p ...
 % \end{align}
@@ -680,7 +702,7 @@ With the usual LDA estimators, $\star\beta={\star{\Sigma}}^{-1}\Delta\star{\mu}$
 % \begin{align}
 %   \beta x \sim \sum_{i=1}^n(A_{i1}'-A_{i0}')x_i \sim \risk (x)
 % \end{align}
-This application of LDA is not justified under the usual
+This application of LDA is not justified under the usual LDA
 homoskedasticity assumption, as the parameter $\theta_j,j=1,2,$ may
 affect the variance across classes. It turns out the coefficient
 estimation still does not affect the asymptotic distribution of the index AUC.
@@ -699,11 +721,11 @@ computing the difference.
 
 \begin{example}
   For a non-parametric estimator like MRC, Example \ref{example:auc:mrc}, there
-  is no further difficulty. Each estimation procedure leads to a
+  is no further difficulty. Both estimation procedures have a
   vanishing derivative. This example is discussed in \citet{heller2017}.
 \end{example}
 \begin{example}Likewise, there is no difficulty when one coefficient
-  is estimated by a well-specified parameric estimator and the other
+  is estimated by a well-specified parametric estimator and the other
   by a non-parametric estimator, or e.g.  the single covariate case
   where there is effectively no estimator. % full
 % model well-specified and reduced model a single covariate 
@@ -782,14 +804,14 @@ logistic function of the index. Several authors have suggested,
 however, that the coefficient estimation may be ignored
 \citep{demler2011} \comment{give citations. is this the right demler
   paper?}. In fact, as shown in forthcoming work \comment{or add to
-  appendix?}, for whatever link $h$, if the covariates are gaussian,
+  appendix?}, for any link function $h$, if the covariates are gaussian,
 then the adjustment term vanishes, and coefficient estimation may be
 ignored, only when the covariates under the marginalized model are the
 covariates that would be obtained under a probit model. Though the
 derivative may not vanish, however, it may be negligible, so that in
 practice the coefficient estimation may be ignored. A heuristic reason
 to expect a small adjustment term is that the logistic risk
-are often close to the probit risk, where the adjustment does
+is often close to the probit risk, where the adjustment does
 vanish.
 
 % \begin{subexample} [Coefficient estimator: logistic regression,
@@ -839,7 +861,7 @@ even just a single AUC. The setting is a misspecification of the
 parametric model \ref{example:auc:lda} where, but for the
 misspecification, coefficient estimation would not affect the
 asymptotic distribution. The nonparametric estimator provides the
-requires adjustment missing from the basic Delong estimator, and may
+required adjustment missing from the basic Delong estimator, and may
 therefore be viewed as a robust estimator.
 
 Suppose Gaussian linear discriminant analysis is applied to estimate
@@ -916,18 +938,18 @@ the sign of $\t{\hat\beta} x$, where
   % Then
   % $|(\star{\Sigma})^{-1} \auc'(\F,\G,\star{\beta})| \to \pm \infty
   % \mathbbm{1}$ as $\pi_0 \to 1$ and $\epsilon\to 0$ simultaneously.
-  One therefore expects that under this scenario inference based on the Delong estimator will be faulty, as verified by simulation in Section \ref{section:simulation}. % ((possible to give result so that the sign of the derivative term is controlled, so that delong can be forced either to low fpr or low power?))
+  One therefore expects that under this scenario inference based on the Delong estimator will be faulty, as seen in the simulations in Section \ref{section:simulation}. % ((possible to give result so that the sign of the derivative term is controlled, so that delong can be forced either to low fpr or low power?))
   
   %Results summarized and extended:
   
   \begin{proposition}\label{proposition:lda} Let $(\W,\D)$ follow \eqref{model:heteroskedastic lda}, with full rank conditional covariance matrices $\Sigma_d, d=0,1$. Then,
     \begin{enumerate}
-\item The adjustment term satisfies
+\item The standard deviation of the adjustment term is given by
   \begin{align}
     sd(\frac{\partial}{\partial\beta}\auc(\F,\G,\beta)\infl[\hat\beta](\W[i])) &= |\Sigma_{\pi}^{-1/2}\frac{\partial}{\partial\beta}\auc(\F,\G,\beta)|\\
     &\le |\pi_1-\pi_0|/(2\sqrt\pi)\frac{\lambda_1(\Sigma_0)|\Sigma_1-\Sigma_0|}{(\lambda_n(\Sigma_0)+\lambda_n(\Sigma_1))^{3/2}(\pi_0\lambda_n(\Sigma_0)+\pi_1\lambda_n(\Sigma_1))^{1/2}}
   \end{align}
-  where $\lambda_j(\Sigma_i)$ is the $jth$ largest eigenvalue of a
+  where $\lambda_j(\Sigma_i)$ is the $jth$ largest eigenvalue of 
   $\Sigma_i,i=1,2$.
 \item The adjustment term vanishes iff the LDA parameter $\star\beta$
   is an eigenvector of $\Sigma_0^{-1}\Sigma_1$, equivalently, if $\mu$
@@ -951,36 +973,66 @@ the sign of $\t{\hat\beta} x$, where
 
 
 \section{Simulation}\label{section:simulation}
-\comment{maybe give nnot in terms of adjustment size but class imbalance}
-We examine by simulation the coverage rate of the proposed estimator
-of $\aucdiff$ under the misspecified LDA model \eqref{model:heteroskedastic lda}.  We consider
-nested models, with 8 covariates in the full model and 6 in the
-reduced, varying the sample size from 1000 to 3000. These choices were
-informed by the data analysis in
-\citet{demler2017}.% following fhs data analyses in
+We examine by simulation the coverage rate of the
+proposed estimators of the index AUC and difference of AUCs, $\auc$
+and $\aucdiff$, under the heteroscedastic LDA model
+\eqref{model:heteroskedastic lda}.  We consider nested models, with 8
+covariates in the full model and 6 in the reduced, varying the sample
+size from 1,000 to 10,000. The true AUC, when estimating $\auc$, is
+.8, and the true difference in AUCs, when estimating $\aucdiff$, is
+.03. These choices were informed by the data analysis in
+\citet{demler2017} and may be easily changed in the supplied
+software. % following fhs data analyses in
 % ((demler)). sample sizes ((...)) settings were chosen to be similar to
 % those in ((demler 2017)): who analyzed 7 and 6 ((8 here for the
 % requirement that $p$ be even)), and sample size of 8k.
-We consider 3 levels of magnitude for the adjustment term,
-$|...|_\infty = .05,.1,.12.$ For comparison, we also consider coverage of the
-unadjusted delong estimator, and an oracle estimator, obtained using
-the derivative obtained in reliance on the paramtric family of the
-data \eqref{model:heteroskedastic lda}.
+As discussed in Section \ref{section:lda}, the magnitude of the
+adjustment required due to coefficient estimation is related to the
+class proportions in the LDA model, with no adjustment being required
+for balanced classes. We consider 3 levels of class imbalance,
+$\pi_0=.8, .9, .95$.
 
-Results are presented in Figure \ref{fig:1}. As expected from Proposition
+For comparison, we also consider coverage of the unadjusted Delong
+estimator, an oracle estimator, and a bootstrap estimator. The oracle
+estimator uses the parametric form of the derivative, but estimates
+all other quantities. It is included primarily to illustrate the
+impact of nonparametrically estimating the derivative at the
+probability limit of the coefficient estimates.
+
+Results are presented in Table \ref{table:auc}. As expected from Proposition
 \ref{proposition:lda}, the Delong estimator, which does not take into account the
 coefficient estimation, falls far below the nominal coverage rate,
 with performance deteriorating with the size of the adjustment
 term. The proposed estimator approximates the nominal rate.
 
-\comment{((maybe include L1 distance to Z?))}
+\begin{table}
+  \centering
+  \input{sim//auc_full/table_lda_auc.tex}
+  \caption{Full model AUC: Coverage with interval length in parentheses.}
+  \label{table:auc}
+\end{table}
 
-% \input{sim/lda/table_lda.tex}
-\begin{figure}
-  \includegraphics{./sim/lda/sim.png}
-  \caption{Coverage simulation}
-  \label{fig:1}
-\end{figure}
+
+\begin{table}
+  \centering
+  \input{sim//auc_red/table_lda_auc.tex}
+  \caption{Reduced model AUC: Coverage with interval length in parentheses.}
+  \label{table:auc}
+\end{table}
+
+
+\begin{table}
+  \centering
+  \input{sim//delta/table_lda_aucdiff.tex}
+  \caption{Difference in AUCs: Coverage with interval length in parentheses.}
+  \label{table:auc}
+\end{table}
+
+
+% \begin{figure}
+%   % \includegraphics{./sim/lda/auc/sim.png}
+%   \label{fig:1}
+% \end{figure}
 
 \section{Discussion}
 We have described a nonparametric method of estimating the index AUC
@@ -1001,7 +1053,18 @@ of the covariates. An important limitation of the method described
 here is that the coefficient estimation procedure have an influence
 function, excluding many modern classification techniques.
 
-
+While we have described inference that accounts for the adjustment
+ignored by the standard error, we have also described many situations
+in which no adjustment is needed. Even in the heteroscedastic LDA
+model, where the adjustment term can be arbitrarily large, the
+unadjusted estimator performs reasonably when the class imbalance
+across cases and controls is not very extreme. These results justify
+the use of the standard Delong estimator in spite of the unmet
+assumption of IID data, but they typically require parametric
+assumptions. The proposed estimator may therefore be viewed as a
+robust estimator, enabling inference despite departures from the
+assumed model. From the presented simulation results, there is not
+much loss of efficiency in using the robust estimator.
 
 \bibliographystyle{chicago}
 \bibliography{delong.bib}

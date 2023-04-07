@@ -1,0 +1,945 @@
+\documentclass[12pt,a4paper]{amsart}
+\usepackage{geometry}\geometry{margin=1.5in}
+\usepackage{latexsym, bbm, enumerate, amssymb, amsmath, graphicx, amsthm}
+\usepackage{tikz}
+% \usepackage[nolists]{endfloat}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem*{remark}{Remark}
+
+% \newcommand{\EE}{{\mathbb{E}}}
+\newcommand{\EE}{E}
+% \newcommand{\PP}{{\mathbb{P}}}
+\newcommand{\PP}{P}
+% \newcommand{\E1}{\EE(Y\mid A=1,X)}
+% \newcommand{\H}[1]{H^{(1)}_{#1}}
+\newcommand{\E}[1]{\EE(Y\mid A=#1,X)}
+
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\logit}{logit}
+\renewcommand{\includegraphics}[2][]{\fbox{}}
+
+\begin{document}
+
+The average treatment effect is a common summary of the effect of
+a treatment on a continuously varying outcome. The ATE is the
+difference in the outcome between the subpopulation receiving the
+treatment and a control subpopulation,
+[[]]
+
+If the data consists only of the responses and the treatment
+indicators, the empirical ATE is efficient, in the sense that it
+achieves the lowest asymptotic variance among [[get class from tsiatis
+book]]. When covariates are available, further efficiency gains are
+attainable [[]]. Efficient estimators taking into account of
+covariates are described in [[]].
+
+A drawback of estimators taking account of covariates is that the
+relationship of the covariates to the outcome must usually be modeled
+consistently. This modeling process introduces the possibility of bias
+by an analyst [[ ]]. One solution is to specify in advance of seeing
+the data the model
+to be used. A disadvantage of this solution is [what disadvantage?
+should any modeling decisions be made based on the data?] [Tsiatis
+2008] presents a solution that allows an analyst to exercise fuller
+range of modeling expertise. Briefly, each regression $\E0$ and $\E1$ within
+each arm is modeled
+by separate teams or individuals, each with access only to data
+corresponding to their arm. The resulting regression estimates may
+then be combined in [[]] to obtain $\hat{\psi}$.
+
+We propose another approach, eliminating the regressions on treatment
+in []. Specifically, by weighting the response
+\[
+\]
+the terms may be combined as
+\[
+\]
+An analyst given the weighted data may then model the regression on
+covariates. The estimate may then be substituting in [] to obtain the
+semiparametric estimate of the ATE. This approach avoids the need for
+a separate analyst for each arm. Additionally, a single regression
+estimate will often be more precise than two combined regression
+estimates. [toy example?]
+
+In some fields it is common to regress out a variable of interest $Y$ on
+  covariates, studying instead the residuals $Y'=Y - E(Y\mid X).$ The
+  average treatment effect of $Y'$ is obtained as the slope in the
+  model $E(Y') = \beta_0 + \beta_1A.$
+  [Example from epi literature]
+This estimator is typically inefficient.
+
+\subsection{Equivalence to regression estimator}
+
+Define
+\[
+  \tilde{Y} = Y - \EE(Y\mid X)
+\]
+and consider the regression
+\[
+  \EE(\tilde{Y} \mid A) = \beta_0 + \beta_1A.
+\]
+Then $\beta_0 + \beta_1 = \EE(\tilde{Y}\mid A=1) = \EE(Y\mid A=1) -
+E(Y)$ and $\beta_0 = \EE(\tilde{Y}\mid A=0) = \EE(Y\mid A=0) -
+E(Y) = \E0-p\E1-(1-p)\E0 = p(\E0-\E1),$ so
+\begin{align*}
+  \beta_0 &= -p\psi_0\\
+  \beta_1 &= \psi_0.
+\end{align*}
+
+The influence function of $(\beta_0,\beta_1)$ is obtained as:
+\begin{align*}
+  0 &= \sum_{i=1}^n\begin{pmatrix}1\\A_i\end{pmatrix}(\tilde{Y}_i - \hat{\beta_0} - A_i\hat{\beta_1})\\
+    &= \sum_{i=1}^n\left\{\begin{pmatrix}1\\A_i\end{pmatrix}(\tilde{Y}_i - \beta_0 - A_i\beta_1) +
+  \begin{pmatrix}-1&-A_i\\-A_i&-A_i\end{pmatrix}\begin{pmatrix}\hat{\beta_0}-\beta_0\\ \hat{\beta_1}-\beta_1\end{pmatrix}\right\}\\
+  n^{1/2}\begin{pmatrix}\hat{\beta_0}-\beta_0\\ \hat{\beta_1}-\beta_1\end{pmatrix} &=\left(\frac{1}{n}\sum_i\begin{pmatrix}1&A_i\\A_i&A_i\end{pmatrix}\right)^{-1}n^{-1/2}\sum_i \begin{pmatrix}1\\A_i\end{pmatrix}(\tilde{Y}_i - \beta_0 - A_i\beta_1)\\
+    &=\begin{pmatrix}1&p\\p&p\end{pmatrix}^{-1}n^{-1/2}\sum_i \begin{pmatrix}1\\A_i\end{pmatrix}(\tilde{Y}_i - \beta_0 - A_i\beta_1)+o_P(1)\\
+  n^{1/2}(\hat{\beta}_1 - \beta_1) &= n^{-1/2}\sum_i \begin{pmatrix}\frac{-1}{1-p}&\frac{1}{p(1-p)}\end{pmatrix}\begin{pmatrix}1\\A_i\end{pmatrix}(\tilde{Y}_i - \beta_0 - A_i\beta_1) + o_P(1)\\
+    &= \frac{n^{-1/2}}{p(1-p)}\sum_i (A_i-p)(\tilde{Y}_i - \beta_0 - A_i\beta_1) + o_P(1)\\
+    &= \frac{n^{-1/2}}{p(1-p)}\sum_i (A_i-p)(\tilde{Y}_i - (A_i-p)\psi_0) + o_P(1)\\
+    &= \frac{n^{-1/2}}{p(1-p)}\sum_i \left\{(A_i-p)(Y_i-\EE(Y\mid X_i)) - p^2\left(\frac{1-p}{p}\right)^{2A_i}\psi_0\right\} + o_P(1).
+\end{align*}
+
+In case $p=1/2,$
+\[
+n^{1/2}(\hat{\beta}_1 - \beta_1) = 4n^{-1/2}\sum_i \left\{(A_i-1/2)(Y_i-\EE(Y\mid X_i)) - \psi_0/4\right\} + o_P(1).
+\]
+By comparison with (\ref{eqn:W_basic}), we find that when $p=1/2,$ the
+augmented estimator $\hat{\psi}$ is asymptotically equivalent to $\hat{\beta_1}.$
+
+On the other hand, the OLS solution to the above regression gives
+\[
+  \hat{\beta_1} = \hat{\Cov}(\tilde{Y},A)/\hat{\Var}(A) = \frac{\overline{A\tilde{Y}}/\bar{\tilde{Y}} - \bar{\tilde{Y}}}{1-\bar{A}}
+\]
+whereas from (\ref{eqn:W_basic}),
+\[
+  \hat{\psi}=\bar{\tilde{Y}}/2 - \overline{A\tilde{Y}},
+\]
+so the two estimators are not equal.
+
+Since the estimator [[]] is efficient, the estimator [[]] is
+inefficient when $p\neq 1/2,$ i.e., its asympototic variance is
+larger. Specifically, the asymptotic variance of [[]] is
+\[
+\]
+and the asymptotic variance of [[]] is
+\[
+  .
+\]
+The difference is therefore
+\[
+  (1-2p)^2\Var(\E1-\E0),
+\]
+which is 0 if and only $p=1/2$ or the stratified ATEs
+$\E1-\E0$ are constant. 
+   As an illustration, suppose the response follows a linear
+model,
+\begin{align*}
+  Y = \alpha A + \beta^T X + \gamma^T AX + \epsilon.
+\end{align*}
+The fixed parameters $\gamma$ represent interaction between $A$ and
+$X$. The errors $\epsilon$ are assumed to have mean zero and the
+variables $A,X,\epsilon$ are assumed mutually independent. In this
+case, after a short calculation, the difference [[]] evaluates to
+\[
+  (1-2p)^2\gamma^T\Var(X)\gamma.
+  \]
+When there are no interactions, $\gamma=0,$ the difference vanishes,
+since in this case the stratified ATEs $\E1-\E0$ are constant. By
+another short calculation, the asymptotic relative efficiency of
+$\hat{\beta_1}$ to $\hat{\psi}$ is
+\[
+  1 + \frac{(1-2p)^2\gamma^T\Var(X)\gamma}{\frac{\Var{(\epsilon)}}{p(1-p)}+\gamma^T\Var(X)\gamma}.
+\]
+See Fig. [[]]. 
+
+\begin{gather}
+\begin{aligned}
+  \label{eqn:model}
+  (X_1,Y_1,A_1),\ldots,(X_n,Y_n,A_n) &\overset{iid}{\sim}\mathcal{O}\\
+  A&\perp X\\
+  \PP(A=1\mid X) = \PP(A=1) = 1-\PP(A=0)&= p
+\end{aligned}
+\end{gather}
+for some law $\mathcal{O}$.
+\begin{figure}[h!]
+  \centering
+\begin{tikzpicture}
+      \node[shape=circle,draw=black] (X) at (0,0) {X};
+      \node[shape=circle,draw=black] (A) at (0,3) {A};
+      \node[shape=circle,draw=black] (Y) at (3,3) {Y};
+      \path [->] (X) edge node[left] {} (Y);
+      \path [->] (A) edge node[left] {} (Y);
+  \end{tikzpicture}
+\end{figure}
+
+The estimand is
+$$
+\psi_0 = \EE(Y\mid A=1) - \EE(Y\mid A=0).
+$$
+An estimator is obtained as the solution in $\psi$ of
+\[
+\sum_{i=1}^nU(Y_i,A_i;\psi) = 0,
+\]
+where
+\[
+  U(Y,A;\psi) = (A-p)(Y-\psi A).
+\]
+Consistency and asymptotic normality of this estimator follow from:
+% \footnote{
+%   Eric, is this the usual MLE consistency-type argument? Ie, if we can expand in a taylor series
+%   about the true parameter,
+%   \begin{align*}
+%     0 = \sum_i U(X_i,Y_i,A_i; \hat{\psi}) &= \sum_i U(X_i,Y_i,A_i; \psi_0) + (\hat{\psi}-\psi_0)\sum_iU'(X_i,Y_i,A_i; \psi_*)\\
+%     n^{1/2}(\hat{\psi}-\psi_0) &= -(n^{-1}\sum_iU'(X_i,Y_i,A_i; \psi_*))^{-1}\times n^{-1/2}\sum_i U(X_i,Y_i,A_i; \psi_0)\\
+%     &\leadsto -\EE(U'(X,Y,A;\psi_*))^{-1}\times \mathcal{N}(0,\sigma^2)
+%   \end{align*}
+%   where use the lemma in concluding that the normal distribution in the
+%   last line has mean zero. Implying root-n consistency.
+%   }
+\begin{lemma}\label{lemma:1}
+  $\EE(U(Y,A;\psi_0))=0.$
+\end{lemma}
+\begin{proof}
+  \begin{align*}
+    \EE(U(Y,A;\psi_0)) &= \EE[(A-p)(Y-\psi_0 A)]\\
+                       &= \EE[(A-p)(\EE(Y\mid A) - \psi_0A)]\\
+                       &= (\EE(Y\mid A=1)-\psi_0A)(1-p)p + \EE(Y\mid A=0)(-p)(1-p)\\
+                       &= p(1-p)[\EE(Y\mid A=1) - \EE(Y\mid A=0) - \psi_0]=0.
+  \end{align*}
+\end{proof}
+
+We consider estimators obtained as solutions in $\psi$ to equations of the form
+\begin{align}
+\sum_iU(Y_i,A_i;\psi) + (A_i-p)h(X_i;\psi)=\sum_i (A_i-p)(Y_i-\psi A_i + h(X_i;\psi))=0\label{eqn:unaugmented}
+\end{align}
+for [arbitrary] functions $h$. It
+follows from Lemma \ref{lemma:1} and (\ref{eqn:model}) that
+\[
+\EE(U(Y,A;\psi_0) + (A-p)h(X;\psi))=0,
+\]
+so such estimators are also
+asymptotically normal. An additional benefit is that
+the asymptotic variance of the resulting estimator may be minimized by
+varying $h$, perhaps improving on the efficiency of the estimator obtained
+from $\sum_iU(Y,A;\psi)=0$. In fact, the minimizing choice of $h$ is determined
+by the estimating equation given by
+\begin{align}
+  % &= U(Y,A;\psi)-\EE(U(Y,A;\psi)\mid S_A)\nonumber\\
+       W(X,Y,A;\psi)      &=U(Y,A;\psi) - \EE(U(Y,A;\psi)\mid A,X) + \EE(U(Y,A;\psi)\mid X).\label{eqn:augmented}
+\end{align}
+A proof is given in Lemma \ref{lemma:min_h}, after rewriting the rhs
+of (\ref{eqn:augmented}), as follows. The middle term on the rhs of (\ref{eqn:augmented}) is,
+
+\begin{align*}
+  \EE(U(Y,A;\psi)\mid A,X) &= \EE((A-p)(Y-\psi A)\mid A,X)\\
+                           &= (\EE(Y\mid A,X)-\psi A)(A-p)\\
+                           &=[\EE(Y\mid A=1,X)A + \EE(Y\mid A=0,X)(1-A)](A-p) - \psi A(A-p)\\
+                           &= \EE(Y\mid A=1,X)A(1-p) - \EE(Y\mid A=0,X)(1-A)p - \psi A(1-p).
+\end{align*}
+The last term on the rhs of (\ref{eqn:augmented}) is then,
+\begin{align*}
+  \EE(U(Y,A;\psi)\mid X) &= p  \EE(U(Y,A;\psi)\mid A=1,X) + (1-p)  \EE(U(Y,A;\psi)\mid A=0,X)\\
+                         &= p[\EE(Y\mid A=1,X)(1-p) - \psi (1-p)] - (1-p)[\EE(Y\mid A=0,X)p]\\
+                         &= p(1-p)(\EE(Y\mid A=1,X) - \EE(Y\mid A=0,X) - \psi).
+\end{align*}
+Therefore,
+\begin{align*}
+  W(X,Y,A;\psi) &= U(Y,A;\psi) - \EE(U(Y,A;\psi)\mid A,X) + \EE(U(Y,A;\psi)\mid X)\\
+                &= (A-p)(Y-\psi A) - (A-p)(1-p)\EE(Y\mid A=1,X) - (A-p) p\EE(Y\mid A=0,X) + \\
+                &\qquad (A-p)(1-p)\psi\\
+                &= (A-p)[Y - (1-p)\EE(Y\mid A=1,X) - p\EE(Y\mid A=0,X)] - p(1-p)\psi\\
+% \end{align*}
+% From the relations
+% \begin{equation}
+%   \begin{aligned}
+%     \label{eqn:relations}
+%   \EE(Y\mid X) &= p\E1 + (1-p)\E0\\
+%   \E1 &= A\E1 = (A/p)[E(Y\mid X) - (1-p)\E0]\\
+%   &=(A/p)\EE(Y\mid X)\\
+%   \E0 &= (1-A)\E0 = [(1-A)/(1-p)][E(Y\mid X) - p\E1]\\
+%   &=[(1-A)/(1-p)]\EE(Y\mid X),
+% \end{aligned}
+% \end{equation}
+% we re-write $W(X,Y,A;\psi)$ so as to avoid the regressions on the
+% treatment levels:
+% \begin{align*}
+%   W(X,Y,A;\psi) &= (A-p)[Y - (1-p)\E1 - p\E0] - p(1-p)\psi\\
+%                 &= (A-p)[Y - (A(1-p)/p + (1-A)p/(1-p))\EE(Y\mid X)] - p(1-p)\psi\\
+%                 &= (A-p)[Y - \frac{(A-p)^2}{p(1-p)}\EE(Y\mid X)] - p(1-p)\psi.
+% \end{align*}
+&= (A-p)[Y - \EE(\tilde{Y}\mid X)] - p(1-p)\psi\\
+                &= U(Y_i,A_i;\psi) + (A-p)[\psi A - \EE(\tilde{Y}\mid X)] - p(1-p)\psi,
+\end{align*}
+where $\tilde{Y}$ is determined by the transformation
+\[
+  Y = \tilde{Y}\frac{p^A(1-p)^{1-A}}{(1-p)^Ap^{1-A}}=\tilde{Y}\left(\frac{p}{1-p}\right)^{2A-1}.
+\]
+In case $p=\PP(A=1)=\PP(A=0)=1/2,$
+\begin{align}
+  W(X,Y,A;\psi) = (A-1/2)(Y-\EE(Y\mid X)) - \psi/4.\label{eqn:W_basic}
+\end{align}
+% The first term on the rhs of (\ref{eqn:augmented}) is
+% \begin{align*}
+    %     \EE(U(\psi)\mid A,X) &= (\EE(Y\mid A,X)-\psi A)(-1)^{1-A}\\
+    %                                &= A[\EE(Y\mid A=1,X) - \psi + \EE(Y\mid A=0,X)] - \EE(Y\mid A=0,X).
+% \end{align*}
+% For the second equality we use the identity $g(a,x)=a[g(1,x)-g(0,x)] +
+% g(0,x),$ which holds for $a\in\{0,1\}$ and arbitrary $g,x,$ applied to the function
+% $g:(a,x)\mapsto(\EE(Y\mid a,x)-\psi a)(-1)^{1-a}.$ The second term on
+% the rhs of (\ref{eqn:augmented}) is
+% \begin{align*}
+%   \EE(U(\psi)\mid X) &= (1/2)[\EE(U(\psi)\mid A=1,X) + \EE(U(\psi)\mid A=0,X)]\\
+%                      &= (1/2)[\EE(Y\mid A=1,X) - \psi - \EE(Y\mid A=0,X)],
+% \end{align*}
+% using in the first equality that $A$ and $X$ are independent under
+% (\ref{eqn:model}). Combining the last two displays,
+% \begin{align*}
+%   W(\psi) &:= U(\psi) - \EE(U(\psi)\mid A,X) + \EE(U(\psi)\mid X)\\
+%           &= U(\psi) - (A-1/2)[\EE(Y\mid A=1,X) + \EE(Y\mid A=0,X) - \psi]\\
+%           &= U(\psi) - (A-1/2)[2\EE(Y\mid X) - \psi].
+% \end{align*}
+
+\begin{lemma}\label{lemma:min_h}
+  The asymptotic variance of the estimator obtained as the solution in $\psi$ to
+  \begin{align}
+    \sum_iU(Y_i,A_i;\psi) + (A_i-p)h(X_i;\psi)=\sum_i (A_i-p)(Y_i-\psi A_i + h(X_i;\psi))=0\label{eqn:min_h}
+  \end{align}
+  is minimized over arbitrary functions $h$ of $X$ at
+  \[ h_0(X;\psi)=(A-p)[\psi A - \EE(\tilde{Y}\mid X)] - p(1-p)\psi.\]
+
+\end{lemma}
+
+\begin{proof}
+  We give the $p=\PP(A=1)=1/2$ case, in which case
+  \[ h_0(X;\psi)=(A-1/2)[\psi A-\EE(Y\mid X)]-\psi/4.\]
+  Under suitable regularity conditions, the asymptotic
+  variance of the solution to the estimating equation
+  (\ref{eqn:min_h}) is given by the variance of its influence
+  function. Since
+  \[ \EE \frac{\partial}{\partial\psi}[U(Y_i,A_i;\psi) + (A_i-p)h(X_i;\psi)]=\EE \frac{\partial}{\partial\psi}U(Y_i,A_i;\psi),
+  \]
+  the influence function of (\ref{eqn:min_h}) is
+  \[
+  -\left(\EE\left.\frac{\partial}{\partial\psi}U(Y,A;\psi) \right\vert_{\psi_0}\right)^{-1}(U(Y,A;\psi_0)+(A-1/2)h(X;\psi)).
+\]
+Thus we wish to show
+\begin{align*}
+  \Var\left[\left(\EE\frac{\partial}{\partial\psi}U(Y,A;\psi_0)\right)^{-1}(U(Y,A;\psi_0)+(A-1/2)h(X;\psi))\right]\ge\\
+   \Var\left[\left(\EE\frac{\partial}{\partial\psi}U(Y,A;\psi_0)\right)^{-1}(U(Y,A;\psi_0)+(A-1/2)h_0(X;\psi))\right]
+\end{align*}
+or
+\begin{gather}
+\begin{aligned}\label{lemma:min_h:step_1}
+  \EE[(A-1/2)^2h^2(X)] + 2\EE[U(Y,A;\psi_0)(A-1/2)h(X;\psi)] \ge\\
+  \EE[(A-1/2)^2h_0^2(X)] + 2\EE[U(Y,A;\psi_0)(A-1/2)h_0(X;\psi)].
+\end{aligned}
+\end{gather}
+Since $A,X$ are uncorrelated, and noting that $(A-1/2)(-1)^{1-A}=1/2,$ the lhs is
+\begin{align*}
+  &\EE[(A-1/2)^2h^2(X)] + 2\EE[U(Y,A;\psi_0)(A-1/2)h(X;\psi)]\\
+  &=\Var(A)\EE h^2(X) + 2\EE[(A-1/2)\EE(U(Y,A;\psi_0)h(X;\psi)\mid A)]\\
+  &= \EE h^2(X)/4 + 2\EE[(A-1/2)\EE((Y-\psi_0 A)(-1)^{1-A}h(X;\psi)\mid A)]\\
+  &= \EE h^2(X)/4 + \EE[\EE((Y-\psi_0 A)h(X;\psi)\mid A)]\\
+    &= \EE h^2(X)/4 + \EE((Y-\psi_0/2)h(X;\psi)).
+\end{align*}
+We obtain an expression for the rhs by substituting $h(X;\psi):=h_0(X;\psi)=-(2\EE(Y\mid
+X)-\psi_0),$
+\begin{align*}
+  &\EE[(A-1/2)^2h_0^2(X)] + 2\EE[U(Y,A;\psi_0)(A-1/2)h_0(X;\psi)]\\
+  &= \EE h_0^2(X)/4 + \EE((Y-\psi_0/2)h_0(X;\psi))\\
+  &= \EE[h_0(X;\psi)(h_0(X;\psi)/4 + Y - \psi_0/2)]\\
+  &= \EE[h_0(X;\psi)(-(2\EE(Y\mid X)-\psi_0)/4 + E(Y\mid X) - \psi_0/2)]\\
+  &= \EE[h_0(X;\psi)(E(Y\mid X)/2 - \psi_0/4)]\\
+  &= -\EE h_0^2(X)/4 \addtocounter{equation}{1}\tag{\theequation}\label{eqn:decrement}\\
+  &= -\EE[\EE(Y\mid X)^2] + \psi_0\EE Y - \psi_0^2/4.
+\end{align*}
+Thus (\ref{lemma:min_h:step_1}), which we wish to show, becomes
+\begin{align*}
+  \EE h^2(X)/4 + \EE((Y-\psi_0/2)h(X;\psi)) + \EE[\EE(Y\mid X)^2] - \psi_0\EE Y + \psi_0^2/4 \ge 0.
+\end{align*}
+This inequality follows by an application of the Cauchy-Schwarz inequality,
+\begin{align*}
+  &\EE h^2(X)/4 + \EE((Y-\psi_0/2)h(X;\psi)) + \EE[\EE(Y\mid X)^2] - \psi_0\EE Y + \psi_0^2/4 \\
+  &= (1/4)\EE[(h(X;\psi)-\psi_0)^2] + \EE(Yh(X;\psi)) + \EE[\EE(Y\mid X)^2] - \psi_0\EE Y\\
+  % &= (1/4)\EE[(h(X;\psi)-\psi_0)^2] + \EE[\EE(Y\mid X)^2] + \EE[Y(h(X;\psi)-\psi_0)]\\
+  &= (1/4)\EE[(h(X;\psi)-\psi_0)^2] + \EE[\EE(Y\mid X)^2] + \EE[\EE(Y\mid X)(h(X;\psi)-\psi_0)]\\
+  &\ge (1/4)\EE[(h(X;\psi)-\psi_0)^2] + \EE[\EE(Y\mid X)^2] - \EE[(h(X;\psi)-\psi_0)^2]^{1/2}\EE[\EE(Y\mid X)^2]^{1/2}\\
+  &= \{(1/2)\EE[(h(X;\psi)-\psi_0)^2]^{1/2} - \EE[\EE(Y\mid X)^2]^{1/2} \}^2 \ge 0.
+\end{align*}
+\end{proof}
+
+\begin{remark}
+From (\ref{eqn:decrement}), $\EE h_0^2(X)/4$ is the reduction in the
+asymptotic variance gained by
+using (\ref{eqn:min_h}) over (\ref{eqn:unaugmented}).
+\end{remark}
+
+% From the identity $(-1)^{1-a}=(2a-1)=2(a-1/2), a\in\{0,1\},$ we
+% write
+% $$
+% U(\psi)=(Y-\psi A)(-1)^{1-A}=2(A-1/2)(Y-\psi A),
+% $$
+% obtaining
+% \begin{align*}
+%   W(\psi) &= U(\psi) - (A-1/2)[2\EE(Y\mid X) - \psi]\\
+%           &= (A-1/2)[2(Y-\EE(Y\mid X))-\psi(2A-1)]\\
+%           &= (A-1/2)[2(Y-\EE(Y\mid X))+(-1)^A\psi].
+% \end{align*}
+
+% [[Extension to $\PP(A=1\mid X)=p\in(0,1)$]]
+
+The expression for $W(X,Y,A;\psi)$ in (\ref{eqn:augmented}) contains a term
+of the form $E(Y\mid A,X),$ generally requiring estimation, whereas the equivalent expression in
+(\ref{eqn:W_basic}) only requires $E(Y\mid X)$ to be estimated. We
+investigate whether the second form is more resistant to bias by an
+unscrupulous analyst.
+
+% Suppose data is generated under the following mechanism, consistent
+% with (\ref{eqn:model}):
+% \[\]
+Consider the following strategies for estimating $\psi$:
+\begin{enumerate}
+\item \label{item:nonblinded} The analyst first forms $2^{p+1}$
+  estimates of $E(Y\mid A,X)$ by fitting submodels of the linear model
+  \[E(Y\mid A,X) = A + X_1 + \ldots + X_p + \text{second-order interactions}.\]
+  For each estimate $E(Y\mid A,X)$, the analyst
+  then obtains an estimate for $\psi$ by solving the estimating equation (\ref{eqn:augmented}),
+  using the model estimate of $E(Y\mid A_i,X_i), i=1,\ldots,n.$ From
+  the resulting estimates for $\psi,$ the analyst reports the
+  largest.
+\item \label{item:blinded} One analyst is given the control data
+  \[\{(Y_i,X_i) : A_i=0\}\]
+  from which he forms estimates of $E(Y\mid A=0, X)$ using submodels
+  of the linear models
+\[E(Y\mid X) = X_1 + \ldots + X_p + \text{second-order
+    interactions}.\]
+Another analyst estimates $E(Y\mid A=1,X)$ analogously. The models
+  are combined to estimate $E(Y\mid A,X)$ and obtain estimates of
+  $\psi$ as before, from which the largest is chosen.
+\item \label{item:ours} The analyst proceeds as in (\ref{item:nonblinded}), but omitting $A_i$
+  from his models. I.e., the analyst first forms
+  estimates of $E(Y\mid X)$ by fitting submodels of the linear model
+  \[E(Y\mid X) = X_1 + \ldots + X_p + \text{second-order interactions}.\]
+  For each estimate $E(Y\mid X)$, the analyst
+  then obtains an estimate for $\psi$ by solving the estimating equation (\ref{eqn:W_basic}),
+  using the model estimate of $E(Y\mid X_i), i=1,\ldots,n.$ From
+  the resulting estimates for $\psi,$ the analyst reports the
+  largest.
+  \item \emph{Not yet done.} As in (\ref{item:blinded}), two analysts each obtain $2^p$
+    estimates of $E(Y\mid
+    A=1,X)$ and $E(Y\mid A=1,X)$ separately, but now the maximum estimate
+    of $\psi$ is obtained ranging over all $2^{p+1}$ pairs of the 2
+    analysts' sets of estimates.
+\end{enumerate}
+
+The results of a simulation are in Figure \ref{fig:1}. From the
+simulation, the reported $\psi$ estimates are less biased when computed
+under method (\ref{item:ours}) and (\ref{item:blinded}) than method (\ref{item:nonblinded}), though all methods are seriously biased. Also plotted is the average, rather than maximum
+$\psi$ estimate, over the sets of models considered under each
+method. These are close to the true value $\psi=1,$ particularly for
+larger $n,$ as expected.
+
+Since all methods are so biased, confidence intervals at this range of
+sample sizes ($\le 300$) are useless. Increasing the sample size to
+1000 allows some comparison of error rates. Figure \ref{fig:2} gives
+the coverage rates of the 3 methods for as the number of covariates
+given to the analysts ranges.
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{171006a.png}
+  \caption{Comparison of the 3 methods of estimating $\psi$.}  \label{fig:1}
+
+\end{figure}
+
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{171017.png}
+  \caption{Coverage rates of 3 $\psi$ estimates when the sample size
+    is $n=1000$.}  \label{fig:2}
+\end{figure}
+
+  
+\section{Other estimands}
+As above, the full data is $Y_i^*=(Y_i^*(0),Y_i^*(1)),i=1,\ldots,n,$ the observed data is $(Y_i,A_i,X_i),i=1,\ldots,n,$ and we assume
+\begin{align*}
+  &Y = AY^*(1) + (1-A)Y^*(0),\\
+  &\PP(A=1)=p\in (0,1)\\
+  &A \perp X, A\perp Y^*.
+\end{align*}
+Besides the mean treatment difference $\EE(Y\mid A=1) -
+\EE(Y\mid A=0)$ discussed above, we consider other estimands:
+\begin{enumerate}
+\item $\psi_0 = \log\frac{E(Y^*(1))}{E(Y^*(0))}=\log\frac{E(Y\mid A=1)}{E(Y\mid
+    A=0)}$
+\item the slope in the model
+  \[
+    \logit(A\EE(Y^*(1)) + (1-A)\EE(Y^*(0))) = \logit(P(Y=1\mid A))
+    = \psi_0 + \psi_1A,
+  \]
+  for a binary-valued response $Y$
+\end{enumerate}
+
+In each case, we obtain the efficient augmented influence function
+following the approach of [[Tsiatis ch. 13]]:
+\begin{enumerate}
+\item obtain a full-data influence function $\phi^F(Y^*)$
+  \item obtain an observed data influence function $\phi(Y,A,X)$ corresponding to
+    $\phi^F$ under the mapping $\phi \mapsto \EE(\phi\mid Y^*)$
+  \item compute the efficient augmentation term
+    \begin{align*}
+      h^*(Y,A,X)&=(A-p)(\EE(\phi\mid A=1,X) - \EE(\phi\mid A=0,X))\\
+                &=\EE(\phi\mid A,X) - \EE(\phi\mid X)
+    \end{align*}
+
+\end{enumerate}
+We then eliminate regressions on treatment level, i.e., the terms $\EE(Y\mid A=1,X)$ and
+$\EE(Y\mid A=0,X).$
+
+% \subsection{$\EE\left(\log\frac{Y^*(1)}{Y^*(0)}\right)$}
+% The problem is to estimate
+% \[
+%   \psi_1 = \EE\left(\log\frac{Y^*(1)}{Y^*(0)}\right),
+% \]
+
+% An estimator using the full data $Y_i^*=(Y^*_i(0),Y^*_i(1)),i=1,\ldots,n,$ is
+% \[
+%   n^{-1}\sum_i \EE\left(\log\frac{Y^*_i(1)}{Y^*_i(0)}\right),
+% \]
+
+% with influence function
+
+% \[
+%   \phi^F(Y^*)= \log\frac{Y^*_i(1)}{Y^*_i(0)} - \psi_1.
+% \]
+
+% This is the only influence function [[ref]], so influence functions
+% based on the observed data are of the form
+% \begin{align}
+%   \{\phi(Y,A,X) + h(Y,A,X) : \EE(h(Y,A,X)\mid Y^*)=0\}\label
+%   {eqn:logodds_general}
+% \end{align}
+% with $\phi$ any particular function of the observed data such that
+% \[
+%   \EE(\phi(Y,A,X)\mid Y^*) = \phi^F(Y^*).
+% \]
+% An example of such a function is $\phi(Y,A,X)=\frac{A-p}{p(1-p)}\log Y-\psi_1:$
+% \begin{align*}
+%   \EE((A-p)\log Y\mid Y^*) &= p(1-p)\EE(\log Y\mid Y^*,A=1) - (1-p)p\EE(\log Y\mid Y^*,A=0)\\
+%                            &=p(1-p)\left( \EE(\log Y^*(1)\mid Y^*,A=1) - \EE(\log Y^*(0)\mid Y^*,A=0)\right)\\
+%                            &= p(1-p)\log\frac{Y^*(1)}{Y^*(0)},\\
+%   \EE(\phi(Y,A,X)\mid Y^*)&=\EE\left(\frac{A-p}{p(1-p)}\log Y-\psi_1\mid Y^*\right)\\
+%                            &=\log\frac{Y^*(1)}{Y^*(0)} - \psi_1=\phi^F(Y^*).
+% \end{align*}
+% The variance of an influence of the form given by
+% (\ref{eqn:logodds_general}) is minimized for the choice of $h$ given
+% by
+% \begin{align*}
+%   h^*(Y,A,X) &=(A-p)(\EE(\phi\mid A=1,X) - \EE(\phi\mid A=0,X))\\
+%            &=\frac{A-p}{p(1-p)}(\EE((A-p)\log Y\mid A=1,X) - \EE((A-p)\log Y\mid A=0,X))\\
+%            &=\frac{A-p}{p(1-p)}((1-p)\EE(\log Y\mid A=1,X) + p\EE(\log Y\mid A=0,X)).
+% \end{align*}
+% The first equality is proven in [[Tsiatis ch.13]].
+% The efficient influence function is therefore
+% \begin{align*}
+%   \phi^*(Y,A,X;\psi_1)&= \phi(Y,A,X;\psi_1) - h^*(Y,A,X)\\
+%                  &= \frac{A-p}{p(1-p)}(\log Y - (1-p)\EE(\log Y\mid A=1,X) - p\EE(\log Y\mid A=0,X)) - \psi_1.
+% \end{align*}
+% In case $p=1-p=1/2,$
+% \begin{align*}
+%   \phi^*(Y,A,X;\psi_1) = 4(A-1/2)(\log Y - \EE(\log Y\mid X)) - \psi_1,
+% \end{align*}
+% only requiring $\EE(\log Y\mid X)$ to be estimated. For general $p$, by
+% taking
+% \[
+%   \tilde{Y} = Y^{\frac{p}{1-p}^{2A-1}},
+% \]
+% we may write
+% \[
+%   \phi^*(Y,A,X;\psi_1) = 4(A-1/2)(\log \tilde{Y} - \EE(\log Y\mid X)) - \psi_1.
+% \]
+\subsection{$\log\frac{E(Y\mid A=1)}{E(Y\mid  A=0)}$} The problem is to
+estimate
+\[
+  \psi_0 = \log\frac{E(Y^*(1))}{E(Y^*(0))}=\log\frac{\EE(Y\mid A=1)}{\EE(Y\mid A=0)}.
+\]
+A full-data estimator is given by the solution to
+\[
+  \sum_i (Y_i^*(1)-e^{\psi_0}Y_i^*(0))=0,
+\]
+with influence function
+\begin{align*}
+  \phi^F(Y,A,X;\psi) &= (e^{\psi}\EE(Y^*
+                       (0)))^{-1}   (Y^*(1)-e^{\psi}Y^*(0))\\
+                     &= (\EE(Y^*(1)))^{-1}   (Y^*(1)-e^{\psi}Y^*(0)).
+\end{align*}
+An influence functions $\phi$ of the observed data satisfies
+\begin{align*}
+  \EE(Y^*_i(1))\phi(Y,A,X) &= \left(\frac{A}{p} - e^{\psi_0}\frac{1-A}{1-p}\right)Y + h(Y,A,X)\\
+              &= (A-p)\left(\frac{A}{(A-p)p} - e^{\psi_0}\frac{1-A}{(A-p)(1-p)}\right)Y + h(Y,A,X)\\
+              &= \frac{A-p}{p(1-p)}(A + e^{\psi_0}(1-A))Y + h(Y,A,X)\\
+              &= \frac{A-p}{p(1-p)}e^{(1-A)\psi_0}Y + h(Y,A,X),
+\end{align*}
+where $h$ satisfies $\EE(h(Y,A,X)\mid Y^*) = 0.$ The minimizing $h$ is given by
+subtracting out
+\begin{align*}
+  h^*(Y,A,X) &= (A-p)[\EE(\frac{A-p}{p(1-p)}e^{(1-A)\psi_0}Y\mid A=1,X) - \EE(\frac{A-p}{p(1-p)}e^{(1-A)\psi_0}Y\mid A=0,X)]\\
+             &= (A-p)[\frac{1}{p}\E1 + \frac{e^{\psi_0}}{1-p}\E0].
+\end{align*}
+The efficient influence function is therefore
+\begin{align*}
+  \phi^*(Y,A,X) &= (\EE(Y^*(1)))^{-1} \phi(Y,A,X) - h^*(Y,A,X)\\
+                &= (\EE(Y^*(1)))^{-1} (A-p)\left(\frac{e^{(1-A)\psi_0}}{p(1-p)}Y - \frac{1}{p}\E1 - \frac{e^{\psi_0}}{1-p}\E0\right).
+\end{align*}
+Let $\hat{\psi}_n$ be a consistent estimator of $\psi_0$. Under the transformation
+\[
+  Y = \frac{p^{2A}(1-p)^{2(1-A)}}{e^{(1-A)\hat{\psi}_n}}\tilde{Y}
+\]
+the efficient influence function may be rewritten
+\begin{align*}
+  \phi^*(Y,A,X) &= (\EE(Y^*(1)))^{-1}(A-p)\left(\frac{e^{(1-A)\psi}}{p(1-p)} Y - \EE(\tilde{Y}\mid X)\right) + o_P(1).
+                % &= (A-p)\left(\frac{(A + e^{\psi}(1-A))}{p(1-p)} \frac{p^{2A}(1-p)^{2(1-A)}}{e^{(1-A)\psi}}\tilde{Y} - \EE(\tilde{Y}\mid X)\right) + o_P(1).
+                % &= (A-p)\left(\left(\frac{Ap}{1-p} + \frac{(1-A)(1-p)}{p}\right)\tilde{Y} - \EE(\tilde{Y}\mid X)\right) + o_P(1)\\
+                % &= (A-p)\left(\frac{(1-p)^2-A(1-2p)}{p(1-p)}\tilde{Y} - \EE(\tilde{Y}\mid X)\right) + o_P(1)\\
+                % &= (A-p)\left(\left(\frac{p}{1-p}\right)^{2A-1}\tilde{Y} - \EE(\tilde{Y}\mid X)\right) + o_P(1).
+\end{align*}
+In case $p=1/2,$ $\tilde{Y}=4e^{(1-A)\hat{\psi}_n}Y,$ and
+\begin{align}
+  \phi^*(Y,A,X) = 2(\EE(Y^*(1)))^{-1}(2A-1)[e^{(1-A)\psi}Y - \EE(e^{(1-A)\hat{\psi}_n}Y\mid X)] + o_P(1).\label{fla:inf_2_simple}
+\end{align}
+
+\subsubsection{Two-step regression}
+Let
+\[
+  Z = Y - e^{(A-1)\psi_0}[\EE(e^{(1-A)\psi_0}Y\mid X) - \EE(Y\mid A=1)]
+\]
+and consider the log-linear regression model
+\begin{align}
+  \log(\EE(Z\mid A)) = \beta_0 + \beta_1A.\label{model:loglinear}
+\end{align}
+
+Then
+\[
+  \EE(e^{(1-A)\psi_0}Y) = (1/2)[e^{\psi_0}\EE(Y\mid A=0) + \EE(Y\mid A=1)] = \EE(Y\mid A=1)
+\]
+implies
+\begin{align*}
+  \EE(Z\mid A=1) &= \EE(Y\mid A=1) - \EE[\EE(e^{(1-A)\psi_0}Y\mid X) - \EE(Y\mid A=1) \mid A=1]\\
+                 &= \EE(Y\mid A=1) - \EE(e^{(1-A)\psi_0}Y) + \EE(Y\mid A=1)\\
+                 &= \EE(Y\mid A=1),
+\end{align*}
+and similarly
+\begin{align*}
+  \EE(Z\mid A=0) &= \EE(Y\mid A=0) - \EE[\EE(e^{(1-A)\psi_0}Y\mid X) - \EE(Y\mid A=1) \mid A=0]\\
+                 &= \EE(Y\mid A=0).
+\end{align*}
+Therefore, under model (\ref{model:loglinear}),
+\begin{align*}
+  \beta_0 &= \log(\EE(Z\mid A = 0)) = \log(\EE(Y\mid A = 0)),\\
+  \beta_0 + \beta_1 &= \log(\EE(Z\mid A = 1)) = \log(\EE(Y\mid A = 1
+                      )),\\
+  \beta_1 &= \frac{\log(\EE(Y\mid A = 1))}{\log(\EE(Y\mid A = 0))} = \psi_0.
+\end{align*}
+An estimator $(\hat{\beta}_0, \hat{\beta}_1)$ under the log-linear
+regression model (\ref{model:loglinear}) is given by the estimating equations
+\[
+  0 = \sum_{i=1}^n \begin{pmatrix} 1 \\ A_i \end{pmatrix}(Z_i - e^{\hat{\beta}_0 + \hat{\beta}_1}).
+\]
+The influence function of $\beta_1=\psi_0$ is computed to be
+\begin{align*}
+  \phi_{\beta_1}(Y,A,X;\beta) &= 2(2A-1)(e^{-\beta_0-\beta_1A}Z - 1)\\
+                    &= 2(2A-1)\left(\frac{Z}{\EE(Z\mid A)} - 1\right)\\
+                    &= 2(2A-1)\left(\frac{e^{(1-A)\beta_1}Z}{\EE(Z\mid A=1)} - 1\right)\\
+                    % &= 2(2A-1)\frac{e^{(1-A)\beta_1}Z - \EE(Z\mid A=1)}{\EE(Z\mid A=1)}\\
+                    &= 2(2A-1)\frac{e^{(1-A)\beta_1}Y - \EE(e^{(1-A)\psi_0}Y\mid X) + \EE(Y\mid A=1) - \EE(Z\mid A=1)}{\EE(Z\mid A=1)}\\
+                    &= 2(2A-1)\frac{e^{(1-A)\beta_1}Y - \EE(e^{(1-A)\psi_0}Y\mid X)}{\EE(Y\mid A=1)}\\
+                    &= 2(\EE(Y^*(1)))^{-1}(2A-1)[e^{(1-A)\psi_0}Y - \EE(e^{(1-A)\psi_0}Y\mid X)].\\
+\end{align*}
+This influence function is the same as the influence function
+(\ref{fla:inf_2_simple}), so the estimator $\hat{\beta}_1$
+under the log-linear regression is asymptotically equivalent to the
+efficient estimator $\hat{\psi}$.
+
+
+\section{Standardization}
+\begin{enumerate}
+\item birthweight standardized by gestational age. $Y$ is
+  birthweight, $X$ includes gestational age, and the standardized
+  birthweight is $Y-E(Y\mid X),$ i.e., substracting out the
+  gestational age-specific mean birthweight. (Also usually divided
+  by gestational age-specific SD to get a z-score.) Plenty of
+  references, E.g.,
+  \begin{enumerate}
+  \item ``Perinatal health studies tend to demand standardizing
+    size at birth for gestational age'' (Statistical Analysis of
+    Human Growth and Development, 2013 book)
+  \item Birth Weight Standardized to Gestational Age and Intelligence in Young
+    Adulthood: A Register-based Birth Cohort Study of Male Siblings
+    (2010, American J of Epi).
+  \item Z-scores and the birthweight paradox (2009, Paediatr Perinat
+    Epi)
+  \end{enumerate}
+\item Controlling for age or other variables in assessing the impact of smoking or other
+  variables on cognitive function
+  \begin{enumerate}
+  \item ``Age corrected MHT score at age 80 was the dependent
+    variable, smoking (never (n = 205); current (n = 34); ex-smoker (n
+    = 231)) and sex were between subject variables, and age corrected
+    MHT score at age 11 was a covariate'' (Smoking and cognitive change
+    from age 11 to age 80, BMJ 2003)
+    \item ``At Phase 5, in age- and sex-adjusted analyses, smokers
+      compared to ¡°never smokers¡± were more likely to be in the lowest
+      quintile of cognitive performance.'' (Smoking history and
+      cognitive function in middle age from the Whitehall II study,
+      Arch Internal Med 2009)
+  \end{enumerate}
+\end{enumerate}
+
+\subsection{$\logit(P(Y=1\mid A)) = \psi_0 + \psi_1A$} The target is the
+slope in the logistic model
+\[
+  \logit(P(Y=1\mid A)) = \psi_0 + \psi_1A.
+\]
+
+Let $A^*=(1,A),$ and let $\sigma$ denote the inverse logistic (sigmoid)
+function. The density of $Y,A$
+\[
+  \sigma(\psi^TA^*)^Y(1-\sigma(\psi^TA^*))\eta(A)
+\]
+the score for the coefficients $\psi=(\psi_0,\psi_1)$ is
+\[
+  S_\psi(Y,A) = (Y-\sigma(\psi^TA^*))A^*.
+  \]
+Since the density $\eta$ is unrestricted, the corresponding nuisance tangent set
+consists of all mean-zero functions in $L^2(A).$ So the projection of
+$S_\psi(Y,A)$ onto the nuisance tangent set is the conditional
+expectation $E(S_\psi\mid A) = 0,$ and $S_\psi$ is orthogonal to
+$A.$ To obtain an influence function for $\psi_1$ we orthogonalize the score for
+$\psi_1,$
+\[
+  S_{\psi_1}(Y,A) = (Y-\sigma(\psi^TA^*))A
+\]
+with respect to the score for $\psi_0,$
+\[
+  S_{\psi_0}(Y,A) = (Y-\sigma(\psi^TA^*)),
+\]
+obtaining
+\begin{align*}
+  S_{\psi_1} - \frac{\EE(S_{\psi_1}S_{\psi_0})}{\Var(S_{\psi_0})}S_{\psi_0}
+  &= S_{\psi_1} - \frac{\EE((Y-\sigma(\psi_0+\psi_1A))^2A)}{\EE((Y-\sigma(\psi_0+\psi_1A))^2)}\\
+  &= (Y-\sigma(\psi_0+\psi_1A))\left\{ A -  \frac{p\sigma'(\psi_0+\psi_1)}{p\sigma'(\psi_0+\psi_1)+(1-p)\sigma'(\psi_0)}\right\}.
+\end{align*}
+Let $\gamma$ denote the constant in braces,
+\[
+  \gamma =\frac{p\sigma'(\psi_0+\psi_1)}{p\sigma'(\psi_0+\psi_1) + (1-p)\sigma'(\psi_0)}.
+\]
+$S_{\psi_1}$ is proportional to an influence function for $\psi_1$ so
+we find the optimal influence function by subtracting out
+$\EE(S_{\psi_1}\mid A,X) - \EE(S_{\psi_1}\mid X):$
+\begin{align*}
+  \EE(S_{\psi_1}\mid A,X) - \EE(S_{\psi_1}\mid X) &= (A-\gamma)\left\{\EE(Y\mid A,X) - \sigma(\psi_0+\psi_1A)\right\}\\
+                                                  &- p(1-\gamma)\left\{\EE(Y\mid A=1,X) - \sigma(\psi_0+\psi_1)\right\}\\
+                                                  &- (1-p)\gamma\left\{\EE(Y\mid A=0,X) - \sigma(\psi_0)\right\}\\
+                                                  &= (A-p)\left\{(1-\gamma)(\EE(Y\mid A=1,X) - \sigma(\psi_0+\psi_1)) + \gamma(\EE(Y\mid A=0,X) - \sigma(\psi_0)\right\}\\
+  \phi^*(Y,A,X;\psi_1) &= S_{\psi_1} - (\EE(S_{\psi_1}\mid A,X) - \EE(S_{\psi_1}\mid X))\\
+                                                  &= (Y-\sigma(\psi_0+\psi_1A))(A-\gamma)\\
+  &-(A-p)\left\{(1-\gamma)(\E1 - \sigma(\psi_0+\psi_1))+\gamma(\E0 - \sigma(\psi_0)\right\}.
+\end{align*}
+With the transformation
+\[
+  Y = \left(\frac{p}{1-\gamma}\right)^A\left(\frac{1-p}{\gamma}\right)^{(1-A)}\tilde{Y}
+\]
+we may rewrite the efficient influence function as
+\[
+  \phi^*(Y,A,X;\psi_1) = (Y-\sigma(\psi_0+\psi_1A))(A-\gamma)\\
+  -(A-p)\left\{\EE(\tilde{Y}\mid X) - (1-\gamma)\sigma(\psi_0+\psi_1))-\gamma\sigma(\psi_0)\right\}.
+\]
+
+\subsection{Grouped Proportional Hazard}
+
+The data consists of at-risk sets $R_1,\ldots,R_k$ and event sets
+$E_1,\ldots,E_k,$ at $k$ discrete time points, as well as time-varying
+patient covariates $Z(t_1),\ldots,Z(t_k).$ The probability of an event
+is assumed to follow a logistic model given a time-dependent intercept
+and the covariates. [D'Agostino, equation (13),]
+approximates the likelihood function as
+
+\begin{align*}
+  L(\alpha,\beta\mid E,R,Z) &= \prod_{j=1}^k\left\{\prod_{l\in E_j}\exp(\alpha_j+\beta^TZ_l(t_{j-1}))\prod_{m\in R_j}\frac{1}{1+\exp(\alpha_j+\beta^TZ_m(t_{j-1}))} \right\}\\
+  &=  \prod_{j=1}^k\left\{\prod_{l\in E_j}\sigma(\alpha_j+\beta^TZ_l(t_{j-1}))\prod_{m\in R_j-E_j}(1-\sigma(\alpha_j+\beta^TZ_m(t_{j-1})) \right\}.
+\end{align*}
+
+We add the following assumptions,
+\begin{enumerate}
+\item the covariates $Z$ do not vary with time, equaling in our case $(1,A)$;
+\item no drop-out censoring, i.e., $R_j=\sum_{k\ge j}E_j$;
+\item administrative censoring at some given time $N$.
+\end{enumerate}
+Let the patient-specific variable $D_i, i=1,\ldots,N,$ be $0$ when the
+patient's event has not yet occurred and $1$ when it has occurred and thereafter. We write the likelihood for a single individual as
+
+\[
+  L(\alpha,\beta\mid D,Z) = \prod_{j=1}^N\left\{\sigma(\alpha_j+\beta Z)^{D_j}(1-\sigma(\alpha_j+\beta Z))^{1-D_j}\right\}^{1-D_{j-1}},
+\]
+with log-likelihood
+\[
+  l(\alpha,\beta\mid D,Z) = \sum_{j=1}^N(1-D_{j-1})\left\{D_j\log(\sigma(\alpha_j+\beta Z)) + (1-D_j)\log(1-\sigma(\alpha_j+\beta Z))\right\}.
+\]
+The parametric scores for $\alpha$ and $\beta$ are
+\begin{align*}
+  \frac{\partial l}{\partial \alpha} &= \left( (1-D_{j-1})\left\{D_j\frac{\sigma'(\alpha_j+\beta Z)}{\sigma(\alpha_j+\beta Z)} - (1-D_j)\frac{\sigma'(\alpha_j+\beta Z)}{1-\sigma(\alpha_j+\beta Z)}\right\}\right)_{j=1}^N\\
+  &= \left((1-D_{j-1})(D_j - \sigma(\alpha_j+\beta Z)\right)_{j=1}^N,
+\end{align*}
+where the notation $(\cdot )_{j=1}^N$ is meant to indicate a vector of
+length $N,$
+and
+\begin{align*}
+  \frac{\partial l}{\partial \beta} &= \sum_{j=1}^N (1-D_{j-1})\left(D_j\frac{\sigma'(\alpha_j+\beta Z)}{\sigma(\alpha_j+\beta Z)}Z - (1-D_j)\frac{\sigma'(\alpha_j+\beta Z)}{1-\sigma(\alpha_j+\beta Z)}Z\right)\\
+  &= (\mathbbm{1}^T\frac{\partial l}{\partial \alpha})Z.
+  \end{align*}
+
+%   We orthogonalize the scores for $\alpha$ and $\beta$ with respect to
+%   the covariates $Z:$
+
+%   \begin{align*}
+%     \frac{\partial l}{\partial \alpha} - \EE(\frac{\partial l}{\partial \alpha}\mid Z) &=\left((1-D_{j-1})D_j - \EE((1-D_{j-1})D_j\mid Z)+(D_{j-1}-\EE(D_{j-1}\mid Z))\sigma(\alpha_j+\beta Z)\right)_{j=1}^N=:Y\\
+%     \frac{\partial l}{\partial \beta} - \EE(\frac{\partial l}{\partial \beta}\mid Z) &= Z\sum_{j=1}^N\left((1-D_{j-1})D_j - \EE((1-D_{j-1})D_j\mid Z)+(D_{j-1}-\EE(D_{j-1}\mid Z))\sigma(\alpha_j+\beta Z)\right)\\
+%                                                                                        &= \mathbbm{1}^T\left(\frac{\partial l}{\partial \alpha} - \EE(\frac{\partial l}{\partial \alpha}\mid Z)\right)Z = (\mathbbm{1}^TY)Z,
+%   \end{align*}
+%   where we use $Y$ to denote the orthogonalized score for $\alpha.$
+
+%   Next, we obtain the efficient score for $\beta$ by orthogonalizing
+%  $ \frac{\partial l}{\partial \beta} - \EE(\frac{\partial l}{\partial
+%    \beta}\mid Z)$ with respect to $Y=\frac{\partial l}{\partial
+%    \alpha} - \EE(\frac{\partial l}{\partial \alpha}\mid Z).$ The
+%  $j^{th}$ component is
+%  \[
+%    (\phi_\beta)_j = \left\{Z_j\mathbbm{1}^T - \mathbbm{1}^T\Cov(YZ_j,Y)(\Var Y)^{-1}\right\}Y.
+%    \]
+
+%   For our application, $Z=(1,A)$ and the estimand is the coefficient
+%   of $A,$ say $\beta_1,$ with $\beta_0$ denoting the intercept, so
+%   $\beta = (\beta_0,\beta_1).$ The component of $\phi_\beta$
+%   corresponding to the intercept term vanishes, as when $Z_j=1,$
+%   \[
+%     Z_j\mathbbm{1}^T - \mathbbm{1}^T\Cov(YZ_j,Y)(\Var Y)^{-1}= \mathbbm{1}^T - \mathbbm{1}^T\Cov(Y,Y)(\Var Y)^{-1}=\mathbbm{1}^T-\mathbbm{1}^T=0.
+%     \]
+% Perhaps this is to be expected as the contribution of the intercept
+% term of the coefficients is absorbed by the random levels $\alpha_j.$
+% As a consequence, the influence function for $\beta_1$ is
+% \[
+%   \phi_{\beta_1}=\mathbbm{1}^T\left\{AI_N - \Cov(YA,Y)(\Var Y)^{-1}\right\}Y.
+% \]
+% Rewriting $\Cov(YA,Y)$ as $\EE(AYY^T)=p\EE(YY^T\mid A=1)=p\Var(Y\mid
+% A=1)$ and factoring out $A-p$ for later,
+% \[
+%   \phi_{\beta_1} = (A-p)\mathbbm{1}^T\left\{ \frac{A}{1-p}I_N +\left(\frac{p}{p-1}\right)^A\Cov(YA,Y)(\Var Y)^{-1}\right\}Y.
+% \]
+
+% Given addiitonally a vector of covariates $X,$ $X\perp A,$ we obtain
+% an optimized influence function  $\phi^*$ from our influence function
+% $\phi_{\beta_1}$ by subtracting out $\EE(\phi_{\beta_1}\mid A,X) -
+% \EE(\phi_{\beta_1}\mid X) = (A-p)\left\{\EE(\phi_{\beta_1}\mid A=1,X)
+%   - \EE(\phi_{\beta_1}\mid A=0,X)\right\},$
+% \begin{align*}
+%   \phi^* &= \phi_{\beta_1} - (A-p)\left\{\EE(\phi_{\beta_1}\mid A=1,X)
+%          - \EE(\phi_{\beta_1}\mid A=0,X)\right\}.
+% \end{align*}
+% The term in braces is
+% \begin{align*}
+%   &\EE(\phi_{\beta_1}\mid A=1,X)    - \EE(\phi_{\beta_1}\mid A=0,X) \\
+% &=  (1-p)\mathbbm{1}^T\left\{\frac{1}{1-p}I_N+\frac{p}{p-1}V\right\}\EE(Y\mid A=1,X) + p\mathbbm{1}^TV\EE(Y\mid A=0,X)\\
+% &= \mathbbm{1}^T\left\{(I_N-pV)\EE(Y\mid A=1,X)+pV\EE(Y\mid A=0,X)\right\},
+% \end{align*}
+% saving space by writing $V$ for the constant matrix $\Cov(YA,Y)(\Var
+% Y)^{-1}.$
+% Under the transformation
+% \[
+%   Y := (p(I_N-pV)^{-1})^A((1-p)/pV^{-1})^{1-A}\tilde{Y},
+% \]
+% we may eliminate the regressions on treatment, as usual.
+
+  These scores are orthogonal to $Z$, since
+  \[
+    \EE((1-D_{j-1})(D_j-\sigma_j)\mid Z) = \EE(D_j-\sigma_j\mid Z,D_{j-1}=0)\PP(D_{j-1}=0\mid Z)=0.
+    \]
+We obtain the efficient score for $\beta$ by orthogonalizing its score
+with respect to the score of $\alpha$
+\begin{align*}
+  \phi_\beta &= \frac{\partial l}{\partial \beta} - \Cov(\frac{\partial l}{\partial \beta},\frac{\partial l}{\partial \alpha})\Var(\frac{\partial l}{\partial \alpha})^{-1}\frac{\partial l}{\partial \alpha},
+\end{align*}
+which has $r^{th}$ component
+\begin{align}
+  (\phi_\beta)_r = \mathbbm{1}^T\left\{Z_rI - \Cov(\frac{\partial l}{\partial \alpha}Z_r,\frac{\partial l}{\partial \alpha})(\Var \frac{\partial l}{\partial \alpha})^{-1}\right\}\frac{\partial l}{\partial \alpha}.\label{eqn:cox_infl}
+\end{align}
+The variance matrix $\Var (\frac{\partial l}{\partial \alpha})$ is
+diagonal since for $j\neq k$
+\begin{align*}
+  &R\EE((1-D_{j-1})(D_j-\sigma_j)(1-D_{k-1})(D_k-\sigma_k))\\
+  &= \EE((D_j-\sigma_j)(D_k-\sigma_k)\mid D_{j\vee k - 1}=0)\PP(D_{j\vee k - 1}=0)\\
+                                                          &= -\sigma_{j\wedge k}\EE(D_{j\vee k}-\sigma_{j\vee k}\mid D_{j\vee k-1}=0)\PP(D_{j\vee k - 1}=0)=0.\\
+\end{align*}
+The diagonal entries are
+\begin{align*}
+  \EE((1-D_{j-1})(D_j-\sigma_j)^2) &= \EE((D_j-\sigma_j)^2\mid D_{j-1}=0)\PP(D_{j-1}=0)\\
+                                   &= \EE(\sigma_j-\sigma_j^2\mid D_{j-1}=0)\PP(D_{j-1}=0)\\
+  &= \EE(\sigma_j'\mid D_{j-1}=0)\PP(D_{j-1}=0).
+\end{align*}
+Similar calculations show that the covariance matrix in
+(\ref{eqn:cox_infl}) is diagonal with entries
+\[
+  \EE(Z_r\sigma_j'\mid D_{j-1}=0)\PP(D_{j-1}=0).
+\]
+Substituting these values, (\ref{eqn:cox_infl}) becomes
+\begin{align}
+  (\phi_\beta)_r = \sum_{j=1}^N\left(Z_r-\frac{\EE(Z_r\sigma_j'\mid  D_{j-1}=0)}{\EE(\sigma_j'\mid  D_{j-1}=0)}\right)(1- D_{j-1})(D_j-\sigma_j).
+\end{align}
+In our application, there is just one covariate, $Z_r=A,$ the
+treatment indicator,
+\[
+  \phi_\beta = \sum_{j=1}^N\left(A-\frac{\EE(A\sigma_j'\mid  D_{j-1}=0)}{\EE(\sigma_j'\mid  D_{j-1}=0)}\right)(1- D_{j-1})(D_j-\sigma_j).
+\]
+
+Given additionally a vector of covariates $X,$ $X\perp A,$ we obtain
+an optimized influence function  $\phi^*$ from
+$\phi_{\beta}$ by subtracting out $\EE(\phi_{\beta}\mid A,X) -
+\EE(\phi_{\beta}\mid X).$ To save space in the following, define
+\begin{align*}
+  \rho_j &= \frac{\EE(A\sigma_j'\mid  D_{j-1}=0)}{\EE(\sigma_j'\mid  D_{j-1}=0)},\\
+  Y_j &= (1-D_{j-1})(D_j-\sigma_j).
+\end{align*}
+Then
+  \begin{align*}
+    \EE(\phi_{\beta}\mid A,X) &= \sum_{j=1}^N(A-\rho_j)\EE(Y_j\mid A,X)\\
+                              &= A\sum_{j=1}^N(1-\rho_j)\EE(Y_j\mid A=1,X) + (1-A)\sum_{j-1}^N(-\rho_j)\EE(Y_j\mid A=0,X),\\
+    \EE(\phi_{\beta}\mid X) &= p\sum_{j=1}^N(1-\rho_j)\EE(Y_j\mid A=1,X) + (1-p)\sum_{j-1}^N(-\rho_j)\EE(Y_j\mid A=0,X),\\
+     \EE(\phi_{\beta}\mid A,X) -  \EE(\phi_{\beta}\mid X) &= (A-p)\sum_{j=1}^N\left\{(1-\rho_j)\EE(Y_j\mid A=1,X)+\rho_j\EE(Y_j\mid A=0,X)\right\},
+  \end{align*}
+  leading to an optimized influence function
+  \begin{align*}
+    \phi_{\beta}^* &= \sum_{j=1}^N\left\{(A-\rho_j)Y_j
+                   - (A-p)[(1-\rho_j)\EE(Y_j\mid A=1,X)-\rho_j\EE(Y_j\mid A=0,X)]\right\}.
+  \end{align*}
+  With the substitution
+  \[
+    Y_j = \left(\frac{p}{1-\rho_j}\right)^A\left(\frac{1-p}{\rho_j}\right)^{1-A}\tilde{Y}
+  \]
+  we eliminate the regressions on treatment levels, leading to
+  \[
+  \phi_{\beta}^* = \sum_{j=1}^N\left\{(A-\rho_j)Y_j
+    - (A-p)\tilde{Y_j}\right\}.
+\]
+Carrying out the substitution requires consistent estimators for
+\[
+  \rho_j=\frac{\EE(A\sigma_j'\mid  D_{j-1}=0)}{\EE(\sigma_j'\mid  D_{j-1}=0)}=\frac{\EE(\sigma_j'\mid D_{j-1}=0,A=1)\PP(A=1\mid D_{j-1}=0)}{\sum_{a\in\{0,1\}}\EE(\sigma_j'\mid D_{j-1}=0,A=a)\PP(A=a\mid D_{j-1}=0)}
+\]
+and
+\begin{align*}
+  1-\rho_j&= 1- \frac{\EE(\sigma_j'\mid D_{j-1}=0,A=1)\PP(A=1\mid D_{j-1}=0)}{\sum_{a\in\{0,1\}}\EE(\sigma_j'\mid D_{j-1}=0,A=a)\PP(A=a\mid D_{j-1}=0)}\\
+  &=\frac{\EE((1-A)\sigma_j'\mid  D_{j-1}=0)}{\EE(\sigma_j'\mid  D_{j-1}=0)},
+\end{align*}
+or equivalently, $\EE(A\sigma_j'\mid  D_{j-1}=0)$ and $\EE((1-A)\sigma_j'\mid  D_{j-1}=0).$
+\end{document}

@@ -1,0 +1,1992 @@
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (MiKTeX 2.9) (preloaded format=pdflatex 2016.8.2)  9 JAN 2018 10:10
+entering extended mode
+**\nonstopmode\nofiles\PassOptionsToPackage{active,tightpage,auctex}{preview}\A
+tBeginDocument{\ifx\ifPreview\undefined\RequirePackage[displaymath,floats,graph
+ics,textmath,sections,footnotes]{preview}[2004/11/05]\fi} \input _region_.tex
+(_region_.tex  !name(manuscript.tex)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\amscls\amsart.cls"
+Document Class: amsart 2015/03/04 v2.20.2
+\linespacing=\dimen102
+\normalparindent=\dimen103
+\normaltopskip=\skip41
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\amsmath\amsmath.sty"
+Package: amsmath 2016/03/10 v2.15b AMS math features
+\@mathmargin=\skip42
+
+For additional information on amsmath, use the `?' option.
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\amsmath\amstext.sty"
+Package: amstext 2000/06/29 v2.01 AMS text
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\amsmath\amsgen.sty"
+File: amsgen.sty 1999/11/30 v2.0 generic functions
+\@emptytoks=\toks14
+\ex@=\dimen104
+))
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\amsmath\amsbsy.sty"
+Package: amsbsy 1999/11/29 v1.2d Bold Symbols
+\pmbraise@=\dimen105
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\amsmath\amsopn.sty"
+Package: amsopn 2016/03/08 v2.02 operator names
+)
+\inf@bad=\count79
+LaTeX Info: Redefining \frac on input line 199.
+\uproot@=\count80
+\leftroot@=\count81
+LaTeX Info: Redefining \overline on input line 297.
+\classnum@=\count82
+\DOTSCASE@=\count83
+LaTeX Info: Redefining \ldots on input line 394.
+LaTeX Info: Redefining \dots on input line 397.
+LaTeX Info: Redefining \cdots on input line 518.
+\Mathstrutbox@=\box26
+\strutbox@=\box27
+\big@size=\dimen106
+LaTeX Font Info:    Redeclaring font encoding OML on input line 634.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 635.
+\macc@depth=\count84
+\c@MaxMatrixCols=\count85
+\dotsspace@=\muskip10
+\c@parentequation=\count86
+\dspbrk@lvl=\count87
+\tag@help=\toks15
+\row@=\count88
+\column@=\count89
+\maxfields@=\count90
+\andhelp@=\toks16
+\eqnshift@=\dimen107
+\alignsep@=\dimen108
+\tagshift@=\dimen109
+\tagwidth@=\dimen110
+\totwidth@=\dimen111
+\lineht@=\dimen112
+\@envbody=\toks17
+\multlinegap=\skip43
+\multlinetaggap=\skip44
+\mathdisplay@stack=\toks18
+LaTeX Info: Redefining \[ on input line 2739.
+LaTeX Info: Redefining \] on input line 2740.
+)
+LaTeX Font Info:    Try loading font information for U+msa on input line 388.
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\amsfonts\umsa.fd"
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\amsfonts\amsfonts.sty"
+Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
+\symAMSa=\mathgroup4
+\symAMSb=\mathgroup5
+LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
+(Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
+)
+\copyins=\insert199
+\abstractbox=\box28
+\listisep=\skip45
+\c@part=\count91
+\c@section=\count92
+\c@subsection=\count93
+\c@subsubsection=\count94
+\c@paragraph=\count95
+\c@subparagraph=\count96
+\c@figure=\count97
+\c@table=\count98
+\abovecaptionskip=\skip46
+\belowcaptionskip=\skip47
+\captionindent=\dimen113
+\thm@style=\toks19
+\thm@bodyfont=\toks20
+\thm@headfont=\toks21
+\thm@notefont=\toks22
+\thm@headpunct=\toks23
+\thm@preskip=\skip48
+\thm@postskip=\skip49
+\thm@headsep=\skip50
+\dth@everypar=\toks24
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\base\latexsym.sty"
+Package: latexsym 1998/08/17 v2.2e Standard LaTeX package (lasy symbols)
+\symlasy=\mathgroup6
+LaTeX Font Info:    Overwriting symbol font `lasy' in version `bold'
+(Font)                  U/lasy/m/n --> U/lasy/b/n on input line 52.
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\bbm\bbm.sty"
+Package: bbm 1999/03/15 V 1.2 provides fonts for set symbols - TH
+LaTeX Font Info:    Overwriting math alphabet `\mathbbm' in version `bold'
+(Font)                  U/bbm/m/n --> U/bbm/bx/n on input line 33.
+LaTeX Font Info:    Overwriting math alphabet `\mathbbmss' in version `bold'
+(Font)                  U/bbmss/m/n --> U/bbmss/bx/n on input line 35.
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\tools\enumerate.sty"
+Package: enumerate 2015/07/23 v3.00 enumerate extensions (DPC)
+\@enLab=\toks25
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\amsfonts\amssymb.sty"
+Package: amssymb 2013/01/14 v3.01 AMS font symbols
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\graphics\graphicx.sty"
+Package: graphicx 2014/10/28 v1.0g Enhanced LaTeX Graphics (DPC,SPQR)
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\graphics\keyval.sty"
+Package: keyval 2014/10/28 v1.15 key=value parser (DPC)
+\KV@toks@=\toks26
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\graphics\graphics.sty"
+Package: graphics 2016/06/02 v1.0s Standard LaTeX Graphics (DPC,SPQR)
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\graphics\trig.sty"
+Package: trig 2016/01/03 v1.10 sin cos tan (DPC)
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\00miktex\graphics.cfg"
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: pdftex.def on input line 99.
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\pdftex-def\pdftex.def"
+File: pdftex.def 2016/06/17 v0.06h Graphics/color for pdfTeX
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\oberdiek\infwarerr.sty"
+Package: infwarerr 2016/05/16 v1.4 Providing info/warning/error messages (HO)
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\oberdiek\ltxcmds.sty"
+Package: ltxcmds 2016/05/16 v1.23 LaTeX kernel commands for general use (HO)
+)
+\Gread@gobject=\count99
+))
+\Gin@req@height=\dimen114
+\Gin@req@width=\dimen115
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\pgf\frontendlayer\tikz.sty"
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\pgf\basiclayer\pgf.sty"
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\pgf\utilities\pgfrcs.sty"
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\utilities\pgfutil-common.te
+x"
+\pgfutil@everybye=\toks27
+\pgfutil@tempdima=\dimen116
+\pgfutil@tempdimb=\dimen117
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\utilities\pgfutil-common-li
+sts.tex"))
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\utilities\pgfutil-latex.def
+"
+\pgfutil@abb=\box29
+ ("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\ms\everyshi.sty"
+Package: everyshi 2001/05/15 v3.00 EveryShipout Package (MS)
+))
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\utilities\pgfrcs.code.tex"
+Package: pgfrcs 2015/08/07 v3.0.1a (rcs-revision 1.31)
+))
+Package: pgf 2015/08/07 v3.0.1a (rcs-revision 1.15)
+ ("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\pgf\basiclayer\pgfcore.sty"
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\pgf\systemlayer\pgfsys.sty"
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\systemlayer\pgfsys.code.tex
+"
+Package: pgfsys 2014/07/09 v3.0.1a (rcs-revision 1.48)
+ ("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\utilities\pgfkeys.code.tex
+"
+\pgfkeys@pathtoks=\toks28
+\pgfkeys@temptoks=\toks29
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\utilities\pgfkeysfiltered.c
+ode.tex"
+\pgfkeys@tmptoks=\toks30
+))
+\pgf@x=\dimen118
+\pgf@y=\dimen119
+\pgf@xa=\dimen120
+\pgf@ya=\dimen121
+\pgf@xb=\dimen122
+\pgf@yb=\dimen123
+\pgf@xc=\dimen124
+\pgf@yc=\dimen125
+\w@pgf@writea=\write3
+\r@pgf@reada=\read1
+\c@pgf@counta=\count100
+\c@pgf@countb=\count101
+\c@pgf@countc=\count102
+\c@pgf@countd=\count103
+\t@pgf@toka=\toks31
+\t@pgf@tokb=\toks32
+\t@pgf@tokc=\toks33
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\systemlayer\pgf.cfg"
+File: pgf.cfg 2008/05/14  (rcs-revision 1.7)
+)
+Driver file for pgf: pgfsys-pdftex.def
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\systemlayer\pgfsys-pdftex.d
+ef"
+File: pgfsys-pdftex.def 2014/10/11  (rcs-revision 1.35)
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\systemlayer\pgfsys-common-p
+df.def"
+File: pgfsys-common-pdf.def 2013/10/10  (rcs-revision 1.13)
+)))
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\systemlayer\pgfsyssoftpath.
+code.tex"
+File: pgfsyssoftpath.code.tex 2013/09/09  (rcs-revision 1.9)
+\pgfsyssoftpath@smallbuffer@items=\count104
+\pgfsyssoftpath@bigbuffer@items=\count105
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\systemlayer\pgfsysprotocol.
+code.tex"
+File: pgfsysprotocol.code.tex 2006/10/16  (rcs-revision 1.4)
+)) ("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\xcolor\xcolor.sty"
+Package: xcolor 2016/05/11 v2.12 LaTeX color extensions (UK)
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\00miktex\color.cfg"
+File: color.cfg 2016/01/02 v1.6 sample color configuration
+)
+Package xcolor Info: Driver file: pdftex.def on input line 225.
+Package xcolor Info: Model `cmy' substituted by `cmy0' on input line 1348.
+Package xcolor Info: Model `hsb' substituted by `rgb' on input line 1352.
+Package xcolor Info: Model `RGB' extended on input line 1364.
+Package xcolor Info: Model `HTML' substituted by `rgb' on input line 1366.
+Package xcolor Info: Model `Hsb' substituted by `hsb' on input line 1367.
+Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1368.
+Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1369.
+Package xcolor Info: Model `Gray' substituted by `gray' on input line 1370.
+Package xcolor Info: Model `wave' substituted by `hsb' on input line 1371.
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcore.code.tex
+"
+Package: pgfcore 2010/04/11 v3.0.1a (rcs-revision 1.7)
+ ("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\math\pgfmath.code.tex"
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\math\pgfmathcalc.code.tex"
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\math\pgfmathutil.code.tex")
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\math\pgfmathparser.code.tex
+"
+\pgfmath@dimen=\dimen126
+\pgfmath@count=\count106
+\pgfmath@box=\box30
+\pgfmath@toks=\toks34
+\pgfmath@stack@operand=\toks35
+\pgfmath@stack@operation=\toks36
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\math\pgfmathfunctions.code.
+tex"
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\math\pgfmathfunctions.basic
+.code.tex")
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\math\pgfmathfunctions.trigo
+nometric.code.tex")
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\math\pgfmathfunctions.rando
+m.code.tex")
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\math\pgfmathfunctions.compa
+rison.code.tex")
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\math\pgfmathfunctions.base.
+code.tex")
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\math\pgfmathfunctions.round
+.code.tex")
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\math\pgfmathfunctions.misc.
+code.tex")
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\math\pgfmathfunctions.integ
+erarithmetics.code.tex")))
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\math\pgfmathfloat.code.tex"
+\c@pgfmathroundto@lastzeros=\count107
+))
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcorepoints.co
+de.tex"
+File: pgfcorepoints.code.tex 2013/10/07  (rcs-revision 1.27)
+\pgf@picminx=\dimen127
+\pgf@picmaxx=\dimen128
+\pgf@picminy=\dimen129
+\pgf@picmaxy=\dimen130
+\pgf@pathminx=\dimen131
+\pgf@pathmaxx=\dimen132
+\pgf@pathminy=\dimen133
+\pgf@pathmaxy=\dimen134
+\pgf@xx=\dimen135
+\pgf@xy=\dimen136
+\pgf@yx=\dimen137
+\pgf@yy=\dimen138
+\pgf@zx=\dimen139
+\pgf@zy=\dimen140
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcorepathconst
+ruct.code.tex"
+File: pgfcorepathconstruct.code.tex 2013/10/07  (rcs-revision 1.29)
+\pgf@path@lastx=\dimen141
+\pgf@path@lasty=\dimen142
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcorepathusage
+.code.tex"
+File: pgfcorepathusage.code.tex 2014/11/02  (rcs-revision 1.24)
+\pgf@shorten@end@additional=\dimen143
+\pgf@shorten@start@additional=\dimen144
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcorescopes.co
+de.tex"
+File: pgfcorescopes.code.tex 2015/05/08  (rcs-revision 1.46)
+\pgfpic=\box31
+\pgf@hbox=\box32
+\pgf@layerbox@main=\box33
+\pgf@picture@serial@count=\count108
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcoregraphicst
+ate.code.tex"
+File: pgfcoregraphicstate.code.tex 2014/11/02  (rcs-revision 1.12)
+\pgflinewidth=\dimen145
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcoretransform
+ations.code.tex"
+File: pgfcoretransformations.code.tex 2015/08/07  (rcs-revision 1.20)
+\pgf@pt@x=\dimen146
+\pgf@pt@y=\dimen147
+\pgf@pt@temp=\dimen148
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcorequick.cod
+e.tex"
+File: pgfcorequick.code.tex 2008/10/09  (rcs-revision 1.3)
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcoreobjects.c
+ode.tex"
+File: pgfcoreobjects.code.tex 2006/10/11  (rcs-revision 1.2)
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcorepathproce
+ssing.code.tex"
+File: pgfcorepathprocessing.code.tex 2013/09/09  (rcs-revision 1.9)
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcorearrows.co
+de.tex"
+File: pgfcorearrows.code.tex 2015/05/14  (rcs-revision 1.43)
+\pgfarrowsep=\dimen149
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcoreshade.cod
+e.tex"
+File: pgfcoreshade.code.tex 2013/07/15  (rcs-revision 1.15)
+\pgf@max=\dimen150
+\pgf@sys@shading@range@num=\count109
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcoreimage.cod
+e.tex"
+File: pgfcoreimage.code.tex 2013/07/15  (rcs-revision 1.18)
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcoreexternal.
+code.tex"
+File: pgfcoreexternal.code.tex 2014/07/09  (rcs-revision 1.21)
+\pgfexternal@startupbox=\box34
+))
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcorelayers.co
+de.tex"
+File: pgfcorelayers.code.tex 2013/07/18  (rcs-revision 1.7)
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcoretranspare
+ncy.code.tex"
+File: pgfcoretransparency.code.tex 2013/09/30  (rcs-revision 1.5)
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\basiclayer\pgfcorepatterns.
+code.tex"
+File: pgfcorepatterns.code.tex 2013/11/07  (rcs-revision 1.5)
+)))
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\modules\pgfmoduleshapes.cod
+e.tex"
+File: pgfmoduleshapes.code.tex 2014/03/21  (rcs-revision 1.35)
+\pgfnodeparttextbox=\box35
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\modules\pgfmoduleplot.code.
+tex"
+File: pgfmoduleplot.code.tex 2015/08/03  (rcs-revision 1.13)
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\pgf\compatibility\pgfcomp-version
+-0-65.sty"
+Package: pgfcomp-version-0-65 2007/07/03 v3.0.1a (rcs-revision 1.7)
+\pgf@nodesepstart=\dimen151
+\pgf@nodesepend=\dimen152
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\pgf\compatibility\pgfcomp-version
+-1-18.sty"
+Package: pgfcomp-version-1-18 2007/07/23 v3.0.1a (rcs-revision 1.1)
+))
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\pgf\utilities\pgffor.sty"
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\pgf\utilities\pgfkeys.sty"
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\utilities\pgfkeys.code.tex"
+)) ("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\pgf\math\pgfmath.sty"
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\math\pgfmath.code.tex"))
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\utilities\pgffor.code.tex"
+Package: pgffor 2013/12/13 v3.0.1a (rcs-revision 1.25)
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\math\pgfmath.code.tex")
+\pgffor@iter=\dimen153
+\pgffor@skip=\dimen154
+\pgffor@stack=\toks37
+\pgffor@toks=\toks38
+))
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\frontendlayer\tikz\tikz.cod
+e.tex"
+Package: tikz 2015/08/07 v3.0.1a (rcs-revision 1.151)
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\libraries\pgflibraryplothan
+dlers.code.tex"
+File: pgflibraryplothandlers.code.tex 2013/08/31 v3.0.1a (rcs-revision 1.20)
+\pgf@plot@mark@count=\count110
+\pgfplotmarksize=\dimen155
+)
+\tikz@lastx=\dimen156
+\tikz@lasty=\dimen157
+\tikz@lastxsaved=\dimen158
+\tikz@lastysaved=\dimen159
+\tikzleveldistance=\dimen160
+\tikzsiblingdistance=\dimen161
+\tikz@figbox=\box36
+\tikz@figbox@bg=\box37
+\tikz@tempbox=\box38
+\tikz@tempbox@bg=\box39
+\tikztreelevel=\count111
+\tikznumberofchildren=\count112
+\tikznumberofcurrentchild=\count113
+\tikz@fig@count=\count114
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\modules\pgfmodulematrix.cod
+e.tex"
+File: pgfmodulematrix.code.tex 2013/09/17  (rcs-revision 1.8)
+\pgfmatrixcurrentrow=\count115
+\pgfmatrixcurrentcolumn=\count116
+\pgf@matrix@numberofcolumns=\count117
+)
+\tikz@expandcount=\count118
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\pgf\frontendlayer\tikz\librarie
+s\tikzlibrarytopaths.code.tex"
+File: tikzlibrarytopaths.code.tex 2008/06/17 v3.0.1a (rcs-revision 1.2)
+)))
+\c@theorem=\count119
+\c@corollary=\count120
+
+No file _region_.aux.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 25.
+LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 25.
+LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 25.
+LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 25.
+LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 25.
+LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 25.
+LaTeX Font Info:    ... okay on input line 25.
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\preview\preview.sty"
+Package: preview 2017/04/24 11.90 (AUCTeX/preview-latex)
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\luatex85\luatex85.sty"
+Package: luatex85 2016/06/15 v1.4 pdftex aliases for luatex
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\preview\prtightpage.def"
+\PreviewBorder=\dimen162
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\preview\prauctex.def"
+No auxiliary output files.
+
+
+\hbadness=\count121
+\hfuzz=\dimen163
+) ("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\preview\prfootnotes.def")
+\pr@snippet=\count122
+\pr@box=\box40
+\pr@output=\toks39
+
+Preview: Fontsize 10pt
+Preview: PDFoutput 1
+)
+LaTeX Font Info:    Try loading font information for U+msa on input line 25.
+ ("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\amsfonts\umsa.fd"
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Try loading font information for U+msb on input line 25.
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\amsfonts\umsb.fd"
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+LaTeX Font Info:    Try loading font information for U+lasy on input line 25.
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\base\ulasy.fd"
+File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\context\base\supp-pdf.mkii"
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count123
+\scratchdimen=\dimen164
+\scratchbox=\box41
+\nofMPsegments=\count124
+\nofMParguments=\count125
+\everyMPshowfont=\toks40
+\MPscratchCnt=\count126
+\MPscratchDim=\dimen165
+\MPnumerator=\count127
+\makeMPintoPDFobject=\count128
+\everyMPtoPDFconversion=\toks41
+) ("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\oberdiek\pdftexcmds.sty"
+Package: pdftexcmds 2016/05/21 v0.22 Utility functions of pdfTeX for LuaTeX (HO
+)
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\oberdiek\ifluatex.sty"
+Package: ifluatex 2016/05/16 v1.4 Provides the ifluatex switch (HO)
+Package ifluatex Info: LuaTeX not detected.
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\oberdiek\ifpdf.sty"
+Package: ifpdf 2016/05/14 v3.1 Provides the ifpdf switch
+)
+Package pdftexcmds Info: LuaTeX not detected.
+Package pdftexcmds Info: \pdf@primitive is available.
+Package pdftexcmds Info: \pdf@ifprimitive is available.
+Package pdftexcmds Info: \pdfdraftmode found.
+)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\oberdiek\epstopdf-base.sty"
+Package: epstopdf-base 2016/05/15 v2.6 Base part for package epstopdf
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\oberdiek\grfext.sty"
+Package: grfext 2016/05/16 v1.2 Manage graphics extensions (HO)
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\oberdiek\kvdefinekeys.sty"
+Package: kvdefinekeys 2016/05/16 v1.4 Define keys (HO)
+))
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\oberdiek\kvoptions.sty"
+Package: kvoptions 2016/05/16 v3.12 Key value format for package options (HO)
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\oberdiek\kvsetkeys.sty"
+Package: kvsetkeys 2016/05/16 v1.17 Key value parser (HO)
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\generic\oberdiek\etexcmds.sty"
+Package: etexcmds 2016/05/16 v1.6 Avoid name clashes with e-TeX commands (HO)
+Package etexcmds Info: Could not find \expanded.
+(etexcmds)             That can mean that you are not using pdfTeX 1.50 or
+(etexcmds)             that some package has redefined \expanded.
+(etexcmds)             In the latter case, load this package earlier.
+)))
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
+38.
+Package grfext Info: Graphics extension search list:
+(grfext)             [.png,.pdf,.jpg,.mps,.jpeg,.jbig2,.jb2,.PNG,.PDF,.JPG,.JPE
+G,.JBIG2,.JB2,.eps]
+(grfext)             \AppendGraphicsExtensions on input line 456.
+)
+ABD: EveryShipout initializing macros  !name(manuscript.tex) !offset(-3) 
+_region_.tex:30: Preview: Snippet 1 started
+Not a real error.
+
+Preview: Tightpage -32891 -32891 32891 32891
+_region_.tex:37: Preview: Snippet 1 ended.(3032638+0x23592960)
+Not a real error.
+
+[1{C:/ProgramData/MiKTeX/2.9/pdftex/config/pdftex.map}
+
+]
+_region_.tex:38: Preview: Snippet 2 started
+Not a real error.
+
+_region_.tex:38: Preview: Snippet 2 ended.(447828+0x539946)
+Not a real error.
+
+[2]
+_region_.tex:39: Preview: Snippet 3 started
+Not a real error.
+
+
+_region_.tex:42: Package tikz Error: Sorry, some package has redefined the mean
+ing of the math-mode dollar sign. This is incompatible with tikz and its calc l
+ibrary and might cause unrecoverable errors.
+
+See the tikz package documentation for explanation.
+Type  H <return>  for immediate help
+This error message was generated by an \errmessage
+command, so I can't give any explicit help.
+Pretend that you're Hercule Poirot: Examine all clues,
+and deduce the truth by order and method.
+
+_region_.tex:50: Preview: Snippet 3 ended.(6898011+0x6898011)
+Not a real error.
+
+[3]
+_region_.tex:53: Preview: Snippet 4 started
+Not a real error.
+
+_region_.tex:55: Preview: Snippet 4 ended.(950272+0x23592960)
+Not a real error.
+
+[4]
+_region_.tex:56: Preview: Snippet 5 started
+Not a real error.
+
+_region_.tex:56: Preview: Snippet 5 ended.(455111+127431x450409)
+Not a real error.
+
+[5]
+_region_.tex:57: Preview: Snippet 6 started
+Not a real error.
+
+_region_.tex:59: Preview: Snippet 6 ended.(1921029+0x14701154)
+Not a real error.
+
+[6]
+_region_.tex:61: Preview: Snippet 7 started
+Not a real error.
+
+_region_.tex:63: Preview: Snippet 7 ended.(655360+0x16264762)
+Not a real error.
+
+[7]
+_region_.tex:77: Preview: Snippet 8 started
+Not a real error.
+
+_region_.tex:77: Preview: Snippet 8 ended.(491520+163840x5655296)
+Not a real error.
+
+[8]
+_region_.tex:80: Preview: Snippet 9 started
+Not a real error.
+
+_region_.tex:85: Preview: Snippet 9 ended.(3827312+0x22635431)
+Not a real error.
+
+[9]
+_region_.tex:88: Preview: Snippet 10 started
+Not a real error.
+
+_region_.tex:88: Preview: Snippet 10 ended.(455111+127431x450409)
+Not a real error.
+
+[10]
+_region_.tex:89: Preview: Snippet 11 started
+Not a real error.
+
+_region_.tex:91: Preview: Snippet 11 ended.(1526904+0x23592960)
+Not a real error.
+
+[11
+
+]
+_region_.tex:92: Preview: Snippet 12 started
+Not a real error.
+
+_region_.tex:92: Preview: Snippet 12 ended.(455111+0x377591)
+Not a real error.
+
+[12]
+
+LaTeX Warning: Reference `lemma:1' on page 1 undefined on input line 93.
+
+
+LaTeX Warning: Reference `eqn:model' on page 1 undefined on input line 93.
+
+_region_.tex:94: Preview: Snippet 13 started
+Not a real error.
+
+_region_.tex:96: Preview: Snippet 13 ended.(655360+0x17202290)
+Not a real error.
+
+[13]
+_region_.tex:100: Preview: Snippet 14 started
+Not a real error.
+
+_region_.tex:100: Preview: Snippet 14 ended.(455111+0x377591)
+Not a real error.
+
+[14]
+_region_.tex:101: Preview: Snippet 15 started
+Not a real error.
+
+_region_.tex:101: Preview: Snippet 15 ended.(491524+196611x5190662)
+Not a real error.
+
+[15]
+_region_.tex:101: Preview: Snippet 16 started
+Not a real error.
+
+_region_.tex:101: Preview: Snippet 16 ended.(455111+0x377591)
+Not a real error.
+
+[16]
+_region_.tex:103: Preview: Snippet 17 started
+Not a real error.
+
+_region_.tex:106: Preview: Snippet 17 ended.(760220+0x23592960)
+Not a real error.
+
+[17
+
+]
+
+LaTeX Warning: Reference `lemma:min_h' on page 1 undefined on input line 107.
+
+
+LaTeX Warning: Reference `eqn:augmented' on page 1 undefined on input line 108.
+
+
+
+LaTeX Warning: Reference `eqn:augmented' on page 1 undefined on input line 108.
+
+
+_region_.tex:110: Preview: Snippet 18 started
+Not a real error.
+
+_region_.tex:115: Preview: Snippet 18 ended.(3827312+0x25956072)
+Not a real error.
+
+[18]
+
+LaTeX Warning: Reference `eqn:augmented' on page 1 undefined on input line 116.
+
+
+_region_.tex:117: Preview: Snippet 19 started
+Not a real error.
+
+_region_.tex:121: Preview: Snippet 19 ended.(2804948+0x24724313)
+Not a real error.
+
+[19]
+_region_.tex:123: Preview: Snippet 20 started
+Not a real error.
+
+_region_.tex:149: Preview: Snippet 20 ended.(6095696+0x27832633)
+Not a real error.
+
+[20]
+_region_.tex:150: Preview: Snippet 21 started
+Not a real error.
+
+_region_.tex:150: Preview: Snippet 21 ended.(603348+0x526109)
+Not a real error.
+
+[21]
+_region_.tex:151: Preview: Snippet 22 started
+Not a real error.
+
+_region_.tex:153: Preview: Snippet 22 ended.(1724342+0x17619326)
+Not a real error.
+
+[22]
+_region_.tex:154: Preview: Snippet 23 started
+Not a real error.
+
+_region_.tex:154: Preview: Snippet 23 ended.(491520+163840x9545248)
+Not a real error.
+
+[23]
+_region_.tex:155: Preview: Snippet 24 started
+Not a real error.
+
+_region_.tex:157: Preview: Snippet 24 ended.(760220+0x23592960)
+Not a real error.
+
+[24
+
+]
+_region_.tex:180: Preview: Snippet 25 started
+Not a real error.
+
+_region_.tex:180: Preview: Snippet 25 ended.(455111+127431x450409)
+Not a real error.
+
+[25]
+_region_.tex:181: Preview: Snippet 26 started
+Not a real error.
+
+_region_.tex:183: Preview: Snippet 26 ended.(1526904+0x23592960)
+Not a real error.
+
+[26
+
+]
+_region_.tex:184: Preview: Snippet 27 started
+Not a real error.
+
+_region_.tex:184: Preview: Snippet 27 ended.(455111+0x377591)
+Not a real error.
+
+[27]
+_region_.tex:184: Preview: Snippet 28 started
+Not a real error.
+
+_region_.tex:184: Preview: Snippet 28 ended.(447828+0x594374)
+Not a real error.
+
+[28]
+_region_.tex:185: Preview: Snippet 29 started
+Not a real error.
+
+_region_.tex:185: Preview: Snippet 29 ended.(767188+0x18826150)
+Not a real error.
+
+[29]
+_region_.tex:190: Preview: Snippet 30 started
+Not a real error.
+
+_region_.tex:190: Preview: Snippet 30 ended.(491520+163840x5774890)
+Not a real error.
+
+[30]
+_region_.tex:191: Preview: Snippet 31 started
+Not a real error.
+
+_region_.tex:191: Preview: Snippet 31 ended.(655360+0x18331562)
+Not a real error.
+
+[31]
+
+LaTeX Warning: Reference `eqn:min_h' on page 1 undefined on input line 194.
+
+_region_.tex:196: Preview: Snippet 32 started
+Not a real error.
+
+_region_.tex:197: Preview: Snippet 32 ended.(1475443+0x20160639)
+Not a real error.
+
+[32]
+
+LaTeX Warning: Reference `eqn:min_h' on page 1 undefined on input line 198.
+
+_region_.tex:199: Preview: Snippet 33 started
+Not a real error.
+
+_region_.tex:201: Preview: Snippet 33 ended.(2099721+0x20664766)
+Not a real error.
+
+[33]
+_region_.tex:203: Preview: Snippet 34 started
+Not a real error.
+
+_region_.tex:206: Preview: Snippet 34 ended.(4194342+0x21135700)
+Not a real error.
+
+[34]
+_region_.tex:208: Preview: Snippet 35 started
+Not a real error.
+
+_region_.tex:213: Preview: Snippet 35 ended.(1932010+0x23592960)
+Not a real error.
+
+[35
+
+]
+_region_.tex:214: Preview: Snippet 36 started
+Not a real error.
+
+_region_.tex:214: Preview: Snippet 36 ended.(447828+127431x1377164)
+Not a real error.
+
+[36]
+_region_.tex:214: Preview: Snippet 37 started
+Not a real error.
+
+_region_.tex:214: Preview: Snippet 37 ended.(551306+163840x7269039)
+Not a real error.
+
+[37]
+_region_.tex:215: Preview: Snippet 38 started
+Not a real error.
+
+_region_.tex:221: Preview: Snippet 38 ended.(5241082+0x21002691)
+Not a real error.
+
+[38]
+_region_.tex:222: Preview: Snippet 39 started
+Not a real error.
+
+_region_.tex:223: Preview: Snippet 39 ended.(491520+163840x12419355)
+Not a real error.
+
+[39]
+_region_.tex:224: Preview: Snippet 40 started
+Not a real error.
+
+_region_.tex:232: Preview: Snippet 40 ended.(7193256+0x23592960)
+Not a real error.
+
+[40
+
+]
+
+LaTeX Warning: Reference `lemma:min_h:step_1' on page 1 undefined on input line
+ 233.
+
+_region_.tex:234: Preview: Snippet 41 started
+Not a real error.
+
+_region_.tex:236: Preview: Snippet 41 ended.(834933+0x22323339)
+Not a real error.
+
+[41]
+_region_.tex:238: Preview: Snippet 42 started
+Not a real error.
+
+_region_.tex:245: Preview: Snippet 42 ended.(5320089+0x24240407)
+Not a real error.
+
+[42]
+
+LaTeX Warning: Reference `eqn:decrement' on page 2 undefined on input line 249.
+
+
+_region_.tex:249: Preview: Snippet 43 started
+Not a real error.
+
+_region_.tex:249: Preview: Snippet 43 ended.(533465+163840x2952612)
+Not a real error.
+
+[43]
+
+LaTeX Warning: Reference `eqn:min_h' on page 2 undefined on input line 251.
+
+
+LaTeX Warning: Reference `eqn:unaugmented' on page 2 undefined on input line 25
+1.
+
+_region_.tex:268: Preview: Snippet 44 started
+Not a real error.
+
+_region_.tex:268: Preview: Snippet 44 ended.(491520+163840x4010284)
+Not a real error.
+
+[44]
+
+LaTeX Warning: Reference `eqn:augmented' on page 2 undefined on input line 268.
+
+
+_region_.tex:269: Preview: Snippet 45 started
+Not a real error.
+
+_region_.tex:269: Preview: Snippet 45 ended.(491520+163840x3662725)
+Not a real error.
+
+[45]
+
+LaTeX Warning: Reference `eqn:W_basic' on page 2 undefined on input line 270.
+
+_region_.tex:270: Preview: Snippet 46 started
+Not a real error.
+
+_region_.tex:270: Preview: Snippet 46 ended.(491520+163840x2697890)
+Not a real error.
+
+[46]
+_region_.tex:277: Preview: Snippet 47 started
+Not a real error.
+
+_region_.tex:277: Preview: Snippet 47 ended.(455111+127431x450409)
+Not a real error.
+
+[47]
+_region_.tex:279: Preview: Snippet 48 started
+Not a real error.
+
+_region_.tex:279: Preview: Snippet 48 ended.(533465+0x1294166)
+Not a real error.
+
+[48]
+_region_.tex:280: Preview: Snippet 49 started
+Not a real error.
+
+_region_.tex:280: Preview: Snippet 49 ended.(491520+163840x3480680)
+Not a real error.
+
+[49]
+_region_.tex:281: Preview: Snippet 50 started
+Not a real error.
+
+_region_.tex:281: Preview: Snippet 50 ended.(679024+0x20719743)
+Not a real error.
+
+[50]
+_region_.tex:282: Preview: Snippet 51 started
+Not a real error.
+
+_region_.tex:282: Preview: Snippet 51 ended.(491520+163840x3480680)
+Not a real error.
+
+[51]
+_region_.tex:283: Preview: Snippet 52 started
+Not a real error.
+
+_region_.tex:283: Preview: Snippet 52 ended.(455111+127431x450409)
+Not a real error.
+
+[52]
+
+LaTeX Warning: Reference `eqn:augmented' on page 2 undefined on input line 283.
+
+
+_region_.tex:284: Preview: Snippet 53 started
+Not a real error.
+
+_region_.tex:284: Preview: Snippet 53 ended.(491520+163840x7615926)
+Not a real error.
+
+[53]
+_region_.tex:285: Preview: Snippet 54 started
+Not a real error.
+
+_region_.tex:285: Preview: Snippet 54 ended.(455111+127431x632454)
+Not a real error.
+
+[54]
+_region_.tex:288: Preview: Snippet 55 started
+Not a real error.
+
+_region_.tex:288: Preview: Snippet 55 ended.(655360+0x14433218)
+Not a real error.
+
+[55]
+_region_.tex:289: Preview: Snippet 56 started
+Not a real error.
+
+_region_.tex:289: Preview: Snippet 56 ended.(491520+163840x4682167)
+Not a real error.
+
+[56]
+_region_.tex:291: Preview: Snippet 57 started
+Not a real error.
+
+_region_.tex:292: Preview: Snippet 57 ended.(679024+0x19682092)
+Not a real error.
+
+[57]
+_region_.tex:293: Preview: Snippet 58 started
+Not a real error.
+
+_region_.tex:293: Preview: Snippet 58 ended.(491520+163840x4682167)
+Not a real error.
+
+[58]
+_region_.tex:294: Preview: Snippet 59 started
+Not a real error.
+
+_region_.tex:294: Preview: Snippet 59 ended.(491520+163840x3480680)
+Not a real error.
+
+[59]
+_region_.tex:295: Preview: Snippet 60 started
+Not a real error.
+
+_region_.tex:295: Preview: Snippet 60 ended.(455111+127431x450409)
+Not a real error.
+
+[60]
+
+LaTeX Warning: Reference `item:nonblinded' on page 2 undefined on input line 29
+6.
+
+_region_.tex:296: Preview: Snippet 61 started
+Not a real error.
+
+_region_.tex:296: Preview: Snippet 61 ended.(447828+98303x709709)
+Not a real error.
+
+[61]
+_region_.tex:298: Preview: Snippet 62 started
+Not a real error.
+
+_region_.tex:298: Preview: Snippet 62 ended.(491520+163840x2697890)
+Not a real error.
+
+[62]
+_region_.tex:299: Preview: Snippet 63 started
+Not a real error.
+
+_region_.tex:299: Preview: Snippet 63 ended.(679024+0x19682092)
+Not a real error.
+
+[63]
+_region_.tex:300: Preview: Snippet 64 started
+Not a real error.
+
+_region_.tex:300: Preview: Snippet 64 ended.(491520+163840x2697890)
+Not a real error.
+
+[64]
+_region_.tex:301: Preview: Snippet 65 started
+Not a real error.
+
+_region_.tex:301: Preview: Snippet 65 ended.(455111+127431x450409)
+Not a real error.
+
+[65]
+
+LaTeX Warning: Reference `eqn:W_basic' on page 2 undefined on input line 301.
+
+_region_.tex:302: Preview: Snippet 66 started
+Not a real error.
+
+_region_.tex:302: Preview: Snippet 66 ended.(491520+163840x6614948)
+Not a real error.
+
+[66]
+_region_.tex:303: Preview: Snippet 67 started
+Not a real error.
+
+_region_.tex:303: Preview: Snippet 67 ended.(455111+127431x632454)
+Not a real error.
+
+[67]
+
+LaTeX Warning: Reference `item:blinded' on page 2 undefined on input line 305.
+
+_region_.tex:305: Preview: Snippet 68 started
+Not a real error.
+
+_region_.tex:305: Preview: Snippet 68 ended.(435343+0x630611)
+Not a real error.
+
+[68]
+_region_.tex:306: Preview: Snippet 69 started
+Not a real error.
+
+_region_.tex:307: Preview: Snippet 69 ended.(491520+163840x4682167)
+Not a real error.
+
+[69]
+_region_.tex:307: Preview: Snippet 70 started
+Not a real error.
+
+_region_.tex:307: Preview: Snippet 70 ended.(491520+163840x4682167)
+Not a real error.
+
+[70]
+_region_.tex:308: Preview: Snippet 71 started
+Not a real error.
+
+_region_.tex:308: Preview: Snippet 71 ended.(455111+127431x450409)
+Not a real error.
+
+[71]
+_region_.tex:308: Preview: Snippet 72 started
+Not a real error.
+
+_region_.tex:308: Preview: Snippet 72 ended.(533465+0x1294166)
+Not a real error.
+
+[72]
+
+LaTeX Warning: Reference `fig:1' on page 2 undefined on input line 312.
+
+_region_.tex:313: Preview: Snippet 73 started
+Not a real error.
+
+_region_.tex:313: Preview: Snippet 73 ended.(455111+127431x450409)
+Not a real error.
+
+[73]
+
+LaTeX Warning: Reference `item:ours' on page 2 undefined on input line 314.
+
+
+LaTeX Warning: Reference `item:blinded' on page 2 undefined on input line 314.
+
+
+LaTeX Warning: Reference `item:nonblinded' on page 2 undefined on input line 31
+4.
+
+_region_.tex:315: Preview: Snippet 74 started
+Not a real error.
+
+_region_.tex:315: Preview: Snippet 74 ended.(455111+127431x450409)
+Not a real error.
+
+[74]
+_region_.tex:316: Preview: Snippet 75 started
+Not a real error.
+
+_region_.tex:316: Preview: Snippet 75 ended.(455111+127431x1833941)
+Not a real error.
+
+[75]
+_region_.tex:317: Preview: Snippet 76 started
+Not a real error.
+
+_region_.tex:317: Preview: Snippet 76 ended.(282168+127431x575415)
+Not a real error.
+
+[76]
+_region_.tex:320: Preview: Snippet 77 started
+Not a real error.
+
+_region_.tex:320: Preview: Snippet 77 ended.(422343+89110x1674809)
+Not a real error.
+
+[77]
+
+LaTeX Warning: Reference `fig:2' on page 2 undefined on input line 321.
+
+_region_.tex:325: Preview: Snippet 78 started
+Not a real error.
+
+_region_.tex:329: Preview: Snippet 78 ended.(1795686+127431x23592960)
+Not a real error.
+
+[78
+
+
+]
+_region_.tex:332: Preview: Snippet 79 started
+Not a real error.
+
+_region_.tex:336: Preview: Snippet 79 ended.(2539155+0x23592960)
+Not a real error.
+
+[79
+
+
+]
+_region_.tex:338: Preview: Snippet 80 started
+Not a real error.
+
+_region_.tex:338: Preview: Snippet 80 ended.(455111+127431x13284905)
+Not a real error.
+
+[80
+
+]
+_region_.tex:341: Preview: Snippet 81 started
+Not a real error.
+
+_region_.tex:343: Preview: Snippet 81 ended.(767188+0x14508932)
+Not a real error.
+
+[81]
+_region_.tex:345: Preview: Snippet 82 started
+Not a real error.
+
+_region_.tex:347: Preview: Snippet 82 ended.(767188+0x14932871)
+Not a real error.
+
+[82]
+_region_.tex:348: Preview: Snippet 83 started
+Not a real error.
+
+_region_.tex:349: Preview: Snippet 83 ended.(603348+163840x13829413)
+Not a real error.
+
+[83]
+_region_.tex:349: Preview: Snippet 84 started
+Not a real error.
+
+_region_.tex:350: Preview: Snippet 84 ended.(603348+163840x23124345)
+Not a real error.
+
+[84]
+_region_.tex:351: Preview: Snippet 85 started
+Not a real error.
+
+_region_.tex:354: Preview: Snippet 85 ended.(1746175+0x13373477)
+Not a real error.
+
+[85]
+_region_.tex:356: Preview: Snippet 86 started
+Not a real error.
+
+_region_.tex:356: Preview: Snippet 86 ended.(491520+163840x2130377)
+Not a real error.
+
+[86]
+_region_.tex:357: Preview: Snippet 87 started
+Not a real error.
+
+_region_.tex:367: Preview: Snippet 87 ended.(16088785+0x22762476)
+Not a real error.
+
+[87]
+
+LaTeX Warning: Reference `eqn:W_basic' on page 2 undefined on input line 368.
+
+_region_.tex:368: Preview: Snippet 88 started
+Not a real error.
+
+_region_.tex:368: Preview: Snippet 88 ended.(628054+127431x632454)
+Not a real error.
+
+[88]
+_region_.tex:369: Preview: Snippet 89 started
+Not a real error.
+
+_region_.tex:369: Preview: Snippet 89 ended.(628054+127431x846736)
+Not a real error.
+
+[89]
+_region_.tex:372: Preview: Snippet 90 started
+Not a real error.
+
+_region_.tex:374: Preview: Snippet 90 ended.(1698046+0x17333836)
+Not a real error.
+
+[90]
+
+LaTeX Warning: Reference `eqn:W_basic' on page 2 undefined on input line 375.
+
+_region_.tex:376: Preview: Snippet 91 started
+Not a real error.
+
+_region_.tex:378: Preview: Snippet 91 ended.(898253+0x14013246)
+Not a real error.
+
+[91]
+_region_.tex:380: Preview: Snippet 92 started
+Not a real error.
+
+_region_.tex:380: Preview: Snippet 92 ended.(447828+0x23592960)
+Not a real error.
+
+[92
+
+]
+_region_.tex:381: Preview: Snippet 93 started
+Not a real error.
+
+_region_.tex:381: Preview: Snippet 93 ended.(491520+170585x9582090)
+Not a real error.
+
+[93]
+_region_.tex:381: Preview: Snippet 94 started
+Not a real error.
+
+_region_.tex:381: Preview: Snippet 94 ended.(491520+163840x6912066)
+Not a real error.
+
+[94]
+_region_.tex:382: Preview: Snippet 95 started
+Not a real error.
+
+_region_.tex:386: Preview: Snippet 95 ended.(2797468+0x15963474)
+Not a real error.
+
+[95]
+_region_.tex:387: Preview: Snippet 96 started
+Not a real error.
+
+_region_.tex:388: Preview: Snippet 96 ended.(491520+163840x8394038)
+Not a real error.
+
+[96]
+_region_.tex:390: Preview: Snippet 97 started
+Not a real error.
+
+_region_.tex:391: Preview: Snippet 97 ended.(668083+340683x9333698)
+Not a real error.
+
+[97]
+_region_.tex:393: Preview: Snippet 98 started
+Not a real error.
+
+_region_.tex:396: Preview: Snippet 98 ended.(655360+0x22213171)
+Not a real error.
+
+[98]
+_region_.tex:397: Preview: Snippet 99 started
+Not a real error.
+
+_region_.tex:397: Preview: Snippet 99 ended.(447828+0x526109)
+Not a real error.
+
+[99]
+_region_.tex:403: Preview: Snippet 100 started
+Not a real error.
+
+_region_.tex:403: Preview: Snippet 100 ended.(551306+163840x2163285)
+Not a real error.
+
+[100]
+_region_.tex:404: Preview: Snippet 101 started
+Not a real error.
+
+_region_.tex:404: Preview: Snippet 101 ended.(491520+163840x2985527)
+Not a real error.
+
+[101]
+_region_.tex:405: Preview: Snippet 102 started
+Not a real error.
+
+_region_.tex:405: Preview: Snippet 102 ended.(551306+127431x826166)
+Not a real error.
+
+[102]
+_region_.tex:405: Preview: Snippet 103 started
+Not a real error.
+
+_region_.tex:405: Preview: Snippet 103 ended.(491520+163840x4205213)
+Not a real error.
+
+[103]
+_region_.tex:407: Preview: Snippet 104 started
+Not a real error.
+
+_region_.tex:410: Preview: Snippet 104 ended.(1782584+0x20138225)
+Not a real error.
+
+[104]
+_region_.tex:413: Preview: Snippet 105 started
+Not a real error.
+
+_region_.tex:413: Preview: Snippet 105 ended.(491520+163840x4682167)
+Not a real error.
+
+[105]
+_region_.tex:414: Preview: Snippet 106 started
+Not a real error.
+
+_region_.tex:414: Preview: Snippet 106 ended.(491520+163840x4864212)
+Not a real error.
+
+[106]
+_region_.tex:478: Preview: Snippet 107 started
+Not a real error.
+
+_region_.tex:478: Preview: Snippet 107 ended.(661912+340683x5123333)
+Not a real error.
+
+[107
+
+]
+_region_.tex:480: Preview: Snippet 108 started
+Not a real error.
+
+_region_.tex:482: Preview: Snippet 108 ended.(1548261+0x17481079)
+Not a real error.
+
+[108]
+_region_.tex:484: Preview: Snippet 109 started
+Not a real error.
+
+_region_.tex:486: Preview: Snippet 109 ended.(1526904+0x15751968)
+Not a real error.
+
+[109]
+_region_.tex:488: Preview: Snippet 110 started
+Not a real error.
+
+_region_.tex:492: Preview: Snippet 110 ended.(1977884+0x19290867)
+Not a real error.
+
+[110]
+_region_.tex:493: Preview: Snippet 111 started
+Not a real error.
+
+_region_.tex:493: Preview: Snippet 111 ended.(455111+127431x390486)
+Not a real error.
+
+[111]
+_region_.tex:494: Preview: Snippet 112 started
+Not a real error.
+
+_region_.tex:499: Preview: Snippet 112 ended.(6941328+0x23190599)
+Not a real error.
+
+[112]
+_region_.tex:500: Preview: Snippet 113 started
+Not a real error.
+
+_region_.tex:500: Preview: Snippet 113 ended.(455111+0x377591)
+Not a real error.
+
+[113]
+_region_.tex:500: Preview: Snippet 114 started
+Not a real error.
+
+_region_.tex:500: Preview: Snippet 114 ended.(491520+163840x6760964)
+Not a real error.
+
+[114]
+_region_.tex:500: Preview: Snippet 115 started
+Not a real error.
+
+_region_.tex:500: Preview: Snippet 115 ended.(455111+0x377591)
+Not a real error.
+
+[115]
+_region_.tex:502: Preview: Snippet 116 started
+Not a real error.
+
+_region_.tex:505: Preview: Snippet 116 ended.(3343447+0x26549499)
+Not a real error.
+
+[116]
+_region_.tex:507: Preview: Snippet 117 started
+Not a real error.
+
+_region_.tex:510: Preview: Snippet 117 ended.(2744922+0x27734795)
+Not a real error.
+
+[117]
+_region_.tex:511: Preview: Snippet 118 started
+Not a real error.
+
+_region_.tex:511: Preview: Snippet 118 ended.(628054+127431x783630)
+Not a real error.
+
+[118]
+_region_.tex:511: Preview: Snippet 119 started
+Not a real error.
+
+_region_.tex:511: Preview: Snippet 119 ended.(455111+127431x720899)
+Not a real error.
+
+[119]
+_region_.tex:512: Preview: Snippet 120 started
+Not a real error.
+
+_region_.tex:514: Preview: Snippet 120 ended.(1582113+0x15215412)
+Not a real error.
+
+[120]
+_region_.tex:516: Preview: Snippet 121 started
+Not a real error.
+
+_region_.tex:522: Preview: Snippet 121 ended.(1647845+0x21962115)
+Not a real error.
+
+[121]
+_region_.tex:523: Preview: Snippet 122 started
+Not a real error.
+
+_region_.tex:523: Preview: Snippet 122 ended.(491520+163840x2368622)
+Not a real error.
+
+[122]
+_region_.tex:523: Preview: Snippet 123 started
+Not a real error.
+
+_region_.tex:523: Preview: Snippet 123 ended.(677461+127431x4807195)
+Not a real error.
+
+[123]
+_region_.tex:524: Preview: Snippet 124 started
+Not a real error.
+
+_region_.tex:526: Preview: Snippet 124 ended.(1804685+0x23592960)
+Not a real error.
+
+[124
+
+]
+_region_.tex:528: Preview: Snippet 125 started
+Not a real error.
+
+_region_.tex:528: Preview: Snippet 125 ended.(447828+127431x7685149)
+Not a real error.
+
+[125
+
+]
+_region_.tex:530: Preview: Snippet 126 started
+Not a real error.
+
+_region_.tex:532: Preview: Snippet 126 ended.(778497+0x19388865)
+Not a real error.
+
+[126]
+_region_.tex:534: Preview: Snippet 127 started
+Not a real error.
+
+_region_.tex:536: Preview: Snippet 127 ended.(760220+0x23592960)
+Not a real error.
+
+[127
+
+]
+_region_.tex:539: Preview: Snippet 128 started
+Not a real error.
+
+_region_.tex:541: Preview: Snippet 128 ended.(778497+0x22150469)
+Not a real error.
+
+[128]
+_region_.tex:543: Preview: Snippet 129 started
+Not a real error.
+
+_region_.tex:547: Preview: Snippet 129 ended.(3051222+0x22832094)
+Not a real error.
+
+[129]
+_region_.tex:549: Preview: Snippet 130 started
+Not a real error.
+
+_region_.tex:552: Preview: Snippet 130 ended.(1905721+0x22832094)
+Not a real error.
+
+[130]
+
+LaTeX Warning: Reference `model:loglinear' on page 3 undefined on input line 55
+3.
+
+_region_.tex:554: Preview: Snippet 131 started
+Not a real error.
+
+_region_.tex:559: Preview: Snippet 131 ended.(3592989+0x18963323)
+Not a real error.
+
+[131]
+_region_.tex:560: Preview: Snippet 132 started
+Not a real error.
+
+_region_.tex:560: Preview: Snippet 132 ended.(628054+163840x2130377)
+Not a real error.
+
+[132]
+
+LaTeX Warning: Reference `model:loglinear' on page 3 undefined on input line 56
+1.
+
+_region_.tex:562: Preview: Snippet 133 started
+Not a real error.
+
+_region_.tex:564: Preview: Snippet 133 ended.(1921029+0x15819264)
+Not a real error.
+
+[133]
+_region_.tex:565: Preview: Snippet 134 started
+Not a real error.
+
+_region_.tex:565: Preview: Snippet 134 ended.(455111+127431x2259396)
+Not a real error.
+
+[134]
+_region_.tex:566: Preview: Snippet 135 started
+Not a real error.
+
+_region_.tex:574: Preview: Snippet 135 ended.(10532971+0x26052804)
+Not a real error.
+
+[135]
+
+LaTeX Warning: Reference `fla:inf_2_simple' on page 3 undefined on input line 5
+76.
+
+_region_.tex:576: Preview: Snippet 136 started
+Not a real error.
+
+_region_.tex:576: Preview: Snippet 136 ended.(628054+127431x664691)
+Not a real error.
+
+[136]
+_region_.tex:578: Preview: Snippet 137 started
+Not a real error.
+
+_region_.tex:578: Preview: Snippet 137 ended.(628054+127431x450409)
+Not a real error.
+
+[137]
+_region_.tex:581: Preview: Snippet 138 started
+Not a real error.
+
+_region_.tex:581: Preview: Snippet 138 ended.(447828+0x23592960)
+Not a real error.
+
+[138
+
+]
+_region_.tex:583: Preview: Snippet 139 started
+Not a real error.
+
+_region_.tex:583: Preview: Snippet 139 ended.(447828+0x526109)
+Not a real error.
+
+[139]
+_region_.tex:584: Preview: Snippet 140 started
+Not a real error.
+
+_region_.tex:584: Preview: Snippet 140 ended.(447828+0x594374)
+Not a real error.
+
+[140]
+_region_.tex:585: Preview: Snippet 141 started
+Not a real error.
+
+_region_.tex:585: Preview: Snippet 141 ended.(491520+163840x4207034)
+Not a real error.
+
+[141]
+_region_.tex:598: Preview: Snippet 142 started
+Not a real error.
+
+_region_.tex:598: Preview: Snippet 142 ended.(491520+163840x10735379)
+Not a real error.
+
+[142
+
+]
+_region_.tex:600: Preview: Snippet 143 started
+Not a real error.
+
+_region_.tex:602: Preview: Snippet 143 ended.(655360+0x16476951)
+Not a real error.
+
+[143]
+_region_.tex:604: Preview: Snippet 144 started
+Not a real error.
+
+_region_.tex:604: Preview: Snippet 144 ended.(491520+163840x3468853)
+Not a real error.
+
+[144]
+_region_.tex:604: Preview: Snippet 145 started
+Not a real error.
+
+_region_.tex:604: Preview: Snippet 145 ended.(282168+0x397994)
+Not a real error.
+
+[145]
+_region_.tex:605: Preview: Snippet 146 started
+Not a real error.
+
+_region_.tex:605: Preview: Snippet 146 ended.(447828+127431x1199672)
+Not a real error.
+
+[146]
+_region_.tex:606: Preview: Snippet 147 started
+Not a real error.
+
+_region_.tex:608: Preview: Snippet 147 ended.(747914+0x16081401)
+Not a real error.
+
+[147]
+_region_.tex:609: Preview: Snippet 148 started
+Not a real error.
+
+_region_.tex:609: Preview: Snippet 148 ended.(491520+163840x3567008)
+Not a real error.
+
+[148]
+_region_.tex:610: Preview: Snippet 149 started
+Not a real error.
+
+_region_.tex:612: Preview: Snippet 149 ended.(771578+0x16174758)
+Not a real error.
+
+[149]
+_region_.tex:613: Preview: Snippet 150 started
+Not a real error.
+
+_region_.tex:613: Preview: Snippet 150 ended.(282168+127431x348919)
+Not a real error.
+
+[150]
+_region_.tex:614: Preview: Snippet 151 started
+Not a real error.
+
+_region_.tex:614: Preview: Snippet 151 ended.(533465+163840x1923305)
+Not a real error.
+
+[151]
+_region_.tex:615: Preview: Snippet 152 started
+Not a real error.
+
+_region_.tex:615: Preview: Snippet 152 ended.(491520+187504x2507286)
+Not a real error.
+
+[152]
+_region_.tex:616: Preview: Snippet 153 started
+Not a real error.
+
+_region_.tex:616: Preview: Snippet 153 ended.(491520+187504x4250348)
+Not a real error.
+
+[153]
+_region_.tex:616: Preview: Snippet 154 started
+Not a real error.
+
+_region_.tex:616: Preview: Snippet 154 ended.(447828+187504x797888)
+Not a real error.
+
+[154]
+_region_.tex:617: Preview: Snippet 155 started
+Not a real error.
+
+_region_.tex:617: Preview: Snippet 155 ended.(447828+0x673566)
+Not a real error.
+
+[155]
+_region_.tex:617: Preview: Snippet 156 started
+Not a real error.
+
+_region_.tex:617: Preview: Snippet 156 ended.(455111+127431x720899)
+Not a real error.
+
+[156]
+_region_.tex:618: Preview: Snippet 157 started
+Not a real error.
+
+_region_.tex:618: Preview: Snippet 157 ended.(455111+127431x902944)
+Not a real error.
+
+[157]
+_region_.tex:619: Preview: Snippet 158 started
+Not a real error.
+
+_region_.tex:621: Preview: Snippet 158 ended.(771578+0x16052751)
+Not a real error.
+
+[158]
+_region_.tex:622: Preview: Snippet 159 started
+Not a real error.
+
+_region_.tex:622: Preview: Snippet 159 ended.(455111+127431x902944)
+Not a real error.
+
+[159]
+_region_.tex:623: Preview: Snippet 160 started
+Not a real error.
+
+_region_.tex:625: Preview: Snippet 160 ended.(771578+0x15898013)
+Not a real error.
+
+[160]
+_region_.tex:627: Preview: Snippet 161 started
+Not a real error.
+
+_region_.tex:631: Preview: Snippet 161 ended.(3448893+0x23581513)
+Not a real error.
+
+[161]
+_region_.tex:632: Preview: Snippet 162 started
+Not a real error.
+
+_region_.tex:632: Preview: Snippet 162 ended.(282168+127431x375708)
+Not a real error.
+
+[162]
+_region_.tex:633: Preview: Snippet 163 started
+Not a real error.
+
+_region_.tex:635: Preview: Snippet 163 ended.(1549429+0x16713753)
+Not a real error.
+
+[163]
+_region_.tex:636: Preview: Snippet 164 started
+Not a real error.
+
+_region_.tex:636: Preview: Snippet 164 ended.(447828+187504x1037204)
+Not a real error.
+
+[164]
+_region_.tex:636: Preview: Snippet 165 started
+Not a real error.
+
+_region_.tex:636: Preview: Snippet 165 ended.(455111+127431x720899)
+Not a real error.
+
+[165]
+_region_.tex:638: Preview: Snippet 166 started
+Not a real error.
+
+_region_.tex:638: Preview: Snippet 166 ended.(491520+187504x8365835)
+Not a real error.
+
+[166]
+_region_.tex:639: Preview: Snippet 167 started
+Not a real error.
+
+_region_.tex:647: Extra }, or forgotten \right
+I've deleted a group-closing symbol because it seems to be
+spurious, as in `$x}$'. But perhaps the } is legitimate and
+you forgot something else, as in `\hbox{$x}'. In such cases
+the way to recover is to insert both the forgotten and the
+deleted material, e.g., by typing `I$}'.
+
+_region_.tex:647: Missing \right. inserted
+I've inserted something that you may have forgotten.
+(See the <inserted text> above.)
+With luck, this will get me unwedged. But if you
+really didn't forget anything, try typing `2' now; then
+my insertion and my current dilemma will both disappear.
+
+_region_.tex:647: Missing } inserted
+I've inserted something that you may have forgotten.
+(See the <inserted text> above.)
+With luck, this will get me unwedged. But if you
+really didn't forget anything, try typing `2' now; then
+my insertion and my current dilemma will both disappear.
+
+_region_.tex:647: Extra }, or forgotten \right
+I've deleted a group-closing symbol because it seems to be
+spurious, as in `$x}$'. But perhaps the } is legitimate and
+you forgot something else, as in `\hbox{$x}'. In such cases
+the way to recover is to insert both the forgotten and the
+deleted material, e.g., by typing `I$}'.
+
+_region_.tex:647: Missing \right. inserted
+I've inserted something that you may have forgotten.
+(See the <inserted text> above.)
+With luck, this will get me unwedged. But if you
+really didn't forget anything, try typing `2' now; then
+my insertion and my current dilemma will both disappear.
+
+_region_.tex:647: Missing } inserted
+I've inserted something that you may have forgotten.
+(See the <inserted text> above.)
+With luck, this will get me unwedged. But if you
+really didn't forget anything, try typing `2' now; then
+my insertion and my current dilemma will both disappear.
+
+_region_.tex:647: Preview: Snippet 167 ended.(6894404+0x31691393)
+Not a real error.
+
+[167]
+_region_.tex:649: Preview: Snippet 168 started
+Not a real error.
+
+_region_.tex:651: Preview: Snippet 168 ended.(1754925+0x16439346)
+Not a real error.
+
+[168]
+_region_.tex:653: Preview: Snippet 169 started
+Not a real error.
+
+_region_.tex:655: Misplaced alignment tab character &
+I can't figure out why you would want to use a tab mark
+here. If you just want an ampersand, the remedy is
+simple: Just type `I\&' now. But if some right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+_region_.tex:656: Preview: Snippet 169 ended.(1179659+0x23592960)
+Not a real error.
+
+[169]
+\newlabel{tocindent-1}{0pt}
+\newlabel{tocindent0}{0pt}
+\newlabel{tocindent1}{17.77782pt}
+\newlabel{tocindent2}{29.38873pt}
+\newlabel{tocindent3}{0pt}
+
+_region_.tex:657: LaTeX Error: \begin{enumerate} on input line 589 ended by \en
+d{document}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+
+LaTeX Warning: There were undefined references.
+
+ )
+(\end occurred inside a group at level 2)
+
+### semi simple group (level 2) entered at line 589 (\begingroup)
+### semi simple group (level 1) entered at line 582 (\begingroup)
+### bottom level 
+Here is how much of TeX's memory you used:
+ 13002 strings out of 493335
+ 252230 string characters out of 3136681
+ 292520 words of memory out of 3000000
+ 16109 multiletter control sequences out of 15000+200000
+ 9924 words of font info for 42 fonts, out of 3000000 for 9000
+ 1302 hyphenation exceptions out of 8191
+ 55i,18n,54p,611b,786s stack positions out of 5000i,500n,10000p,200000b,50000s
+<C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/
+cm/cmbx10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm
+/cmcsc10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/
+cmex10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cm
+mi10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi
+5.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmmi7.p
+fb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr10.pfb>
+<C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr5.pfb><C:/
+Program Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Prog
+ram Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Progra
+m Files (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy5.pfb><C:/Program F
+iles (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Program File
+s (x86)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmti10.pfb>
+Output written on _region_.pdf (169 pages, 250747 bytes).
+PDF statistics:
+ 599 PDF objects out of 1000 (max. 8388607)
+ 0 named destinations out of 1000 (max. 500000)
+ 13 words of extra memory for PDF output out of 10000 (max. 10000000)
+

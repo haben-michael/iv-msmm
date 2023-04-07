@@ -1,0 +1,25 @@
+## the distribution of the distances of a
+## p-dimensional normal vector with mean mu and covariance matrix
+## Sigma
+
+require(mvtnorm)
+p <- 6
+mu <- rnorm(p)
+Sigma <- matrix(rnorm(p^2),p)
+Sigma <- Sigma%*%t(Sigma)
+eig <- eigen(Sigma) #spectral decomposition
+P <- t(eig$vectors)
+Lambda <- diag(eig$values)
+ncps <- (diag(1/sqrt(diag(Lambda)))%*%P%*%mu)^2 #noncentrality parameters
+## P%*%solve(expm::sqrtm(Sigma))%*%mu
+
+x <- rmvnorm(1e4,mu,Sigma)
+squared.distances <- rowSums(x^2)
+hist(sqrt(squared.distances),prob=TRUE)
+
+W.squared <- replicate(1e4, sapply(ncps, function(ncp) rchisq(1,df=1,ncp=ncp)))
+theoretical <- sqrt(diag(Lambda)%*%W.squared)
+lines(density(theoretical),col=2)
+
+
+

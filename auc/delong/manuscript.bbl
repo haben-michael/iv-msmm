@@ -12,7 +12,7 @@ DeLong, E.~R., D.~M. DeLong, and D.~L. Clarke-Pearson (1988).
 Demler, O.~V., M.~J. Pencina, N.~R. Cook, and R.~B. D'Agostino~Sr (2017).
 \newblock Asymptotic distribution of $\delta$auc, nris, and idi based on theory
   of u-statistics.
-\newblock {\em Statistics in medicine\/}~{\em 36\/}(21), 3334--3360.
+\newblock {\em Statistics in Medicine\/}~{\em 36\/}(21), 3334--3360.
 
 \bibitem[\protect\citeauthoryear{Demler, Pencina, and D'Agostino~Sr}{Demler
   et~al.}{2011}]{demler2011}
@@ -55,7 +55,14 @@ Pollard, D. (1984).
 \bibitem[\protect\citeauthoryear{Seshan, G{\"o}nen, and Begg}{Seshan
   et~al.}{2013}]{seshan2013}
 Seshan, V.~E., M.~G{\"o}nen, and C.~B. Begg (2013).
-\newblock Comparing roc curves derived from regression models.
+\newblock Comparing {ROC} curves derived from regression models.
 \newblock {\em Statistics in medicine\/}~{\em 32\/}(9), 1483--1493.
+
+\bibitem[\protect\citeauthoryear{Tzoulaki, Liberopoulos, and
+  Ioannidis}{Tzoulaki et~al.}{2009}]{tzoulaki2009}
+Tzoulaki, I., G.~Liberopoulos, and J.~P. Ioannidis (2009).
+\newblock Assessment of claims of improved prediction beyond the framingham
+  risk score.
+\newblock {\em JAMA\/}~{\em 302\/}(21), 2345--2352.
 
 \end{thebibliography}

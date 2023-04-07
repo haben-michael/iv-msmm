@@ -4,45 +4,45 @@ The top-level auxiliary file: manuscript.aux
 The style file: chicago.bst
 Database file #1: delong.bib
 Warning--no number and no volume in delong1988
-You've used 9 entries,
+You've used 10 entries,
             2861 wiz_defined-function locations,
-            672 strings with 6485 characters,
-and the built_in function-call counts, 6699 in all, are:
-= -- 549
-> -- 521
+            680 strings with 6682 characters,
+and the built_in function-call counts, 7476 in all, are:
+= -- 614
+> -- 582
 < -- 0
-+ -- 154
-- -- 166
-* -- 665
-:= -- 1210
-add.period$ -- 27
-call.type$ -- 9
-change.case$ -- 69
-chr.to.int$ -- 9
-cite$ -- 10
-duplicate$ -- 161
-empty$ -- 398
-format.name$ -- 194
-if$ -- 1242
++ -- 172
+- -- 184
+* -- 747
+:= -- 1346
+add.period$ -- 30
+call.type$ -- 10
+change.case$ -- 77
+chr.to.int$ -- 10
+cite$ -- 11
+duplicate$ -- 179
+empty$ -- 444
+format.name$ -- 216
+if$ -- 1389
 int.to.chr$ -- 1
 int.to.str$ -- 0
-missing$ -- 10
-newline$ -- 48
-num.names$ -- 90
-pop$ -- 47
+missing$ -- 11
+newline$ -- 53
+num.names$ -- 100
+pop$ -- 52
 preamble$ -- 1
-purify$ -- 124
+purify$ -- 138
 quote$ -- 0
-skip$ -- 160
+skip$ -- 177
 stack$ -- 0
-substring$ -- 410
-swap$ -- 52
+substring$ -- 461
+swap$ -- 58
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 170
+type$ -- 190
 warning$ -- 1
-while$ -- 82
+while$ -- 90
 width$ -- 0
-write$ -- 119
+write$ -- 132
 (There was 1 warning)

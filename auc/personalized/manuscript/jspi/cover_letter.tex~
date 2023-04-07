@@ -1,0 +1,66 @@
+
+\documentclass[10pt]{letter}
+
+\usepackage{geometry}
+
+
+\geometry{
+	paper=a4paper, % Change to letterpaper for US letter
+	top=3cm, % Top margin
+	bottom=1.5cm, % Bottom margin
+	left=4.5cm, % Left margin
+	right=4.5cm, % Right margin
+}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\usepackage{stix}
+
+\usepackage{microtype}
+
+\signature{Haben Michael}
+
+\address{Haben Michael \\Department of Mathematics \& Statistics\\ University of Massachusetts \\ 710 N. Pleasant St.\\ Amherst, MA 01003} % Your address and phone number
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+
+%----------------------------------------------------------------------------------------
+%	ADDRESSEE SECTION
+%----------------------------------------------------------------------------------------
+
+\begin{letter}{Editorial Board, \emph{Journal of Statistical Planning and Inference} } % Name/title of the addressee
+
+%----------------------------------------------------------------------------------------
+%	LETTER CONTENT SECTION
+%----------------------------------------------------------------------------------------
+
+\opening{Dear Editors,}
+
+Please find enclosed a copy of our manuscript, ``The Population and
+Personalized AUCs,'' which we submit for
+consideration for publication in the \emph{Journal of Multivariate
+  Analysis}. The manuscript describes ways of extending the area under the curve, a popular measure of discrimination, to
+accommodate clustered, possibly paired data. The need for such an
+extension arises frequently, including in the authors' previous work with medical professionals,
+yet to our knowledge statistical models and parameters have not been
+carefully described. We describe two population parameters that may
+produce substantially different inferences and conclusions. A careful
+consideration of the assumptions and goals of analyzing clustered data
+is therefore necessary, rather than the more ad hoc procedures
+currently in employ. % This work complements and extends the
+% foundational paper of N. Obuchowski on clustered AUC data that appeared in this journal in
+% 1997.
+
+We have not submitted the manuscript elsewhere, and look forward to your review and
+comments.
+
+\vspace{2\parskip} % Extra whitespace for aesthetics
+\closing{Sincerely,}
+
+
+\end{letter}
+
+\end{document}

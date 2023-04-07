@@ -1,0 +1,92 @@
+## just the auc in this sim, not delta auc
+
+args <- commandArgs(trailingOnly=TRUE)
+n <- as.numeric(args[1])
+reps <- as.numeric(args[2])
+p.full <- as.numeric(args[3])
+p.red <- as.numeric(args[4])
+pi.0 <- as.numeric(args[5])
+
+suppressPackageStartupMessages({
+    require(mvtnorm)
+    require(parallel)
+    require(numDeriv)
+})
+source('../misc.R')
+source('../../../misc.R')
+sim <- function(n,p.full,p.red,auc,epsilon=NULL,pi.0=NULL,adjust.size=NULL,reps=3e2,bootstrap.reps=1e2) {
+## sim <- function(n,p.full,p.red,adjust.size,alpha=.05,reps=3e2) {
+    ## browser()
+    ## cat('.')
+    sampler <- sampler.init(n,p.full,auc=auc,epsilon=epsilon,pi.0=pi.0)
+    ## sampler <- sampler.init(n,p.full,adjust.size)
+    params.full <- sampler$params
+    params.red <- with(params.full, list(mu.0=mu.0[1:p.red],mu.1=mu.1[1:p.red],Sigma.0=Sigma.0[1:p.red,1:p.red],Sigma.1=Sigma.1[1:p.red,1:p.red],pi.0=pi.0))
+    params.red$beta <- with(params.red,solve(pi.0*Sigma.0+(1-pi.0)*Sigma.1)%*%(mu.1-mu.0)) 
+    params.red$auc <- auc.lda.gaussian(params.red$beta,params.red)
+    params.red$deriv.star <- auc.deriv.lda.gaussian(params.red$beta,params.red) # ==0 for p.red=p.full=2 
+    terms <- replicate(reps, {
+    ## z.stats <- mclapply(1:reps, mc.cores=detectCores()-3, FUN= function(dd){
+        xd <- sampler$sample()
+        ## x <- xd$x; d <- xd$d
+        params.full$x <- xd$x; params.full$d <- xd$d # maybe rename to "dataset"? these arent just params anymore
+        params.red$x <- xd$x[,1:p.red]; params.red$d <- xd$d
+        out <- lapply(list(full=params.full), function(params) {
+            with(params, {
+                x.0 <- x[d==0,]; x.1 <- x[d==1,]
+                beta.hat <- coefs.lda(x.0,x.1)
+                obs <- auc.hat(x.0%*%beta.hat,x.1%*%beta.hat) #- auc
+                linearized <- lapply(list(delong= function(x,d,beta)rep(0,ncol(x)),oracle=function(x,d,beta)params$deriv.star, proposed=NULL), function(deriv.fn)
+                    auc.index.linearize(x,d,beta.hat,infl.fn=function(x,d)infl.lda(x,d,params=NULL,var.equal=FALSE),deriv.fn=deriv.fn))
+                linearized <- simplify2array(linearized)
+                list(obs=obs,true=params$auc,linearized=linearized)
+            })
+        })
+        linearized <- out$full$linearized #- out$red$linearized
+        obs <- out$full$obs# - out$red$obs
+        true <- out$full$true# - out$red$true
+        var.hat <- apply(linearized,2,function(iid)var(iid) / length(iid))
+        ## c(diff.obs) / sqrt(diff.var.hat)
+        auc.bs <- replicate(bootstrap.reps, {
+            with(params.full, {
+                idx <- sample(1:nrow(x),replace=TRUE)
+                x.bs <- x[idx,]; d.bs <- d[idx]
+                x.0.bs <- x[d.bs==0,]; x.1.bs <- x.bs[d.bs==1,]
+                beta.hat.bs <- coefs.lda(x.0.bs,x.1.bs)
+                auc.hat(x.0.bs%*%beta.hat.bs,x.1.bs%*%beta.hat.bs)
+            })
+        })
+        var.hat <- c(var.hat,bootstrap=var(auc.bs))       
+        c(obs=obs,true=true,var.hat)
+    })
+    ## t(terms)
+    ## z.stats <- simplify2array(z.stats)
+    ## fpr <- rowMeans(abs(z.stats)<qnorm(1-alpha/2))
+}
+## p.full <- 8
+## p.red <- 6
+## n <- 1e3
+## pi.0 <- .9
+## reps <- 3e2
+epsilon <- .01
+auc <- .9
+terms <-  tryCatch(
+    sim(n,p.full,p.red=p.red,auc=auc,epsilon=epsilon,pi.0=pi.0,adjust.size=NULL,reps=reps) ,
+    ## sim(n,p.full,p.red,adjust.size,alpha=alpha,reps=reps),
+    error=function(e)NA)
+## Sys.time() - start
+## matplot(x=ns,t(fpr),pch=1,type='l',lty=1:3,col=1)
+## legend('bottomleft',legend=rownames(fpr),lty=1:3)
+## abline(h=1-alpha,lty=2)
+
+
+
+filename <- paste0('save',as.integer(abs(rnorm(1))*1e8),'.RData')
+## save(obs=subset(terms,select='obs'),true=subset(terms,select='true'),var.hats=subset(terms,select=-c('obs','true')),n,reps,p.full,p.red,adjust.size,file=filename)
+## save(terms,n,reps,p.full,p.red,adjust.size,file=filename)
+save(terms,n,p.full,p.red,reps,auc,pi.0,file=filename)
+
+
+
+## shell command
+## for n in $(seq 5e2 500 5000); do for reps in 300; do for pi0 in .8 .9 .95; do /usr/bin/Rscript sim.R $n $reps 8 6 $pi0; done; done; done&

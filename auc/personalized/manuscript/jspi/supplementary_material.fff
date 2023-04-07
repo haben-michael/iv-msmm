@@ -1,0 +1,7 @@
+\begin{figure}[!tbp]
+  \centering
+  \subfloat[NYC]{\includegraphics[width=0.5\textwidth]{220823_nyc.pdf}}
+  \hfill
+  \subfloat[Boston]{\includegraphics[width=0.5\textwidth]{220823_boston.pdf}}
+  \caption{Level 95\% and 99\% Confidence ellipses for the estimates of $(\aucindiv,\aucpop)$ for duration of Terry stop by non-Black/Black status.}  \label{fig:data analysis:confidence ellipses}
+\end{figure}

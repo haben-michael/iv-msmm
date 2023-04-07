@@ -1,0 +1,30 @@
+\documentclass{article}
+\usepackage{amssymb}
+\begin{document}
+
+could cache the samples from the reference distributions at each
+vector p. assumes that the same data set dimensions are being
+used. test statistic is being used.
+
+tried sampling from the preimage of theta. intersection of simplex
+with a hyperplane.
+
+Do we need exchangeability? The data are $n$ IID vectors of length
+$m$, e.g.,
+$(X_{11},X_{12},\ldots,X_{1m}), (X_{21},X_{22},\ldots,X_{2m}), \ldots,
+(X_{n1},X_{n2},\ldots,X_{nm})$. We don't make any assumptions about
+the dependence structure within each vector
+$(X_{i1},X_{i2},\ldots,X_{im}),$ for any given $i$. Still the sums
+$\sum_{j=1}^mX_{ij}, i=1,\ldots,n$ are IID. Since each $X_{ij}$ is $0$
+or $1$, the sums are IID random variables each taking a value in
+$0,1,\ldots,m$. Viewing $0,1,\ldots,m$ as $m+1$ categories, we can
+identify each vector sum $\sum_{j=1}^mX_{ij}$ as a (weighted) choice
+of one of thse $m+1$ categories. These choices are IID, so their sum
+is multinomial. 
+
+
+
+
+The hyperplane $c^tx=1$ in $\{x\ge 0\}\subset\mathbb{R}^m$, for constant $c\ge 0$, is contained in $[0,c_1^{-1}]\times\ldots\times[0,c_m^{-1}]$. So can use rejection sampling to sample points uniformly on its intersection with the solid simplex. Acceptance probability $O(1/m!)$ (volume of solid simplex in $\mathbb{R}^m$.
+
+\end{document}

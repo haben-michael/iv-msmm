@@ -1,0 +1,178 @@
+\documentclass[10pt,a4paper]{amsart}
+% \usepackage{geometry}\geometry{margin=1.5in}
+\usepackage{latexsym, bbm, enumerate, amssymb, amsmath, graphicx, amsthm}
+\usepackage{tikz}
+% \usepackage[nolists]{endfloat}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem*{remark}{Remark}
+
+% \newcommand{\EE}{{\mathbb{E}}}
+\newcommand{\EE}{E}
+% \newcommand{\PP}{{\mathbb{P}}}
+\newcommand{\PP}{P}
+% \newcommand{\E1}{\EE(Y\mid A=1,X)}
+% \newcommand{\H}[1]{H^{(1)}_{#1}}
+\newcommand{\E}[1]{\EE(Y\mid A=#1,X)}
+
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\logit}{logit}
+\renewcommand{\includegraphics}[2][]{\fbox{}}
+
+\begin{document}
+
+The data is modeled as:
+\begin{gather}
+\begin{aligned}
+  \label{eqn:model}
+  (X_1,Y_1,A_1),\ldots,(X_n,Y_n,A_n) &\overset{iid}{\sim}\mathcal{O}\\
+  A&\perp X\\
+  \PP(A=1\mid X) = \PP(A=1) = 1-\PP(A=0)&= p
+\end{aligned}
+\end{gather}
+for some law $\mathcal{O}$.
+
+The estimand is
+$$
+\psi_0 = \EE(Y\mid A=1) - \EE(Y\mid A=0).
+$$
+
+One estimator is the semiparametric efficient estimator $\hat{psi}$, augmented for
+covariates and optimized. It is the solution in $\psi$ of
+\[
+  \sum_i (A_i-p)[Y - (1-p)\EE(Y\mid A=1,X_i) - p\EE(Y\mid A=0,X_i)] - p(1-p)\psi\\
+\]
+Another estimator $\hat{\beta_1}$ solves for $\beta_1$ the system of equations,
+\[
+  0 &= \sum_{i=1}^n\begin{pmatrix}1\\A_i\end{pmatrix}(\tilde{Y}_i - \hat{\beta_0} - A_i\hat{\beta_1})\\
+\]
+ The latter estimator is the OLS solution to the equation
+\[
+  \EE(\tilde{Y} \mid A) = \beta_0 + \beta_1A.
+\]
+where
+\[
+  \tilde{Y} = Y - \EE(Y\mid X).
+\]
+Then $\beta_0 + \beta_1 = \EE(\tilde{Y}\mid A=1) = \EE(Y\mid A=1) -
+E(Y)$ and $\beta_0 = \EE(\tilde{Y}\mid A=0) = \EE(Y\mid A=0) -
+E(Y) = \E0-p\E1-(1-p)\E0 = p(\E0-\E1),$ so
+\begin{align*}
+  \beta_0 &= -p\psi_0\\
+  \beta_1 &= \psi_0.
+\end{align*}
+
+
+
+
+An estimator is obtained as the solution in $\psi$ of
+\[
+\sum_{i=1}^nU(Y_i,A_i;\psi) = 0,
+\]
+where
+\[
+  U(Y,A;\psi) = (A-p)(Y-\psi A).
+\]
+
+We consider estimators obtained as solutions in $\psi$ to equations of the form
+\begin{align}
+\sum_iU(Y_i,A_i;\psi) + (A_i-p)h(X_i;\psi)=\sum_i (A_i-p)(Y_i-\psi A_i + h(X_i;\psi))=0\label{eqn:unaugmented}
+\end{align}
+for arbitrary measurable $h$.The minimizing choice of $h$ is determined
+by the estimating equation given by
+\begin{align}
+  % &= U(Y,A;\psi)-\EE(U(Y,A;\psi)\mid S_A)\nonumber\\
+       W(X,Y,A;\psi)      &=U(Y,A;\psi) - \EE(U(Y,A;\psi)\mid A,X) + \EE(U(Y,A;\psi)\mid X).\label{eqn:augmented}
+\end{align}
+The middle term on the rhs of (\ref{eqn:augmented}) is,
+
+\begin{align*}
+  \EE(U(Y,A;\psi)\mid A,X) &= \EE((A-p)(Y-\psi A)\mid A,X)\\
+                           &= (\EE(Y\mid A,X)-\psi A)(A-p)\\
+                           &=[\EE(Y\mid A=1,X)A + \EE(Y\mid A=0,X)(1-A)](A-p) - \psi A(A-p)\\
+                           &= \EE(Y\mid A=1,X)A(1-p) - \EE(Y\mid A=0,X)(1-A)p - \psi A(1-p).
+\end{align*}
+The last term on the rhs of (\ref{eqn:augmented}) is then,
+\begin{align*}
+  \EE(U(Y,A;\psi)\mid X) &= p  \EE(U(Y,A;\psi)\mid A=1,X) + (1-p)  \EE(U(Y,A;\psi)\mid A=0,X)\\
+                         &= p[\EE(Y\mid A=1,X)(1-p) - \psi (1-p)] - (1-p)[\EE(Y\mid A=0,X)p]\\
+                         &= p(1-p)(\EE(Y\mid A=1,X) - \EE(Y\mid A=0,X) - \psi).
+\end{align*}
+Therefore,
+\begin{align*}
+  W(X,Y,A;\psi) &= U(Y,A;\psi) - \EE(U(Y,A;\psi)\mid A,X) + \EE(U(Y,A;\psi)\mid X)\\
+                &= (A-p)(Y-\psi A) - (A-p)(1-p)\EE(Y\mid A=1,X) - (A-p) p\EE(Y\mid A=0,X) + \\
+                &\qquad (A-p)(1-p)\psi\\
+                &= (A-p)[Y - (1-p)\EE(Y\mid A=1,X) - p\EE(Y\mid A=0,X)] - p(1-p)\psi\\
+                &= (A-p)[Y - \EE(\tilde{Y}\mid X)] - p(1-p)\psi\\
+                &= U(Y_i,A_i;\psi) + (A-p)[\psi A - \EE(\tilde{Y}\mid X)] - p(1-p)\psi,
+\end{align*}
+where $\tilde{Y}$ is determined by the transformation
+\[
+  Y = \tilde{Y}\frac{p^A(1-p)^{1-A}}{(1-p)^Ap^{1-A}}=\tilde{Y}\left(\frac{p}{1-p}\right)^{2A-1}.
+\]
+In case $p=\PP(A=1)=\PP(A=0)=1/2,$
+\begin{align}
+  W(X,Y,A;\psi) = (A-1/2)(Y-\EE(Y\mid X)) - \psi/4.\label{eqn:W_basic}
+\end{align}
+% The first term on the rhs of (\ref{eqn:augmented}) is
+% \begin{align*}
+    %     \EE(U(\psi)\mid A,X) &= (\EE(Y\mid A,X)-\psi A)(-1)^{1-A}\\
+    %                                &= A[\EE(Y\mid A=1,X) - \psi + \EE(Y\mid A=0,X)] - \EE(Y\mid A=0,X).
+% \end{align*}
+% For the second equality we use the identity $g(a,x)=a[g(1,x)-g(0,x)] +
+% g(0,x),$ which holds for $a\in\{0,1\}$ and arbitrary $g,x,$ applied to the function
+% $g:(a,x)\mapsto(\EE(Y\mid a,x)-\psi a)(-1)^{1-a}.$ The second term on
+% the rhs of (\ref{eqn:augmented}) is
+% \begin{align*}
+%   \EE(U(\psi)\mid X) &= (1/2)[\EE(U(\psi)\mid A=1,X) + \EE(U(\psi)\mid A=0,X)]\\
+%                      &= (1/2)[\EE(Y\mid A=1,X) - \psi - \EE(Y\mid A=0,X)],
+% \end{align*}
+% using in the first equality that $A$ and $X$ are independent under
+% (\ref{eqn:model}). Combining the last two displays,
+% \begin{align*}
+%   W(\psi) &:= U(\psi) - \EE(U(\psi)\mid A,X) + \EE(U(\psi)\mid X)\\
+%           &= U(\psi) - (A-1/2)[\EE(Y\mid A=1,X) + \EE(Y\mid A=0,X) - \psi]\\
+%           &= U(\psi) - (A-1/2)[2\EE(Y\mid X) - \psi].
+% \end{align*}
+
+
+\subsection{Regression estimator}
+
+Define
+\[
+  \tilde{Y} = Y - \EE(Y\mid X)
+\]
+and consider the regression
+\[
+  \EE(\tilde{Y} \mid A) = \beta_0 + \beta_1A.
+\]
+Then $\beta_0 + \beta_1 = \EE(\tilde{Y}\mid A=1) = \EE(Y\mid A=1) -
+E(Y)$ and $\beta_0 = \EE(\tilde{Y}\mid A=0) = \EE(Y\mid A=0) -
+E(Y) = \E0-p\E1-(1-p)\E0 = p(\E0-\E1),$ so
+\begin{align*}
+  \beta_0 &= -p\psi_0\\
+  \beta_1 &= \psi_0.
+\end{align*}
+
+The influence function of $(\beta_0,\beta_1)$ is obtained as:
+\begin{align*}
+  0 &= \sum_{i=1}^n\begin{pmatrix}1\\A_i\end{pmatrix}(\tilde{Y}_i - \hat{\beta_0} - A_i\hat{\beta_1})\\
+    &= \sum_{i=1}^n\left\{\begin{pmatrix}1\\A_i\end{pmatrix}(\tilde{Y}_i - \beta_0 - A_i\beta_1) +
+  \begin{pmatrix}-1&-A_i\\-A_i&-A_i\end{pmatrix}\begin{pmatrix}\hat{\beta_0}-\beta_0\\ \hat{\beta_1}-\beta_1\end{pmatrix}\right\}\\
+  n^{1/2}\begin{pmatrix}\hat{\beta_0}-\beta_0\\ \hat{\beta_1}-\beta_1\end{pmatrix} &=\left(\frac{1}{n}\sum_i\begin{pmatrix}1&A_i\\A_i&A_i\end{pmatrix}\right)^{-1}n^{-1/2}\sum_i \begin{pmatrix}1\\A_i\end{pmatrix}(\tilde{Y}_i - \beta_0 - A_i\beta_1)\\
+    &=\begin{pmatrix}1&p\\p&p\end{pmatrix}^{-1}n^{-1/2}\sum_i \begin{pmatrix}1\\A_i\end{pmatrix}(\tilde{Y}_i - \beta_0 - A_i\beta_1)+o_P(1)\\
+  n^{1/2}(\hat{\beta}_1 - \beta_1) &= n^{-1/2}\sum_i \begin{pmatrix}\frac{-1}{1-p}&\frac{1}{p(1-p)}\end{pmatrix}\begin{pmatrix}1\\A_i\end{pmatrix}(\tilde{Y}_i - \beta_0 - A_i\beta_1) + o_P(1)\\
+    &= \frac{n^{-1/2}}{p(1-p)}\sum_i (A_i-p)(\tilde{Y}_i - \beta_0 - A_i\beta_1) + o_P(1)\\
+    &= \frac{n^{-1/2}}{p(1-p)}\sum_i (A_i-p)(\tilde{Y}_i - (A_i-p)\psi_0) + o_P(1)\\
+    &= \frac{n^{-1/2}}{p(1-p)}\sum_i \left\{(A_i-p)(Y_i-\EE(Y\mid X_i)) - p^2\left(\frac{1-p}{p}\right)^{2A_i}\psi_0\right\} + o_P(1).
+\end{align*}
+
+In case $p=1/2,$
+\[
+n^{1/2}(\hat{\beta}_1 - \beta_1) = 4n^{-1/2}\sum_i \left\{(A_i-1/2)(Y_i-\EE(Y\mid X_i)) - \psi_0/4\right\} + o_P(1).
+\]
+\end{document}

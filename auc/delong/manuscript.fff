@@ -1,5 +1,4 @@
 \begin{figure}
-  \includegraphics{./sim/lda/sim.png}
-  \caption{Coverage simulation}
+  % \includegraphics{./sim/lda/auc/sim.png}
   \label{fig:1}
 \end{figure}

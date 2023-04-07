@@ -1,0 +1,91 @@
+
+\documentclass[10pt]{letter}
+
+\usepackage{geometry}
+
+
+\geometry{
+	paper=a4paper, % Change to letterpaper for US letter
+	top=3cm, % Top margin
+	bottom=1.5cm, % Bottom margin
+	left=4.5cm, % Left margin
+	right=4.5cm, % Right margin
+}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\usepackage{stix}
+
+\usepackage{microtype}
+
+\signature{Haben Michael}
+
+\address{Haben Michael \\Department of Mathematics \& Statistics\\ University of Massachusetts \\ 710 N. Pleasant St.\\ Amherst, MA 01003} % Your address and phone number
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+
+%----------------------------------------------------------------------------------------
+%	ADDRESSEE SECTION
+%----------------------------------------------------------------------------------------
+
+\begin{letter}{Editorial Board, \emph{Journal of Statistical Planning and Inference} } % Name/title of the addressee
+
+%----------------------------------------------------------------------------------------
+%	LETTER CONTENT SECTION
+%----------------------------------------------------------------------------------------
+
+\opening{Dear Editors,}
+
+Please find enclosed a copy of our manuscript, ``The Population and
+Personalized AUCs,'' which we submit for
+consideration for publication in the \emph{Journal of Multivariate
+  Analysis}. The manuscript describes ways of extending the area under the curve, a popular measure of discrimination, to
+accommodate clustered, possibly paired data. The need for such an
+extension arises frequently, including in the authors' previous work with medical professionals,
+yet to our knowledge statistical models and parameters have not been
+carefully described. We describe two population parameters that may
+produce substantially different inferences and conclusions. A careful
+consideration of the assumptions and goals of analyzing clustered data
+is therefore necessary, rather than the more ad hoc procedures
+currently in employ. % This work complements and extends the
+% foundational paper of N. Obuchowski on clustered AUC data that appeared in this journal in
+% 1997.
+
+We are re-submitting this manuscript (JSPI-D-23-00108) in response to suggestions from the executive editors:
+
+\begin{enumerate}
+\item \emph{Your paper in its present form cannot be assigned to an
+    Associate editor. To start with, you need to define AUC in the
+    title and the abstract since this abbreviation may not be familiar
+    to the journal readership.}  We agree that, coming from a
+  biostatistics readership where the abbreviation shows up in many
+  article titles, we may have overlooked its opacity. We have written
+  out the abbreviation and given a brief description of the comment in
+  the abstract. An alternative that may be more familiar to JSPI's
+  readership would be to use ``Mann-Whitney statistic'' rather than
+  ``AUC'', though we believe the latter is currently much more popular
+  in biostatistics and data science.
+
+
+\item \emph{Second, the references on the subject are very
+    limited. You need to add references and to carry out an exhaustive
+    literature review.} We agree with this suggestion and have added a
+  literature review. Our references have more than doubled. We have
+  also included the 3 references cited in the data analysis.
+
+\item \emph{Finally, when you submit the new version of the paper,
+    make sure that the body of the paper precedes the appendix. After
+    these revisions are done, your paper will be re-evaluated.}  We
+  believe this must be a quirk of the uploading system. We will check
+  the proofs to make sure parts have been ordered correctly.
+\end{enumerate}
+\vspace{2\parskip} % Extra whitespace for aesthetics
+\closing{Sincerely,}
+
+
+\end{letter}
+
+\end{document}

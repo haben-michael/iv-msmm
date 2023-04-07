@@ -1,0 +1,106 @@
+\documentclass{article}
+\usepackage{outlines,enumitem,amsmath}
+% \setenumerate[1]{label=\Roman*.}
+\setenumerate[2]{label=\Alph*.}
+\setenumerate[3]{label=\roman*.}
+\setenumerate[4]{label=\alph*.}
+\newcommand{\EE}{E}
+% \newcommand{\PP}{{\mathbb{P}}}
+\newcommand{\PP}{P}
+% \newcommand{\E1}{\EE(Y\mid A=1,X)}
+% \newcommand{\H}[1]{H^{(1)}_{#1}}
+\newcommand{\E}[1]{\EE(Y\mid A=#1,X)}
+
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\logit}{logit}
+\begin{document}
+
+\begin{outline}[enumerate]
+\textbf{Main Argument}
+  \1  Background material on estimating the average treatment effect
+  from the standpoint of semiparametric models, mainly summarizing
+  Tsiatis 2008.
+     \2 Introduce semiparametric estimator for the average treatment
+  effect. Assume additional covariates are available. Introduce augmentation term, and optimized estimator that is
+  semiparametric efficient given covariates.
+
+     \2 Discuss the ``principled approach'' to estimating the regression
+  terms, by estimating $E(Y\mid A=1,X)$ and $E(Y\mid A=0,X)$
+  separately.
+
+  \1 Show that the terms may be combined to $E(\tilde{Y}\mid X),$ eliminating the regressions on
+  treatment. In general this requires transforming the response to
+  $\tilde{Y}.$ In case the treatment propensity is $1/2$, no transformation is required.
+
+  \1 Advantages of this simplification
+
+     \2 Eliminate need for multiple teams/analysts etc under Tsiatis protocol.
+
+     \2 Better estimate the conditional expectation by
+     simultaneously using the data from both arms
+
+        \3 Maybe a toy example here
+
+           \4 improvement in standard error from estimating $E(Y\mid
+           X)$ directly rather than combining estimates $\E0$ and $\E1$
+
+           \4 improvement in point estimate in case $X$ isn't well
+           balanced over the arms
+
+  \1 Implication for studies that use residuals as response or similar
+  types of standardization. In some
+  fields it is common to regress out a variable of interest $Y$ on
+  covariates, studying instead the residuals $Y'=Y - E(Y\mid X).$ The
+  average treatment effect of $Y'$ is obtained as the slope in the
+  model $E(Y') = \beta_0 + \beta_1A.$
+     \2 Example from epi literature
+     \2 Argue that the OLS estimate of $\beta_1$ is asymptotically equivalent to
+     to the optimized estimator in case $p=P(A=1)=1/2.$
+     \2 When $p\neq 1/2,$ the OLS estimate is not equivalent to the
+     optimized estimator. Since the optimized estimator is
+     semiparametric efficient, the OLS estimate is not.
+        \3 The difference in asymptotic variances is
+     \[(1-2p)^2p(1-p)\Var(\E1-\E0-\psi)\]
+        which is 0 iff $p=1/2$ or the ``stratified ATEs'' $\E1-\E0$
+        are constant
+
+   \1 We can estimate both arms at the
+   same time for other estimators, besides the ATE. Here the advantage is in the improved efficiency of
+   estimating both rather than combining two estimates.
+      \2 log-linear
+      \2 logistic
+      \2 discrete hazard?\\
+    \end{outline}
+
+\textbf{Simulation}
+\begin{outline}[enumerate]
+   \1 plot improved efficiency of using the semiparametric estimator
+      over the residual OLS estimator $\hat{\beta}_1$ for a range of
+      values $p\neq 1/2$ and values $\Var(\E1-\E0-\psi).$ The data is
+      generated from a linear model with normal errors.
+    \end{outline}
+
+\textbf{Discussion}
+    \begin{outline}[enumerate]
+   \1 some drawbacks
+
+      \2 An unscrupulous analyst may still select the model $E(Y\mid
+      X)$ that optimizes the magnitude of the ATE estimate $\hat{psi}$
+      if he has access to the treatment indicators. So it may still be
+      necessary to have two analysts, one without access who estimates
+      $E(Y\mid X)$, and one with access who then uses the first analyst's estimated CE
+      to compute $\hat{psi}$.
+         \3 There are a few small criticisms of Tsiatis's approach in the
+         literature as well, that we might include. Eg it may be
+         obvious to an analyst,  based on the response data,  who
+         received treatment and who didn't.
+         \2 for the other estimators (eg logistic) consistent estimators
+      must be used in the weights, so the improved efficiency of
+      simultaneously estimating both arms must be balanced against the
+      loss of (finite-sample) efficiency of plugging in the consistent
+      estimator.
+    \end{outline}
+
+
+\end{document}

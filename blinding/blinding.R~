@@ -1,0 +1,1529 @@
+require(mvtnorm)
+require(ggplot2)
+
+fit.psi.1 <- function(Y,X,A,E0,E1) 4*mean((A-.5)/2*(2*Y - E0 - E1))
+fit.psi.2 <- function(Y,A,E) 4*mean((A-.5)*(Y-E))
+
+## 1. bias
+
+n <- 1e2
+beta1 <- -2
+beta2 <- -1
+female <- rep(c(0,1),c(n/2,n/2))
+vegan <- rep(c(1,0,1,0),c(n/2*.9,n/2*.1,n/2*.1,n/2*.9))
+y <- beta1*female + beta2*vegan +rnorm(n)/5
+xtabs(~ vegan+female)
+xtabs(y ~ vegan + female)
+xtabs(y ~ vegan + female) / xtabs(~ vegan+female)
+mean(y[vegan==1]) - mean(y[vegan==0])
+summary(lm(y ~ vegan + female))
+cor(vegan,female)
+
+
+n <- .2e2
+## p <- .5
+psi <- 0
+fits <- replicate(5e3, {
+    A <- rbinom(n,1,.5)
+    X <- rnorm(n)
+    beta1 <- 1; beta2 <- psi
+    Y <- beta1*X + beta2*A + rnorm(n)/3
+    lm0 <- lm(Y ~ X + A)
+    betas <- coef(lm0)
+    E0 <- betas[1] + betas[2]*X
+    E1 <- betas[1] + betas[2]*X + betas[3]
+    fit.psi.1(Y,X,A,E0,E1)
+})
+hist(fits);abline(v=psi,col='red')
+## looks fine
+
+## with an interaction
+
+n <- .2e2
+## p <- .5
+psi <- 0
+fits <- replicate(5e3, {
+    A <- rbinom(n,1,.5)
+    X <- rnorm(n)
+    beta1 <- 1; beta2 <- psi
+    Y <- beta1*X + beta2*A + rnorm(n)/3
+    lm0 <- lm(Y ~ X + A + X*A)
+    betas <- coef(lm0)
+    E0 <- betas[1] + betas[2]*X
+    E1 <- betas[1] + betas[2]*X + betas[3] + betas[4]*X
+    fit.psi.1(Y,X,A,E0,E1)
+})
+hist(fits);abline(v=psi,col='red')
+
+## vectorial X
+
+p <- 3
+n <- .2e1
+max.fits <- 3e1
+psi <- 1
+sigma.x <- diag(p)
+include <- as.matrix(do.call(expand.grid,rep(list(c(TRUE,FALSE)),p)))
+include <- include[sample(1:nrow(include)),]
+reps <- 1e2
+ns <- seq(20,300,by=20)
+by.n <- sapply(ns, function(n) {
+    psi.hats <- replicate(reps, {
+        A <- rbinom(n,1,.5)
+        X <- rmvnorm(n=n,mean=rnorm(p))
+        beta.true <- c(psi,rpois(p,lambda=1))
+        Y <- cbind(A,X) %*% beta.true + rnorm(n)
+        ## Y <- exp(cbind(A,X[,1]) %*% beta.true[1:2] + rnorm(n))
+
+        sapply(1:min(nrow(include),max.fits), function(i) {
+            X.include <- as.matrix(X[,include[i,]],nrow=n)
+            data <- data.frame(Y=Y,A=A,X=X.include)
+            lm0 <- lm(Y ~ ., data=data)
+            betas <- coef(lm0)
+            E0 <- cbind(1,X.include) %*% betas[-2]
+            E1 <- E0 + betas['A']
+
+            data <- data.frame(Y=Y,X=X.include)
+            lm0 <- lm(Y ~ ., data=data)
+            betas <- coef(lm0)
+            E <- cbind(1,X.include) %*% betas
+
+            E.blind <- sapply(c(0,1), function(a) {
+                data <- data.frame(Y=Y[A==a],X=X.include[A==a,])
+                lm0 <- lm(Y ~ ., data=data)
+                betas <- coef(lm0)
+                E1.blind <- cbind(1,X.include) %*% betas
+            })
+            E0.blind <- E.blind[,1]; E1.blind <- E.blind[,2]
+
+            c(method1=fit.psi.1(Y,X,A,E0,E1),method2=fit.psi.2(Y,A,E),method3=fit.psi.1(Y,X,A,E0.blind,E1.blind))
+        })
+    })
+
+    c(psi.hat.means=apply(psi.hats,1,mean),psi.hat.maxes=rowMeans(apply(psi.hats,c(1,3),max)))
+})
+
+
+gg.df <- data.frame(n=ns,psi.hat=as.numeric(t(by.n)),method=gl(6,length(ns),labels=c('mean.1','mean.2','mean.3','max.1','max.2','max.3')))
+## png('171006b.png')
+ggplot(gg.df, aes(x=n,y=psi.hat,group=method)) + geom_line(aes(linetype=method)) +geom_point(aes(shape=method)) + theme_classic() + geom_hline(aes(yintercept=psi),linetype=2) + labs(y=expression(hat(psi)))
+dev.off()
+
+
+
+
+
+## 2. fpr
+
+p <- 3
+n <- 2e1
+max.fits <- 3e1
+psi <- 1
+sigma.x <- diag(p)
+include <- as.matrix(do.call(expand.grid,rep(list(c(TRUE,FALSE)),p)))
+include <- include[sample(1:nrow(include)),]
+reps <- 1e1
+ns <- seq(20,3000,by=200)
+by.n <- sapply(ns, function(n) {
+    coverage <- replicate(reps, {
+        A <- rbinom(n,1,.5)
+        X <- rmvnorm(n=n,mean=rnorm(p))
+        beta.true <- c(psi,rpois(p,lambda=1))
+        Y <- cbind(A,X) %*% beta.true + rnorm(n)
+        ## Y <- exp(cbind(A,X[,1]) %*% beta.true[1:2] + rnorm(n))
+
+        by.model <- sapply(1:min(nrow(include),max.fits), function(i) {
+            X.include <- as.matrix(X[,include[i,]],nrow=n)
+            data <- data.frame(Y=Y,A=A,X=X.include)
+            lm0 <- lm(Y ~ ., data=data)
+            betas <- coef(lm0)
+            E0 <- cbind(1,X.include) %*% betas[-2]
+            E1 <- E0 + betas['A']
+
+            data <- data.frame(Y=Y,X=X.include)
+            lm0 <- lm(Y ~ ., data=data)
+            betas <- coef(lm0)
+            E <- cbind(1,X.include) %*% betas
+
+            E.blind <- sapply(c(0,1), function(a) {
+                data <- data.frame(Y=Y[A==a],X=X.include[A==a,])
+                lm0 <- lm(Y ~ ., data=data)
+                betas <- coef(lm0)
+                E1.blind <- cbind(1,X.include) %*% betas
+            })
+            E0.blind <- E.blind[,1]; E1.blind <- E.blind[,2]
+
+            c(method1=fit.psi.1(Y,X,A,E0,E1),method2=fit.psi.2(Y,A,E),method3=fit.psi.1(Y,X,A,E0.blind,E1.blind))
+
+        })
+
+        max.psi.hats <- apply(by.model,1,max) - psi
+        ## var.hat <- 2*(mean(Y^2) - 2*psi*mean(Y[A==1])) - 16*mean(( X %*% beta.true[-1] )^2) + 16*psi*mean(Y) - 2*psi^2
+        W <- (A-1/2)*(Y-psi*A) - (A-1/2)*(X%*%beta.true[-1] - psi)
+        var.hat <- var(W)
+        q <- qnorm(.975)
+        CIs <- cbind(max.psi.hats+q*sqrt(var.hat/n),max.psi.hats-q*sqrt(var.hat/n))
+        apply(CIs,1,prod)<=0
+
+    })
+
+    ## c(psi.hat.means=apply(psi.hats,1,mean),psi.hat.maxes=rowMeans(apply(psi.hats,c(1,3),max)))
+    structure(rowMeans(coverage),names=c('method.1','method.2','method.3'))
+})
+
+
+
+
+## 3. bias -- vectorial X with interactions
+
+p <- 10 ## not including treatment variable "A"
+n.interactions <- p/2
+max.fits <- 3e1
+psi <- 1
+sigma.x <- matrix(runif(p^2),nrow=p)
+sigma.x <- sigma.x %*% sigma.x
+## include <- as.matrix(do.call(expand.grid,rep(list(c(TRUE,FALSE)),p)))
+## include <- include[sample(1:nrow(include)),]
+reps <- 1e3
+ns <- seq(20,300,by=20)
+
+rand.interactions <- function(data,n.interactions) {
+    interactions <- data[,sample(1:ncol(data),n.interactions,replace=FALSE)]
+    interactions <- interactions * data[,sample(1:ncol(data),n.interactions,replace=TRUE)]
+}
+
+by.n <- sapply(ns, function(n) {
+    psi.hats <- replicate(reps, {
+        A <- rbinom(n,1,.5)
+        X <- rmvnorm(n=n,mean=rnorm(p))
+        beta.true <- c(psi,rpois(p,lambda=1))
+        Y <- cbind(A,X) %*% beta.true + rnorm(n)
+
+        replicate(max.fits, {
+            X.include <- X[,sample(c(TRUE,FALSE),p,replace=TRUE)]
+            X.include <- cbind(X.include,rand.interactions(cbind(A,X),n.interactions))
+            data <- data.frame(Y=Y,A=A,X=X.include)
+            lm0 <- lm(Y ~ ., data=data)
+            betas <- coef(lm0)
+            E0 <- cbind(1,X.include) %*% betas[-2]
+            E1 <- E0 + betas['A']
+
+            X.include <- X[,sample(c(TRUE,FALSE),p,replace=TRUE)]
+            X.include <- cbind(X.include,rand.interactions(X,n.interactions))
+            data <- data.frame(Y=Y,X=X.include)
+            lm0 <- lm(Y ~ ., data=data)
+            betas <- coef(lm0)
+            E <- cbind(1,X.include) %*% betas
+
+            E.blind <- sapply(c(0,1), function(a) {
+                data <- data.frame(Y=Y[A==a],X=X.include[A==a,])
+                lm0 <- lm(Y ~ ., data=data)
+                betas <- coef(lm0)
+                E1.blind <- cbind(1,X.include) %*% betas
+            })
+            E0.blind <- E.blind[,1]; E1.blind <- E.blind[,2]
+
+            c(method1=fit.psi.1(Y,X,A,E0,E1),method2=fit.psi.1(Y,X,A,E0.blind,E1.blind),method3=fit.psi.2(Y,A,E))
+        })
+    })
+
+    c(psi.hat.means=apply(psi.hats,1,mean),psi.hat.maxes=rowMeans(apply(psi.hats,c(1,3),max)))
+    c(psi.hat.means=apply(psi.hats,1,mean,na.rm=TRUE),psi.hat.maxes=rowMeans(apply(psi.hats,c(1,3),max,na.rm=TRUE)))
+})
+
+
+gg.df <- data.frame(n=ns,psi.hat=as.numeric(t(by.n)),method=rep(gl(3,length(ns),labels=1:3),2),stat=gl(2,3*length(ns),labels=c('mean','max')))
+gg.df$group <- paste0(gg.df$stat,gg.df$method)
+## png('171006b.png')
+ggplot(gg.df, aes(x=n,y=psi.hat,group=group)) + geom_line(aes(linetype=stat)) +geom_point(aes(shape=method)) + theme_classic() + geom_hline(aes(yintercept=psi),linetype=2) + labs(y=expression(hat(psi)))
+dev.off()
+
+
+
+## 3. fpr -- vectorial X with interactions
+
+p <- 10 ## not including treatment variable "A"
+n.interactions <- p/2
+n <- 1e2
+max.fits <- 3e1
+psi <- 1
+sigma.x <- matrix(runif(p^2),nrow=p)
+sigma.x <- sigma.x %*% sigma.x
+## include <- as.matrix(do.call(expand.grid,rep(list(c(TRUE,FALSE)),p)))
+## include <- include[sample(1:nrow(include)),]
+reps <- 1e3
+ns <- seq(20,300,by=20)
+ps <- seq(4,20,by=2)
+
+rand.interactions <- function(data,n.interactions) {
+    interactions <- data[,sample(1:ncol(data),n.interactions,replace=FALSE)]
+    interactions <- interactions * data[,sample(1:ncol(data),n.interactions,replace=TRUE)]
+}
+
+## by.n <- sapply(ns, function(n) {
+by.p <- sapply(ps,function(p) {
+    n.interactions <- p/2
+    coverage <- replicate(reps, {
+        A <- rbinom(n,1,.5)
+        X <- rmvnorm(n=n,mean=rnorm(p))
+        beta.true <- c(psi,rpois(p,lambda=1))
+        Y <- cbind(A,X) %*% beta.true + rnorm(n)
+
+        by.model <- replicate(max.fits, {
+            X.include <- X[,sample(c(TRUE,FALSE),p,replace=TRUE)]
+            X.include <- cbind(X.include,rand.interactions(cbind(A,X),n.interactions))
+            data <- data.frame(Y=Y,A=A,X=X.include)
+            lm0 <- lm(Y ~ ., data=data)
+            betas <- coef(lm0)
+            E0 <- cbind(1,X.include) %*% betas[-2]
+            E1 <- E0 + betas['A']
+
+            X.include <- X[,sample(c(TRUE,FALSE),p,replace=TRUE)]
+            X.include <- cbind(X.include,rand.interactions(X,n.interactions))
+            data <- data.frame(Y=Y,X=X.include)
+            lm0 <- lm(Y ~ ., data=data)
+            betas <- coef(lm0)
+            E <- cbind(1,X.include) %*% betas
+
+            E.blind <- sapply(c(0,1), function(a) {
+                data <- data.frame(Y=Y[A==a],X=X.include[A==a,])
+                lm0 <- lm(Y ~ ., data=data)
+                betas <- coef(lm0)
+                E1.blind <- cbind(1,X.include) %*% betas
+            })
+            E0.blind <- E.blind[,1]; E1.blind <- E.blind[,2]
+
+            c(method1=fit.psi.1(Y,X,A,E0,E1),method2=fit.psi.1(Y,X,A,E0.blind,E1.blind),method3=fit.psi.2(Y,A,E))
+        })
+
+        psi.hats <- apply(by.model,1,mean,na.rm=TRUE)
+        psi.hats <- apply(by.model,1,max,na.rm=TRUE)
+        ## var.hat <- 2*(mean(Y^2) - 2*psi*mean(Y[A==1])) - 16*mean(( X %*% beta.true[-1] )^2) + 16*psi*mean(Y) - 2*psi^2
+        W <- (A-1/2)*(Y - X%*%beta.true[-1]) - psi/4
+        var.hat <- var(4*W)
+        q <- qnorm(.975)
+        CIs <- cbind(psi.hats+q*sqrt(var.hat/n),psi.hats-q*sqrt(var.hat/n))
+        c(apply(CIs-psi,1,prod)<=0)#,psi.hats)
+
+
+    })
+
+    rowMeans(coverage)
+    structure(rowMeans(coverage,na.rm=TRUE),names=paste0('method.',1:3))
+
+
+})
+
+rownames(by.p) <- paste0('method ',1:3)
+
+## plot by n
+gg.df <- data.frame(n=ns,psi.hat=as.numeric(t(by.n)),method=rep(gl(3,length(ns),labels=1:3),2),stat=gl(2,3*length(ns),labels=c('mean','max')))
+gg.df$group <- paste0(gg.df$stat,gg.df$method)
+## png('171006b.png')
+ggplot(gg.df, aes(x=n,y=psi.hat,group=group)) + geom_line(aes(linetype=stat)) +geom_point(aes(shape=method)) + theme_classic() + geom_hline(aes(yintercept=psi),linetype=2) + labs(y=expression(hat(psi)))
+dev.off()
+
+## plot by p
+gg.df <- data.frame(coverage=as.numeric(t(by.p)),method=gl(3,ncol(by.p)),p=rep(ps,nrow(by.p)))
+png('171017.png')
+ggplot(gg.df, aes(x=p,y=coverage,group=method))+geom_line()+geom_point(aes(shape=method))+theme_classic()
+dev.off()
+
+
+## 4. check formula for log odds estimator
+
+n <- 1e3
+psi <- 1
+p <- .5
+
+psi.hats <- replicate(1e2, {
+beta <- rpois(5,lambda=2)
+X <- rmvnorm(n,sigma=diag(5))
+Y.star <- exp(X %*% beta + rnorm(n))
+Y.star <- cbind(Y.star.0=Y.star,Y.star.1=2^(psi/log(2)+rnorm(n))*Y.star)
+mean(log(Y.star[,2]/Y.star[,1]))
+A <- rbinom(n,1,p)
+Y <- Y.star[,1]*(1-A) + Y.star[,2]*A
+data <- data.frame(Y=Y,A=A,X=X)
+lm(log(Y) ~ ., data=subset(data,A==0))
+
+
+mean(4*(A-.5)*(log(Y) - (1-p)*(X%*%beta + psi) - p*((X%*%beta))))
+})
+hist(psi.hats); abline(v=psi,col='red')
+
+
+
+## 5.
+
+require(mvtnorm)
+n <- 1e3
+sigma <- matrix(runif(4),nrow=2)
+sigma <- sigma%*%t(sigma)
+ests <- replicate(1e2,{
+data <- rmvnorm(n,mean=c(2,1),sigma=sigma)
+xi <- data[,1]; eta <- data[,2]
+est <- (sum(xi)*sum(eta) - sum(xi*eta))/n/(n-1)
+})
+hist(sqrt(n)*(ests - 2))
+
+n <- 1e2
+x <- runif(n)
+y <- runif(n)
+sum(apply(expand.grid(x,y),1,function(r)diff(r)^2))
+(var(x)+var(y))*(n-1)*n
+n*sum((x-mean(x))^2)
+expand.grid
+
+
+
+## 6. log linear estimator
+
+
+n <- 1e2
+n.covariates <- 5
+p <- .5
+
+count <- 0
+psi.hats <- replicate(5e2, {
+    if(count%%100 == 0)print(count)
+    count <<- count+1
+    psi <- runif(1)
+    beta <- rpois(n.covariates,lambda=2)
+    X <- rmvnorm(n,sigma=diag(length(beta)))
+    A <- rbinom(n,1,p)
+    Y.star <- X %*% beta
+    Y.star <- cbind(Y.star.0=Y.star,Y.star.1=Y.star*exp(psi))
+    Y.star <- Y.star + rnorm(length(Y.star),sd=sd(Y.star)/50)
+    ## mean(log(Y.star[,2]/Y.star[,1]))
+    Y <- ifelse(A, yes = Y.star[,2], no = Y.star[,1])
+
+    psi.hat.init <- psi + rnorm(1)/sqrt(n)
+    Y.tilde <- exp((1-A)*psi.hat.init)*Y
+    E <- lm(Y.tilde ~ X)$fitted
+    ## plot(E,ifelse(A, yes=Y.star[,'Y.star.1'], no=exp(psi)*Y.star[,'Y.star.0']));abline(0,1)
+    U <- Vectorize(function(psi) sum(4*(A-.5)*((A+exp(psi)*(1-A))*Y - E)))
+    psi.hat <- tryCatch(uniroot(U,c(0,.01),extendInt='yes',maxiter=1e3)$root,error=function(e)NA,warning=function(w)NA)
+    psi.hat-psi
+    ## uniroot(Vectorize(function(psi)sum(Y.star[,2]-exp(psi)*Y.star[,1])),c(0,.01),extendInt='yes')$root - psi
+})
+mean(psi.hats,na.rm=TRUE)
+hist(psi.hats)
+sd(psi.hats,na.rm=TRUE)
+hist(psi.hats)
+abline(v=psi,col='red',lty=2)
+abline(v=mean(psi.hats,na.rm=TRUE))
+
+## 7. log linear estimator -- coverage
+
+
+n <- 1e1
+n.covariates <- 1
+p <- .5
+
+count <- 0
+alphas <- seq(.1,.99,length.out=10)
+mean.coverage <- sapply(alphas, function(alpha) {
+    coverages <- replicate(5e2, {
+        ## if(count%%100 == 0)print(count)
+        ## count <<- count+1
+        psi <- runif(1)
+        beta <- rpois(n.covariates,lambda=2)
+        X <- rmvnorm(n,runif(length(beta)),sigma=diag(length(beta)))
+        A <- rbinom(n,1,p)
+        Y.star <- X %*% beta
+        Y.star <- Y.star + rnorm(n,sd=sd(Y.star)/50)
+        Y.star <- cbind(Y.star.0=Y.star,Y.star.1=Y.star*exp(psi))
+        ## Y.star <- Y.star + rnorm(length(Y.star),sd=sd(Y.star)/50)
+        ## mean(log(Y.star[,2]/Y.star[,1]))
+        Y <- ifelse(A, yes = Y.star[,2], no = Y.star[,1])
+
+        psi.hat.init <- psi + rnorm(1)/sqrt(n)
+        ## Y.tilde <- exp((1-A)*psi.hat.init)*Y
+        Y.tilde <- exp((1-A)*psi)*Y
+        E <- lm(Y.tilde ~ I(exp(-psi)*X))$fitted
+        ## plot(E,ifelse(A, yes=Y.star[,2], no=exp(psi)*Y.star[,1]));abline(0,1)
+
+        ## U <- Vectorize(function(psi) sum(4*(A-.5)*((A+exp(psi)*(1-A))*Y - E)))
+        U <- Vectorize(function(psi) sum((A-.5)*(exp((1-A)*psi)*Y - E)))
+        psi.hat <- tryCatch(uniroot(U,c(0,.01),extendInt='yes',maxiter=1e3)$root,error=function(e)NA,warning=function(w)NA)
+        abs(psi.hat - psi)
+        phi <- 4*(A-.5)*(exp((1-A)*psi)*Y - E)/mean(Y[A==1])
+        sigma <- sd(phi)
+
+        ## phi <- function(Y,A,X) (A-p) * ((exp(*1-A)*psi)*Y/p/(1-p) -
+
+        ## alpha <- .01
+        CI <- psi.hat + c(-1,1)*sigma/sqrt(n)*qnorm(1-alpha/2)
+        prod(CI - psi) < 0
+        ## sigma
+        ## uniroot(Vectorize(function(psi)sum(Y.star[,2]-exp(psi)*Y.star[,1])),c(0,.01),extendInt='yes')$root - psi
+    })
+    mean(coverages,na.rm=TRUE)
+}, simplify = FALSE)
+plot(1-alphas,mean.coverage); abline(0,1) # looks fine
+
+
+
+## 8. compare variances of regression estimator vs optimized estimator
+
+require(mvtnorm)
+
+ns <- seq(1e1,1e2,length.out=50)
+ns <- rep(1e2, 50)
+vars <- sapply(ns, function(n) {
+    m <- 4
+    p <- .5
+    psi <- 1
+    sigma.x <- matrix(runif((m-1)^2),nrow=m-1)
+    sigma.x <- sigma.x%*%t(sigma.x)
+    mu.x <- runif(m-1)
+    sigma.y <- 1
+
+    ests <- replicate(1e3, {
+        X <- rmvnorm(n,mean=mu.x,sigma=sigma.x)
+        A <- rbinom(n,1,p)
+        beta <- rchisq(m+1, df=3)
+        beta[2] <- psi
+        data <- cbind(I=1,A=A,X=X)
+        E0 <- with(list(data=transform(data,A=0)), as.matrix(data) %*% beta)
+        E1 <- with(list(data=transform(data,A=1)), as.matrix(data) %*% beta)
+        EX <- p*E1 + (1-p)*E0
+        Y <- data %*% beta + sigma.y*rnorm(n)
+        data <- as.data.frame(cbind(Y=Y,data))
+
+        psi.1 <- with(data, sum((A-p)*(Y-(1-p)*E1-p*E0))/(n*p*(1-p)))
+        ## psi.2 <- sum((A-p)*(Y-EX))/(p^2*sum((1/p-1)^(2*A))) ## standardized response
+        Y.tilde <- Y-EX
+        psi.2 <- 1/(1-mean(A)) * (sum(A*Y.tilde)/sum(A) - mean(Y.tilde))
+        c(psi.1=psi.1,psi.2=psi.2)
+    })
+
+    ## plot(ests[1,],ests[2,]); abline(a=0,b=1)
+    diffs <- apply(ests,2,diff)
+    var.1 <- var(ests[1,])
+    var.2 <- var(ests[2,])
+    c(var.1=var.1,var.2=var.2,diff=mean(abs(diffs)))
+})
+## hist(vars[3,])
+plot(vars[1,], vars[2,]); abline(0,1)
+## bad simulation--was comparing variances of estimators rather than
+## variances of influence functions ie the standardized estimators
+
+
+## 9. check pythagorean decomposition
+
+require(mvtnorm)
+n <- 1e2
+m <- 4
+p <- .3
+psi <- 1
+sigma.x <- matrix(runif((m-1)^2),nrow=m-1)
+sigma.x <- sigma.x%*%t(sigma.x)
+mu.x <- runif(m-1)
+sigma.y <- 1
+
+ests <- replicate(1e3, {
+    X <- rmvnorm(n,mean=mu.x,sigma=sigma.x)
+    A <- rbinom(n,1,p)
+    beta <- rchisq(m+1, df=3)
+    beta[2] <- psi
+    data <- cbind(I=1,A=A,X=X)
+    E0 <- with(list(data=transform(data,A=0)), as.matrix(data) %*% beta)
+    E1 <- with(list(data=transform(data,A=1)), as.matrix(data) %*% beta)
+    EX <- p*E1 + (1-p)*E0
+    Y <- data %*% beta + sigma.y*rnorm(n)
+    data <- as.data.frame(cbind(Y=Y,data))
+
+    W <- (A-p)*Y - p*(1-p)*psi - (A-p)*((1-p)*E1 + p*E0)
+    V <- (A-p)*Y - p*(1-p)*psi - (A-p)*(EX-psi*(1-2*p))
+    delta <- -(A-p)*((1-p)*E1+p*E0-EX+psi*(1-2*p))
+    ## c(var.W=var(W),var.V=var(V),delta=var(delta))
+    psi.1 <- with(data, sum((A-p)*(Y-(1-p)*E1-p*E0))/(n*p*(1-p)))
+    ## psi.2 <- sum((A-p)*(Y-EX))/(p^2*sum((1/p-1)^(2*A))) ## standardized response
+    Y.tilde <- Y-EX
+    psi.2 <- 1/(1-mean(A)) * (sum(A*Y.tilde)/sum(A) - mean(Y.tilde))
+    c(psi.1=psi.1,psi.2=psi.2,var.W=var(W),var.V=var(V),delta=var(delta))
+})
+
+## plot(colSums(ests[c(1,3),]),ests[2,]);abline(0,1)
+var(ests['psi.2',])
+mean(ests['var.W',])/(p*(1-p))
+
+diffs <- apply(ests,2,diff)
+var.1 <- var(ests[1,])
+var.2 <- var(ests[2,])
+c(var.1=var.1,var.2=var.2,diff=mean(abs(diffs)))
+
+## 10. ARE vs p and stratified variance
+
+require(mvtnorm)
+
+## check data generation
+gen.data <- function(n=1e3,p=.5,psi=1.2,coef.var=1.4) {
+    m <- 1
+    sigma.x <- matrix(runif(m^2),nrow=m)
+    sigma.x <- sigma.x%*%t(sigma.x)
+    sigma.x <- sigma.x/max(sigma.x)
+    diag(sigma.x) <- 1
+    ## mu.x <- runif(m-1)
+    mu.x <- rep(0,m)
+    sigma.y <- 1
+    ## beta <- rchisq(m+1, df=3)
+    beta <- rep(1,2*m+1)
+    beta[1] <- psi
+    beta[3] <- sqrt(coef.var)
+
+    X <- rmvnorm(n,mean=mu.x,sigma=sigma.x)
+    A <- rbinom(n,1,p)
+    data <- data.frame(A=A,X=X,AX=A*X)
+    E0 <- with(list(data=transform(data,A=0,AX=0)), as.matrix(data) %*% beta)
+    E1 <- with(list(data=transform(data,A=1,AX=X)), as.matrix(data) %*% beta)
+    EX <- p*E1 + (1-p)*E0
+    Y <- as.matrix(data) %*% beta + sigma.y*rnorm(n)
+    list(data=as.data.frame(cbind(Y=Y,data)), beta=beta,E0=E0,E1=E1)
+}
+
+coef.var <- 1
+ests <- replicate(1e3, {
+    data <- gen.data(p=.3,coef.var=coef.var)
+    beta <- data$beta; E0 <- data$E0; E1 <- data$E1; data <- data$data
+    EX <- p*E1 + (1-p)*E0
+
+
+    c(mean(data$Y[data$A==1]) - mean(data$Y[data$A==0]),var(E1-E0))
+})
+op <- par(mfrow=c(1,2))
+hist(ests[1,]); abline(v=psi,col='red')
+hist(ests[2,]); abline(v=coef.var,col='red')
+
+
+## ps <- seq(.05,.95,length.out=10)
+## coef.vars <- seq(0,1,length.out=10)
+## psi <- 1.2
+## mapply(function(p,coef.var) {
+##     data <- gen.data(p=p,coef.var=coef.var,psi=psi)
+##     beta <- data$beta; E0 <- data$E0; E1 <- data$E1; data <- data$data
+##     EX <- p*E1 + (1-p)*E0
+##     delta <- with(data,-(A-p)*((1-p)*E1+p*E0-EX+psi*(1-2*p)) )
+##     var(delta)
+## }, ps, coef.vars)
+## par(op)
+## curve((1-2*p)^2*p*(1-p),xname='p',0,1)
+
+
+## 11. check variance formulas
+require(mvtnorm)
+n <- 1e2
+m <- 4
+p <- .3
+psi <- 1
+
+vars <- replicate(1e3, {
+    sigma.x <- matrix(runif((m-1)^2),nrow=m-1)
+    sigma.x <- sigma.x%*%t(sigma.x)
+    sigma.x <- diag(m-1)
+    mu.x <- runif(m-1)
+    ## mu.x <- mu.x*0
+    sigma.y <- 1
+    X <- rmvnorm(n,mean=mu.x,sigma=sigma.x)
+    A <- rbinom(n,1,p)
+    beta <- rchisq(m, df=3)
+    ## beta <- rep(1,m)
+    beta[1] <- psi
+    data <- cbind(A=A,X=X)
+    E0 <- with(list(data=transform(data,A=0)), as.matrix(data) %*% beta)
+    E1 <- with(list(data=transform(data,A=1)), as.matrix(data) %*% beta)
+    EX <- p*E1 + (1-p)*E0
+    Y <- data %*% beta + sigma.y*rnorm(n)
+    data <- as.data.frame(cbind(Y=Y,data))
+
+    U <- (A-p)/(p*(1-p)) * (Y - (1-p)*E1 - p*E0)
+    XX <- t(beta[-1]) %*% (sigma.x + mu.x%*%t(mu.x))%*%beta[-1]
+
+    var.est <- var(U)
+    var.true <- beta[2]^2 -2*t(beta[-1]) %*% (sigma.x + mu.x%*%t(mu.x))%*%
+                            beta[-1] + (2+p-p^2)*sigma.y^2/(p*(1-p)) +
+                                                             2*(beta[-1]%*%mu.x)^2 - psi^2
+    var.true <- -psi^2 + mean(((A-p)*Y)^2)/(p*(1-p))^2 +
+                                                         mean((A-p)^2*((1-p)*E1+p*E0)^2)/(p*(1-p))^2 -
+                                                                                                       2/p^2/(1-p)^2*mean((A-p)^2*Y*((1-p)*E1+p*E0))
+
+    alpha.est <-  mean(((A-p)*Y)^2)/(p*(1-p))^2
+    alpha.true <- beta[1]^2/p +  XX/p/(1-p) + sigma.y/p/(1-p)
+    ## alpha.true <- mean(Y[A==1]^2)/p + mean(Y[A==0]^2)/(1-p)
+
+
+    ## alpha.est <-  mean(((A-p)*Y))
+    ## alpha.true <- mean(Y[A==1])*p*(1-p) + mean(Y[A==0])*(1-p)*(-p)
+
+
+    beta.est <- mean((A-p)^2*((1-p)*E1+p*E0)^2)/(p*(1-p))^2
+    beta.true <- beta[1]^2*(1-p)/p + 2/p*beta[1]*(beta[-1]%*%mu.x) +
+                             XX/p/(1-p)
+    gamma.est <-  1/p^2/(1-p)^2*mean((A-p)^2*Y*((1-p)*E1+p*E0))
+    gamma.true <- beta[1]^2*(1-p)/p + 2*beta[1]*(beta[-1]%*%mu.x)/p + XX/p/(1-p)
+
+    ##     var.est <- 2/p^2/(1-p)^2*mean((A-p)^2*Y*((1-p)*E1+p*E0))
+    ## var.true
+
+    var.est <- mean(U^2)-mean(U)^2
+    var.est <- -psi^2 +alpha.est + beta.est - 2*gamma.est
+    var.true <- -psi^2 + alpha.true+ beta.true - 2*gamma.true
+    var.true2 <- beta[1]^2 + sigma.y^2/p/(1-p) -
+    2*beta[1]*(beta[-1]%*%mu.x)/p - psi^2
+
+
+    c(est=var.est,true=var.true)
+    c(alpha.est,alpha.true,beta.est,beta.true,gamma.est,gamma.true,var.est,var.true)
+
+    ## c(mean(((A-p)*Y)^2)
+})
+
+## plot(vars[1,],vars[2,]);abline(0,1)
+
+op <- par(mfrow=c(1,4))
+plot(vars[1,],vars[2,],main='alpha');abline(0,1)
+plot(vars[3,],vars[4,]);abline(0,1)
+plot(vars[5,],vars[6,]);abline(0,1)
+plot(vars[7,],vars[8,]);abline(0,1)
+par(op)
+## very variable sum, even if components seem consistent
+
+
+
+n <- 5e3
+m <- 4
+p <- .3
+psi <- 1
+sigma.x <- matrix(runif((m-1)^2),nrow=m-1)
+sigma.x <- sigma.x%*%t(sigma.x)
+sigma.x <- diag(m-1)
+mu.x <- runif(m-1)
+mu.x <- mu.x*0
+sigma.y <- 1
+beta <- rchisq(m, df=3)
+beta <- rep(1,m)
+beta[1] <- psi
+
+vars <- replicate(1e3, {
+    X <- rmvnorm(n,mean=mu.x,sigma=sigma.x)
+    A <- rbinom(n,1,p)
+
+    data <- cbind(A=A,X=X)
+    E0 <- with(list(data=transform(data,A=0)), as.matrix(data) %*% beta)
+    E1 <- with(list(data=transform(data,A=1)), as.matrix(data) %*% beta)
+    EX <- p*E1 + (1-p)*E0
+    Y <- data %*% beta + sigma.y*rnorm(n)
+    data <- as.data.frame(cbind(Y=Y,data))
+
+    U <- (A-p)/(p*(1-p)) * (Y - (1-p)*E1 - p*E0)
+    XX <- t(beta[-1]) %*% (sigma.x + mu.x%*%t(mu.x))%*%beta[-1]
+
+    var.est <- mean(U^2)-mean(U)^2
+    var.true <- beta[1]^2 + sigma.y^2/p/(1-p) -
+                                        2*beta[1]*(beta[-1]%*%mu.x)/p - psi^2
+
+    c(est=var.est,true=var.true)
+
+    ## c(alpha.est,alpha.true,beta.est,beta.true,gamma.est,gamma.true,var.est,var.true)
+    ## c(mean(((A-p)*Y)^2)
+})
+hist(vars[1,])
+abline(v=vars[2,1],col='red')
+## well centered, concentrates
+
+
+
+## 11. check variance formula for linear model with interactions
+
+require(mvtnorm)
+n <- 5e3
+m <- 4
+p <- .1
+
+vars <- replicate(1e3,{
+    sigma.x <- matrix(runif(m^2),nrow=m)
+    sigma.x <- sigma.x%*%t(sigma.x)
+    mu.x <- runif(m)
+    sigma.y <- 1
+    alpha <- rchisq(1, df=3)
+    beta <- rchisq(m, df=3)
+    gamma <- rchisq(m, df=3)
+    X <- rmvnorm(n,mean=mu.x,sigma=sigma.x)
+    A <- rbinom(n,1,p)
+    psi <- alpha + t(gamma)%*%mu.x
+
+    E0 <- X %*% beta
+    E1 <- cbind(1,X,X) %*% c(alpha,beta,gamma)
+    EX <- p*E1 + (1-p)*E0
+    Y <- cbind(A,X,A*X) %*% c(alpha,beta,gamma) + rnorm(n)
+
+    U <- (A-p)/(p*(1-p)) * (Y - (1-p)*E1 - p*E0)
+    XX <- sigma.x + mu.x%*%t(mu.x)
+
+    a.true <- p*(1-p)*( (1-p)^2*(alpha^2 + t(beta+gamma)%*%XX%*%(beta+gamma)
+        + 2*alpha*((beta+gamma)%*%mu.x)) + p^2*t(beta)%*%XX%*%beta +
+                                             2*(1-p)*p*(alpha*t(beta)%*%mu.x + t(beta+gamma)%*%XX%*%beta))
+    a.est <- mean((A-p)^2*((1-p)*E1+p*E0)^2)
+
+
+    ## b.true <-
+    ##     (1-p)*(alpha^2*p*(1-p)+alpha*p*(1-p)*t(beta+2*gamma)%*%mu.x+p*(1-p)*t(beta+gamma)%*%XX%*%gamma) + p*(alpha*p*(1-p)*t(beta)%*%mu.x + p*(1-p)*t(beta)%*%XX%*%gamma)
+    gt <- beta + (1-p)*gamma
+    b.true <- (1-p)/p*alpha^2 + alpha/p*t(beta)%*%mu.x +
+                                alpha*(1-p)/p*t(gamma)%*%mu.x +
+                                alpha/p*t(gt)%*%mu.x +
+                                1/p/(1-p)*t(gt)%*%XX%*%beta +
+                                1/p*t(gt)%*%XX%*%gamma
+    b.true <- b.true*(p*(1-p))^2
+    b.est <- mean((A-p)^2*Y*((1-p)*E1+p*E0))
+
+    c.true <- (1-p)^2*p*(alpha^2 + t(gamma)%*%XX%*%gamma +
+                               2*alpha*t(beta+gamma)%*%mu.x +
+                               2*t(beta)%*%XX%*%gamma) +
+                        p*(1-p)*(t(beta)%*%XX%*%beta + sigma.y^2)
+    c.est <- mean((A-p)^2*Y^2)
+
+    (a.true -2*b.true + c.true)/(p*(1-p))^2
+    (a.est -2*b.est + c.est)/(p*(1-p))^2
+
+    est <- mean(U^2) - mean(U)^2
+    true <- -alpha^2 - t(gamma)%*%XX%*%gamma +
+                     2*(1-2*p)/p/(1-p)*t(beta)%*%XX%*%gamma +
+                     2/(p*(1-p))*t(beta)%*%XX%*%beta +
+                     2*(1-2*p)/p/(1-p)*alpha*(t(beta)%*%mu.x) -
+                     2*alpha*t(gamma)%*%mu.x + sigma.y^2/p/(1-p) - psi^2
+
+    ## true <- -alpha^2 + t(gamma)%*%XX%*%gamma*(1/p + (1-p)/p - 2/p) +
+    ## t(beta)%*%XX%*%gamma*(2/p+2*(1-p)/p + 2 - 2/p - 2/(1-p)) +
+    ## t(beta)%*%XX%*%beta*(1/p/(1-p) + (1-p)/p + p/(1-p) + 2) +
+    ## alpha*t(beta)%*%mu.x*(2/p + 2*(1-p)/p + 2 - 2/p - 2/(1-p)) +
+    ## alpha*t(gamma)%*%mu.x*(2/p + 2*(1-p)/p - 4/p) + sigma.y^2/p/(1-p)
+
+    ## est <- 1/p*(alpha^2+t(gamma)%*%XX%*%gamma +
+    ##                   2*alpha*t(beta+gamma)%*%mu.x +
+    ##                   2*t(beta)%*%XX%*%gamma) +
+    ##     1/p/(1-p)*(t(beta)%*%XX%*%beta + sigma.y^2) +
+    ##     (1-p)/p*(alpha^2 + t(beta+gamma)%*%XX%*%(beta+gamma)
+    ##         + 2*alpha*t(beta+gamma)%*%mu.x) +
+    ##     p/(1-p)*t(beta)%*%XX%*%beta +
+    ##     2*(alpha*t(beta)%*%mu.x + t(beta+gamma)%*%XX%*%beta) -
+    ## 2/p*alpha^2 - 2*alpha/p*t(beta+2*gamma)%*%mu.x -
+    ##                 2/p*t(beta+gamma)%*%XX%*%gamma -
+    ##                 2/(1-p)*alpha*t(beta)%*%mu.x - 2/(1-p)*t(beta)%*%XX%*%gamma
+
+    true <- alpha^2 + t(gamma)%*%XX%*%gamma + 2*alpha*t(gamma)%*%mu.x + sigma.y^2/p/(1-p)
+    true <- (alpha + t(gamma)%*%mu.x)^2 + t(gamma)%*%sigma.x%*%gamma +
+                                          sigma.y^2/p/(1-p) - psi^2
+    true <- t(gamma)%*%sigma.x%*%gamma + sigma.y^2/p/(1-p)
+    est <- var(U)
+
+
+    c(true,est)
+})
+plot(vars[1,],vars[2,]); abline(0,1)
+## formula good usually...seems to be a bias when p is small like .001
+
+
+## 12. plot ARE for linear model
+ARE <- function(p,gamma.sigma.gamma,sigma.y) 1 + (1-2*p)^2*gamma.sigma.gamma /
+                                                     (sigma.y^2/(p*(1-p)) + gamma.sigma.gamma)
+
+ARE <- Vectorize(ARE)
+curve(ARE(x,3,1),0,1,xlab='p',ylab='ARE')
+curve(ARE(x,1,1),0,1,add=TRUE)
+
+curve(ARE(.5,x,1),0,100)
+curve(ARE(.6,x,1),0,100,add=TRUE)
+
+
+
+## 13. variance of combined regression vs 2 stratified regressions
+require(mvtnorm)
+
+n <- 5e2
+m <- 4
+p <- .2
+
+## res <- replicate(1e2, {
+sigma.x <- matrix(runif(m^2),nrow=m)
+sigma.x <- sigma.x%*%t(sigma.x)
+mu.x <- runif(m)
+sigma.y <- 1
+alpha <- rchisq(1, df=3)
+beta <- rchisq(m, df=3)
+gamma <- rchisq(m, df=3)*0
+X <- rmvnorm(n,mean=mu.x,sigma=sigma.x)
+A <- rbinom(n,1,p)
+psi <- alpha + t(gamma)%*%mu.x
+
+E0 <- X %*% beta
+E1 <- cbind(1,X,X) %*% c(alpha,beta,gamma)
+truth <- (1-p)*E1 + p*E0
+covariates <- cbind(A,X)
+res <- replicate(1e2, {
+Y <- covariates %*% c(alpha,beta) + rnorm(n)
+data <- data.frame(Y=Y,covariates)
+
+
+coefs.case <- lm(Y ~ .  - A, data=subset(data, A==1))$coef
+coefs.ctrl <- lm(Y ~ .  - A, data=subset(data, A==0))$coef
+
+E0.hat <- cbind(1,X) %*% coefs.ctrl
+E1.hat <- cbind(1,X) %*% coefs.case
+est.combined <- (1-p)*E1.hat + p*E0.hat
+MSE.combined <- mean((est.combined - truth)^2)
+
+Y.tilde <- (p/(1-p))^(1-2*A) * Y
+coefs <- lm(Y.tilde ~ X)$coef
+est.simple <- cbind(1,X) %*% coefs
+MSE.simple <- mean((est.simple - truth)^2)
+## plot(EX.hat ~ truth); abline(0,1)
+
+psi.hat.combined <- sum((A-p)*(Y-est.combined))/(n*p*(1-p))
+psi.hat.simple <- sum((A-p)*(Y-est.simple))/(n*p*(1-p))
+
+c(MSE.simple=MSE.simple,MSE.combined=MSE.combined,est.simple=psi.hat.simple,est.combined=psi.hat.combined,true=psi)
+
+})
+
+
+
+rowMeans(res)
+plot(res['MSE.simple',],res['MSE.combined',]);abline(0,1)
+## mean(res['est.simple',]-res['true',])
+## mean(res['est.combined',]-res['true',])
+
+
+
+
+## 14. same as 13, but varying n and p
+require(mvtnorm)
+require(ggplot2)
+ns <- as.integer(seq(100,1e3,length.out=30))
+ps <- c(.5,.7,.9)
+ps <- seq(.5,.9,by=.1)
+## ps <- .9
+params <- expand.grid(n=ns,p=ps)
+
+m <- 4
+alpha <- rchisq(1, df=1)
+beta <- rchisq(m, df=1)
+gamma <- rchisq(m, df=1)
+mu.x <- runif(m)
+psi <- alpha + t(gamma)%*%mu.x
+
+rowmeans <- sapply(1:nrow(params), function(j) {
+    ## n <- 5e2
+    print(params[j,])
+    n <- params[j,1]
+    p <- params[j,2]#.2
+
+    res <- replicate(5e2, {
+        sigma.x <- matrix(runif(m^2),nrow=m)
+        sigma.x <- sigma.x%*%t(sigma.x)
+        sigma.y <- 1
+        X <- rmvnorm(n,mean=mu.x,sigma=sigma.x)
+        A <- rbinom(n,1,p)
+
+        E0 <- X %*% beta
+        E1 <- cbind(1,X,X) %*% c(alpha,beta,gamma)
+        truth <- (1-p)*E1 + p*E0
+        ## covariates <- cbind(A,X,X)
+        ## res <- replicate(3e3, {
+        Y <- cbind(A,X,A*X) %*% c(alpha,beta,gamma) + rnorm(n)
+        data <- data.frame(Y=Y,A=A,X=X)
+
+
+        coefs.case <- lm(Y ~ .  - A, data=subset(data, A==1))$coef
+        coefs.ctrl <- lm(Y ~ .  - A, data=subset(data, A==0))$coef
+
+        E0.hat <- cbind(1,X) %*% coefs.ctrl
+        E1.hat <- cbind(1,X) %*% coefs.case
+        est.combined <- (1-p)*E1.hat + p*E0.hat
+        MSE.combined <- mean((est.combined - truth)^2)
+
+        Y.tilde <- (p/(1-p))^(1-2*A) * Y
+        coefs <- lm(Y.tilde ~ X)$coef
+        est.simple <- cbind(1,X) %*% coefs
+        MSE.simple <- mean((est.simple - truth)^2)
+        ## plot(EX.hat ~ truth); abline(0,1)
+
+        psi.hat.combined <- sum((A-p)*(Y-est.combined))/(n*p*(1-p))
+        ## psi.hat.combined <- sum((A-p)*(Y-truth))/(n*p*(1-p))
+        ## psi.hat.simple <- sum((A-p)*(Y-est.simple))/(n*p*(1-p))
+        psi.hat.simple <- unname(lm(resid ~ Ap - 1, data=data.frame(resid=Y-est.simple,Ap=A-p))$coef)
+
+        c(MSE.simple=MSE.simple,MSE.combined=MSE.combined,psi.hat.simple=psi.hat.simple,psi.hat.combined=psi.hat.combined,true=psi)
+
+    })
+
+    rowMeans(res)
+    ## plot(res['MSE.simple',],res['MSE.combined',]);abline(0,1)
+    ## mean(res['est.simple',]-res['true',])
+    ## mean(res['est.combined',]-res['true',])
+})
+
+## plot(ns,rowmeans['MSE.simple',])
+gg.df <- cbind(params,t(rowmeans))
+## helful: https://stackoverflow.com/questions/2185252/reshaping-data-frame-from-wide-to-long-format
+gg.df <- reshape(gg.df[,1:4],direction='long',varying=list(names(gg.df)[3:4]),timevar='estimator',times=c('simple','combined'),idvar=names(gg.df)[1:2],v.names='MSE')
+ggplot(gg.df,aes(x=n,y=MSE,group=estimator,color=estimator)) + geom_path() + facet_wrap(~p)
+## ggsave('041118.png')
+## ggsave('041118b.png')
+## ggsave('041118c.png') ## wiht random X and A...better but still not good
+
+var(rowmeans['psi.hat.simple',])
+var(rowmeans['psi.hat.combined',])
+gg.df <- cbind(params,t(rowmeans))
+gg.df$bias.simple <- with(gg.df, psi.hat.simple - true)
+gg.df$bias.combined <- with(gg.df, psi.hat.combined - true)
+gg.df <- reshape(gg.df[,c(1,2,8,9)],direction='long',varying=list(names(gg.df)[8:9]),timevar='estimator',times=c('simple','combined'),idvar=names(gg.df)[1:2],v.names='bias')
+ggplot(gg.df,aes(x=n,y=bias,group=estimator,color=estimator)) + geom_path() + facet_wrap(~p) + geom_hline(yintercept=0,linetype=2,color='grey')
+## ggsave('041118d.png') ## bias of ATE estimator, using Eric's suggestion for combined estimator
+
+
+
+## 15. using efficient estimator instead of OLS one in 13,14--checking formula for variance of Y.tilde
+require(mvtnorm)
+
+n <- 5e2
+m <- 4
+p <- .2
+
+## res <- replicate(1e2, {
+sigma.x <- matrix(runif(m^2),nrow=m)
+sigma.x <- sigma.x%*%t(sigma.x)
+mu.x <- runif(m)
+sigma.y <- 1
+alpha <- rchisq(1, df=3)
+beta <- rchisq(m, df=3)
+gamma <- rchisq(m, df=3)*0
+X <- rmvnorm(n,mean=mu.x,sigma=sigma.x)
+X <- matrix(rep(rmvnorm(1,mean=mu.x,sigma=sigma.x),n),nrow=n,byrow=TRUE)
+
+res <- replicate(5e2, {
+    A <- rbinom(n,1,p)
+    psi <- alpha + t(gamma)%*%mu.x
+
+    E0 <- X %*% beta
+    E1 <- cbind(1,X,X) %*% c(alpha,beta,gamma)
+    truth <- (1-p)*E1 + p*E0
+    covariates <- cbind(A,X)
+    epsilon <- sigma.y*rnorm(n)
+    Y <- covariates %*% c(alpha,beta) + epsilon
+    data <- data.frame(Y=Y,covariates)
+
+    Y.tilde <- (p/(1-p))^(1-2*A) * Y
+
+    var((p/(1-p))^(1-2*A)*epsilon)
+    var(alpha*A*(p/(1-p))^(1-2*A))
+    var(X%*%beta*(p/(1-p))^(1-2*A))
+    cov((p/(1-p))^(1-2*A)*alpha*A,(p/(1-p))^(1-2*A)*X%*%beta)
+    ## cov((p/(1-p))^(1-2*A)*alpha*A,(p/(1-p))^(1-2*A)*epsilon)
+    ## cov((p/(1-p))^(1-2*A)*X%*%beta,(p/(1-p))^(1-2*A)*epsilon)
+    var(Y.tilde)
+})
+hist(res)
+## abline(v=(1-3*p+3*p^2)/p/(1-p),col='red')
+## abline(v=alpha^2*(1-p)^3/p,col='red')
+## abline(v=(X[1,]%*%beta)^2*(2*p-1)^2/p/(1-p),col='red')
+## abline(v=alpha*X[1,]%*%beta*(1-p)*(1-2*p)/p,col='red')
+abline(v=(1-3*p+3*p^2)/p/(1-p) + alpha^2*(1-p)^3/p + (X[1,]%*%beta)^2*(2*p-1)^2/p/(1-p) + 2*(alpha*X[1,]%*%beta*(1-p)*(1-2*p)/p),  col='red')
+
+
+## 15a. same as 15 (using efficient estimator instead of OLS one in 13,14--checking formula for variance of Y.tilde) now including interaction terms
+require(mvtnorm)
+
+n <- 5e2
+m <- 4
+p <- .2
+
+## res <- replicate(1e2, {
+sigma.x <- matrix(runif(m^2),nrow=m)
+sigma.x <- sigma.x%*%t(sigma.x)
+mu.x <- runif(m)
+sigma.y <- 1
+alpha <- rchisq(1, df=3)
+beta <- rchisq(m, df=3)
+gamma <- rchisq(m, df=3)
+X <- rmvnorm(n,mean=mu.x,sigma=sigma.x)
+X <- matrix(rep(rmvnorm(1,mean=mu.x,sigma=sigma.x),n),nrow=n,byrow=TRUE)
+
+res <- replicate(5e2, {
+    A <- rbinom(n,1,p)
+    psi <- alpha + t(gamma)%*%mu.x
+
+    ## E0 <- X %*% beta
+    ## E1 <- cbind(1,X,X) %*% c(alpha,beta,gamma)
+    ## truth <- (1-p)*E1 + p*E0
+    covariates <- cbind(A,X,A*X)
+    epsilon <- sigma.y*rnorm(n)
+    Y <- covariates %*% c(alpha,beta,gamma) + epsilon
+    data <- data.frame(Y=Y,covariates)
+
+    Y.tilde <- (p/(1-p))^(1-2*A) * Y
+
+    var((p/(1-p))^(1-2*A)*epsilon)
+    var(alpha*A*(p/(1-p))^(1-2*A))
+    var(X%*%beta*(p/(1-p))^(1-2*A))
+    cov((p/(1-p))^(1-2*A)*alpha*A,(p/(1-p))^(1-2*A)*X%*%beta)
+    ## cov((p/(1-p))^(1-2*A)*alpha*A,(p/(1-p))^(1-2*A)*epsilon)
+    ## cov((p/(1-p))^(1-2*A)*X%*%beta,(p/(1-p))^(1-2*A)*epsilon)
+    var(Y.tilde)
+})
+hist(res)
+## abline(v=(1-3*p+3*p^2)/p/(1-p),col='red')
+## abline(v=alpha^2*(1-p)^3/p,col='red')
+## abline(v=(X[1,]%*%beta)^2*(2*p-1)^2/p/(1-p),col='red')
+## abline(v=alpha*X[1,]%*%beta*(1-p)*(1-2*p)/p,col='red')
+## abline(v=(1-3*p+3*p^2)/p/(1-p) + alpha^2*(1-p)^3/p + (X[1,]%*%beta)^2*(2*p-1)^2/p/(1-p) + 2*(alpha*X[1,]%*%beta*(1-p)*(1-2*p)/p) + (X[1,]%*%gamma)^2*(1-p)^3/p + 2*alpha*X[1,]%*%gamma*(1-p)^3/p + 2*(X[1,]%*%beta)*(X[1,]%*%gamma)*(1-p)*(1-2*p)/p,  col='red')
+abline(v=(X[1,]%*%beta*(2*p-1)/sqrt(p*(1-p)) - (alpha+X[1,]%*%gamma)*(1-p)*sqrt((1-p)/p))^2 + (1-3*p+3*p^2)/p/(1-p)*sigma.y^2,  col='red')
+
+
+## 16. different estimator for combined version
+require(mvtnorm)
+
+n <- 5e1
+m <- 4
+p <- .2
+
+
+gee <- function(alpha.beta,Y.tilde,X,sigma.y) {
+    alpha.beta <- matrix(alpha.beta,ncol=1)
+    V <- sigma.y^2*(1-3*p+3*p^2)/p/(1-p) + alpha.beta[1]^2*(1-p)^3/p + (X%*%alpha.beta[-1,])^2*(2*p-1)^2/p/(1-p) + 2*(alpha.beta[1]*X%*%alpha.beta[-1,]*(1-p)*(1-2*p)/p)
+    VV <- (1/V) * (Y.tilde - cbind(1-p,X)%*%alpha.beta)
+    ## mean((diag(as.numeric(VV)) %*% cbind(1-p,X))^2)
+    sum((t(VV) %*% cbind(1-p,X))^2)
+}
+res <- replicate(1e3, {
+    sigma.x <- matrix(runif(m^2),nrow=m)
+    sigma.x <- sigma.x%*%t(sigma.x)
+    mu.x <- runif(m)
+    sigma.y <- 1
+    alpha <- rchisq(1, df=3)
+    beta <- rchisq(m, df=3)
+    gamma <- rchisq(m, df=3)*0
+    X <- rmvnorm(n,mean=mu.x,sigma=sigma.x)
+
+    ## V <- function(x,beta,p,sigma.y)
+    ##     sigma.y^2(1-3*p+3*p^2)/p/(1-p) + alpha^2*(1-p)^3/p + (x%*%beta)^2*(2*p-1)^2/p/(1-p) + 2*(alpha*x%*%beta*(1-p)*(1-2*p)/p)
+    ## V <- Vectorize(V,'beta')
+
+    ## gee <- Vectorize(gee,'alpha.beta')
+    ## res <- replicate(2e2, {
+    A <- rbinom(n,1,p)
+    psi <- alpha + t(gamma)%*%mu.x
+
+    E0 <- X %*% beta
+    E1 <- cbind(1,X,X) %*% c(alpha,beta,gamma)
+    truth <- (1-p)*E1 + p*E0
+    covariates <- cbind(A,X)
+    Y <- covariates %*% c(alpha,beta) + rnorm(n)
+    data <- data.frame(Y=Y,covariates)
+
+
+    coefs.case <- lm(Y ~ .  - A, data=subset(data, A==1))$coef
+    coefs.ctrl <- lm(Y ~ .  - A, data=subset(data, A==0))$coef
+
+    E0.hat <- cbind(1,X) %*% coefs.ctrl
+    E1.hat <- cbind(1,X) %*% coefs.case
+    est.combined <- (1-p)*E1.hat + p*E0.hat
+    MSE.combined <- mean((est.combined - truth)^2)
+
+    Y.tilde <- (p/(1-p))^(1-2*A) * Y
+    ## gee(c(alpha,beta),Y.tilde,X,sigma.y)
+    ## nlm(gee,rnorm(m+1),Y.tilde=Y.tilde,X=X,sigma.y=sigma.y,iterlim=1e2,print.level=2,gradtol=1e-20,steptol=1e-15)
+    ## nlm(gee,c(alpha,beta),Y.tilde=Y.tilde,X=X,sigma.y=sigma.y,iterlim=1e2,print.level=2,gradtol=1e-20,steptol=1e-15)
+    ## coefs <- lm(Y.tilde ~ X)$coef
+    ## coefs <- nlm(gee,rnorm(m+1),Y.tilde=Y.tilde,X=X,sigma.y=sigma.y,iterlim=1e3)$estimate
+    ## coefs <- nlm(gee,c(alpha,beta),Y.tilde=Y.tilde,X=X,sigma.y=sigma.y,iterlim=1e3)$estimate
+    coefs <- optim(gee,par=c(alpha,beta),Y.tilde=Y.tilde,X=X,sigma.y=sigma.y,control=list(trace=0),method = "L-BFGS-B")$par
+    est.simple <- cbind(1-p,X) %*% coefs
+    MSE.simple <- mean((est.simple - truth)^2)
+
+    psi.hat.combined <- sum((A-p)*(Y-est.combined))/(n*p*(1-p))
+    psi.hat.simple <- sum((A-p)*(Y-est.simple))/(n*p*(1-p))
+
+    c(MSE.simple=MSE.simple,MSE.combined=MSE.combined,est.simple=psi.hat.simple,est.combined=psi.hat.combined,true=psi)
+    ## gee(c(alpha,beta),Y.tilde,X,sigma.y)
+})
+
+## hist(res)
+## hist(res[2,])
+
+
+plot(res['MSE.simple',],res['MSE.combined',]);abline(0,1)
+mean(res['est.simple',]-res['true',])
+mean(res['est.combined',]-res['true',],na.rm=TRUE)
+## still much worse even using restricted mean model GEE estimator for the combined estimator
+
+
+
+
+
+
+## 17. same as 14, but trying SVM
+require(mvtnorm)
+require(ggplot2)
+require(e1071)
+ns <- as.integer(seq(100,1e3,length.out=30))
+ps <- c(.5,.7,.9)
+ps <- .9
+ps <- seq(.5,.9,by=.1)
+## ps <- .9
+params <- expand.grid(n=ns,p=ps)
+
+m <- 4
+alpha <- rchisq(1, df=1)
+beta <- rchisq(m, df=1)
+gamma <- rchisq(m, df=1)
+mu.x <- runif(m)
+psi <- alpha + t(gamma)%*%mu.x
+
+rowmeans <- sapply(1:nrow(params), function(j) {
+    ## n <- 5e2
+    print(params[j,])
+    n <- params[j,1]
+    p <- params[j,2]#.2
+
+    res <- replicate(5e2, {
+        sigma.x <- matrix(runif(m^2),nrow=m)
+        sigma.x <- sigma.x%*%t(sigma.x)
+        sigma.y <- 1
+        X <- rmvnorm(n,mean=mu.x,sigma=sigma.x)
+        A <- rbinom(n,1,p)
+
+        E0 <- X %*% beta
+        E1 <- cbind(1,X,X) %*% c(alpha,beta,gamma)
+        truth <- (1-p)*E1 + p*E0
+        ## covariates <- cbind(A,X,X)
+        ## res <- replicate(3e3, {
+        Y <- cbind(A,X,A*X) %*% c(alpha,beta,gamma) + rnorm(n)
+        data <- data.frame(Y=Y,A=A,X=X)
+
+
+        coefs.case <- lm(Y ~ .  - A, data=subset(data, A==1))$coef
+        coefs.ctrl <- lm(Y ~ .  - A, data=subset(data, A==0))$coef
+
+        E0.hat <- cbind(1,X) %*% coefs.ctrl
+        E1.hat <- cbind(1,X) %*% coefs.case
+        est.combined <- (1-p)*E1.hat + p*E0.hat
+        MSE.combined <- mean((est.combined - truth)^2)
+
+        Y.tilde <- (p/(1-p))^(1-2*A) * Y
+        ## coefs <- lm(Y.tilde ~ X)$coef
+        ## est.simple <- cbind(1,X) %*% coefs
+        ## plot(EX.hat ~ truth); abline(0,1)
+        ## tune.svm(x=X, y=Y.tilde, gamma=10^(-3:3),cost=c(0.01,0.1,1,10,100,1000))$best.parameters
+        if(p>=.8) {
+            gamma <- .01
+            cost <- 100
+        } else {
+            if (p>=.7) {
+                gamma <- .005
+                cost <- 10
+            } else {
+                gamma <- .001
+                cost <- 10
+            }
+        }
+        est.simple <- svm(Y.tilde ~ X, gamma=gamma, cost=cost)$fitted
+        MSE.simple <- mean((est.simple - truth)^2)
+
+        psi.hat.combined <- sum((A-p)*(Y-est.combined))/(n*p*(1-p))
+        ## psi.hat.combined <- sum((A-p)*(Y-truth))/(n*p*(1-p))
+        ## psi.hat.simple <- sum((A-p)*(Y-est.simple))/(n*p*(1-p))
+        psi.hat.simple <- unname(lm(resid ~ Ap - 1, data=data.frame(resid=Y-est.simple,Ap=A-p))$coef)
+
+        c(MSE.simple=MSE.simple,MSE.combined=MSE.combined,psi.hat.simple=psi.hat.simple,psi.hat.combined=psi.hat.combined,true=psi)
+
+    })
+
+    rowMeans(res)
+    ## plot(res['MSE.simple',],res['MSE.combined',]);abline(0,1)
+    ## mean(res['est.simple',]-res['true',])
+    ## mean(res['est.combined',]-res['true',])
+})
+
+## plot(ns,rowmeans['MSE.simple',])
+gg.df <- cbind(params,t(rowmeans))
+## helful: https://stackoverflow.com/questions/2185252/reshaping-data-frame-from-wide-to-long-format
+gg.df <- reshape(gg.df[,1:4],direction='long',varying=list(names(gg.df)[3:4]),timevar='estimator',times=c('simple','combined'),idvar=names(gg.df)[1:2],v.names='MSE')
+ggplot(gg.df,aes(x=n,y=MSE,group=estimator,color=estimator)) + geom_path() + facet_wrap(~p)
+## ggsave('041118.png')
+## ggsave('041118b.png')
+## ggsave('041118c.png') ## wiht random X and A...better but still not good
+
+var(rowmeans['psi.hat.simple',])
+var(rowmeans['psi.hat.combined',])
+gg.df <- cbind(params,t(rowmeans))
+gg.df$bias.simple <- with(gg.df, psi.hat.simple - true)
+gg.df$bias.combined <- with(gg.df, psi.hat.combined - true)
+gg.df <- reshape(gg.df[,c(1,2,8,9)],direction='long',varying=list(names(gg.df)[8:9]),timevar='estimator',times=c('simple','combined'),idvar=names(gg.df)[1:2],v.names='bias')
+ggplot(gg.df,aes(x=n,y=bias,group=estimator,color=estimator)) + geom_path() + facet_wrap(~p) + geom_hline(yintercept=0,linetype=2,color='grey')
+## ggsave('041118e.png') ## using an svm to estimate Ehat(Y.tilde|X_i)
+## ggsave('041118e1.png') ## using an svm to estimate Ehat(Y.tilde|X_i)
+
+
+
+
+
+## 18. same as 16, but using two step estimator
+require(mvtnorm)
+
+n <- 5e1
+m <- 4
+p <- .2
+
+
+gee <- function(alpha.beta,Y.tilde,X,sigma.y) {
+    alpha.beta <- matrix(alpha.beta,ncol=1)
+    V <- sigma.y^2*(1-3*p+3*p^2)/p/(1-p) + alpha.beta[1]^2*(1-p)^3/p + (X%*%alpha.beta[-1,])^2*(2*p-1)^2/p/(1-p) + 2*(alpha.beta[1]*X%*%alpha.beta[-1,]*(1-p)*(1-2*p)/p)
+    VV <- (1/V) * (Y.tilde - cbind(1-p,X)%*%alpha.beta)
+    ## mean((diag(as.numeric(VV)) %*% cbind(1-p,X))^2)
+    sum((t(VV) %*% cbind(1-p,X))^2)
+}
+res <- replicate(1e3, {
+    sigma.x <- matrix(runif(m^2),nrow=m)
+    sigma.x <- sigma.x%*%t(sigma.x)
+    mu.x <- runif(m)
+    sigma.y <- 1
+    alpha <- rchisq(1, df=3)
+    beta <- rchisq(m, df=3)
+    gamma <- rchisq(m, df=3)
+    X <- rmvnorm(n,mean=mu.x,sigma=sigma.x)
+
+    ## V <- function(x,beta,p,sigma.y)
+    ##     sigma.y^2(1-3*p+3*p^2)/p/(1-p) + alpha^2*(1-p)^3/p + (x%*%beta)^2*(2*p-1)^2/p/(1-p) + 2*(alpha*x%*%beta*(1-p)*(1-2*p)/p)
+    ## V <- Vectorize(V,'beta')
+
+    ## gee <- Vectorize(gee,'alpha.beta')
+    ## res <- replicate(2e2, {
+    A <- rbinom(n,1,p)
+    psi <- alpha + t(gamma)%*%mu.x
+
+    E0 <- X %*% beta
+    E1 <- cbind(1,X,X) %*% c(alpha,beta,gamma)
+    truth <- (1-p)*E1 + p*E0
+    covariates <- cbind(A,X)
+    Y <- covariates %*% c(alpha,beta) + rnorm(n)
+    data <- data.frame(Y=Y,covariates)
+
+
+    coefs.case <- lm(Y ~ .  - A, data=subset(data, A==1))$coef
+    coefs.ctrl <- lm(Y ~ .  - A, data=subset(data, A==0))$coef
+
+    E0.hat <- cbind(1,X) %*% coefs.ctrl
+    E1.hat <- cbind(1,X) %*% coefs.case
+    est.combined <- (1-p)*E1.hat + p*E0.hat
+    MSE.combined <- mean((est.combined - truth)^2)
+
+    Y.tilde <- (p/(1-p))^(1-2*A) * Y
+    ## gee(c(alpha,beta),Y.tilde,X,sigma.y)
+    ## nlm(gee,rnorm(m+1),Y.tilde=Y.tilde,X=X,sigma.y=sigma.y,iterlim=1e2,print.level=2,gradtol=1e-20,steptol=1e-15)
+    ## nlm(gee,c(alpha,beta),Y.tilde=Y.tilde,X=X,sigma.y=sigma.y,iterlim=1e2,print.level=2,gradtol=1e-20,steptol=1e-15)
+    ## coefs <- lm(Y.tilde ~ X)$coef
+    ## coefs <- nlm(gee,rnorm(m+1),Y.tilde=Y.tilde,X=X,sigma.y=sigma.y,iterlim=1e3)$estimate
+    ## coefs <- nlm(gee,c(alpha,beta),Y.tilde=Y.tilde,X=X,sigma.y=sigma.y,iterlim=1e3)$estimate
+    ## coefs <- optim(gee,par=c(alpha,beta),Y.tilde=Y.tilde,X=X,sigma.y=sigma.y,control=list(trace=0),method = "L-BFGS-B")$par
+    alpha.beta.pre <- matrix(lm(Y.tilde ~ X)$coef,ncol=1)
+    V <- sigma.y^2*(1-3*p+3*p^2)/p/(1-p) + alpha.beta.pre[1]^2*(1-p)^3/p + (X%*%alpha.beta.pre[-1,])^2*(2*p-1)^2/p/(1-p) + 2*(alpha.beta.pre[1]*X%*%alpha.beta.pre[-1,]*(1-p)*(1-2*p)/p)
+    V <- (X[1,]%*%beta*(2*p-1)/sqrt(p*(1-p)) - (alpha+X[1,]%*%gamma)*(1-p)*sqrt((1-p)/p))^2 + (1-3*p+3*p^2)/p/(1-p)*sigma.y
+    X.star <- cbind(1-p,X)
+    coefs <- solve(t(as.numeric(1/V)*X.star)%*%X.star) %*% (t(X.star) %*% (Y.tilde/V))
+
+    est.simple <- cbind(1-p,X) %*% coefs
+    MSE.simple <- mean((est.simple - truth)^2)
+
+    psi.hat.combined <- sum((A-p)*(Y-est.combined))/(n*p*(1-p))
+    psi.hat.simple <- sum((A-p)*(Y-est.simple))/(n*p*(1-p))
+
+    c(MSE.simple=MSE.simple,MSE.combined=MSE.combined,est.simple=psi.hat.simple,est.combined=psi.hat.combined,true=psi)
+    ## gee(c(alpha,beta),Y.tilde,X,sigma.y)
+})
+
+## hist(res)
+## hist(res[2,])
+
+
+plot(res['MSE.simple',],res['MSE.combined',]);abline(0,1)
+mean(res['est.simple',]-res['true',])
+mean(res['est.combined',]-res['true',],na.rm=TRUE)
+## still much worse even using restricted mean model GEE estimator for the combined estimator
+
+
+
+
+
+
+## 18a. adding term in V(Y.tilde | X) for interaction
+require(mvtnorm)
+
+n <- 5e1
+m <- 4
+p <- .2
+
+
+res <- replicate(1e3, {
+    sigma.x <- matrix(runif(m^2),nrow=m)
+    sigma.x <- sigma.x%*%t(sigma.x)
+    mu.x <- runif(m)
+    sigma.y <- 1
+    alpha <- rchisq(1, df=3)
+    beta <- rchisq(m, df=3)
+    gamma <- rchisq(m, df=3)
+    X <- rmvnorm(n,mean=mu.x,sigma=sigma.x)
+
+    ## V <- function(x,beta,p,sigma.y)
+    ##     sigma.y^2(1-3*p+3*p^2)/p/(1-p) + alpha^2*(1-p)^3/p + (x%*%beta)^2*(2*p-1)^2/p/(1-p) + 2*(alpha*x%*%beta*(1-p)*(1-2*p)/p)
+    ## V <- Vectorize(V,'beta')
+
+    ## gee <- Vectorize(gee,'alpha.beta')
+    ## res <- replicate(2e2, {
+    A <- rbinom(n,1,p)
+    psi <- alpha + t(gamma)%*%mu.x
+
+    E0 <- X %*% beta
+    E1 <- cbind(1,X,X) %*% c(alpha,beta,gamma)
+    truth <- (1-p)*E1 + p*E0
+    covariates <- cbind(A,X)
+    Y <- covariates %*% c(alpha,beta) + rnorm(n)
+    data <- data.frame(Y=Y,covariates)
+
+
+    coefs.case <- lm(Y ~ .  - A, data=subset(data, A==1))$coef
+    coefs.ctrl <- lm(Y ~ .  - A, data=subset(data, A==0))$coef
+
+    E0.hat <- cbind(1,X) %*% coefs.ctrl
+    E1.hat <- cbind(1,X) %*% coefs.case
+    est.combined <- (1-p)*E1.hat + p*E0.hat
+    MSE.combined <- mean((est.combined - truth)^2)
+
+    Y.tilde <- (p/(1-p))^(1-2*A) * Y
+    ## gee(c(alpha,beta),Y.tilde,X,sigma.y)
+    ## nlm(gee,rnorm(m+1),Y.tilde=Y.tilde,X=X,sigma.y=sigma.y,iterlim=1e2,print.level=2,gradtol=1e-20,steptol=1e-15)
+    ## nlm(gee,c(alpha,beta),Y.tilde=Y.tilde,X=X,sigma.y=sigma.y,iterlim=1e2,print.level=2,gradtol=1e-20,steptol=1e-15)
+    ## coefs <- lm(Y.tilde ~ X)$coef
+    ## coefs <- nlm(gee,rnorm(m+1),Y.tilde=Y.tilde,X=X,sigma.y=sigma.y,iterlim=1e3)$estimate
+    ## coefs <- nlm(gee,c(alpha,beta),Y.tilde=Y.tilde,X=X,sigma.y=sigma.y,iterlim=1e3)$estimate
+    ## coefs <- optim(gee,par=c(alpha,beta),Y.tilde=Y.tilde,X=X,sigma.y=sigma.y,control=list(trace=0),method = "L-BFGS-B")$par
+    alpha.beta.pre <- matrix(lm(Y.tilde ~ X)$coef,ncol=1)
+    ## V <- (X%*%alpha.beta.pre[-1,]*(2*p-1)/sqrt(p*(1-p)) - (alpha.beta.pre[1])*(1-p)*sqrt((1-p)/p))^2 + (1-3*p+3*p^2)/p/(1-p)*sigma.y^2
+    V <- (X%*%alpha.beta.pre[-1,]*(2*p-1)/sqrt(p*(1-p)) - (alpha.beta.pre[1]+X%*%gamma)*(1-p)*sqrt((1-p)/p))^2 + (1-3*p+3*p^2)/p/(1-p)*sigma.y^2
+    X.star <- cbind(1-p,X)
+    coefs <- solve(t(as.numeric(1/V)*X.star)%*%X.star) %*% (t(X.star) %*% (Y.tilde/V))
+
+    est.simple <- cbind(1-p,X) %*% coefs
+    MSE.simple <- mean((est.simple - truth)^2)
+
+    psi.hat.combined <- sum((A-p)*(Y-est.combined))/(n*p*(1-p))
+    psi.hat.simple <- sum((A-p)*(Y-est.simple))/(n*p*(1-p))
+
+    c(MSE.simple=MSE.simple,MSE.combined=MSE.combined,est.simple=psi.hat.simple,est.combined=psi.hat.combined,true=psi)
+    ## gee(c(alpha,beta),Y.tilde,X,sigma.y)
+})
+
+## hist(res)
+## hist(res[2,])
+
+
+plot(res['MSE.simple',],res['MSE.combined',]);abline(0,1)
+mean(res['est.simple',]-res['true',])
+mean(res['est.combined',]-res['true',],na.rm=TRUE)
+## improved, but now need to find consistent estimator for gamma (or alpha + X%*%gamma)
+
+
+
+## 19. same as 14, but using efficient estimator and interaction term
+require(mvtnorm)
+require(ggplot2)
+ns <- as.integer(seq(100,5e2,length.out=15))
+ps <- c(.5,.7,.9)
+ps <- seq(.5,.9,by=.1)
+## ps <- .9
+params <- expand.grid(n=ns,p=ps)
+
+m <- 4
+alpha <- rchisq(1, df=1)
+beta <- rchisq(m, df=1)
+gamma <- rchisq(m, df=1)*0
+mu.x <- runif(m)
+psi <- alpha + t(gamma)%*%mu.x
+
+rowmeans <- sapply(1:nrow(params), function(j) {
+    ## n <- 5e2
+    print(params[j,])
+    n <- params[j,1]
+    p <- params[j,2]#.2
+
+    res <- replicate(5e2, {
+        sigma.x <- matrix(runif(m^2),nrow=m)
+        sigma.x <- sigma.x%*%t(sigma.x)
+        sigma.y <- 1
+        X <- rmvnorm(n,mean=mu.x,sigma=sigma.x)
+        A <- rbinom(n,1,p)
+
+        E0 <- X %*% beta
+        E1 <- cbind(1,X,X) %*% c(alpha,beta,gamma)
+        truth <- (1-p)*E1 + p*E0
+        ## covariates <- cbind(A,X,X)
+        ## res <- replicate(3e3, {
+        Y <- cbind(A,X,A*X) %*% c(alpha,beta,gamma) + rnorm(n)
+        data <- data.frame(Y=Y,A=A,X=X)
+
+
+        coefs.case <- lm(Y ~ .  - A, data=subset(data, A==1))$coef
+        coefs.ctrl <- lm(Y ~ .  - A, data=subset(data, A==0))$coef
+
+        E0.hat <- cbind(1,X) %*% coefs.ctrl
+        E1.hat <- cbind(1,X) %*% coefs.case
+        est.combined <- (1-p)*E1.hat + p*E0.hat
+        MSE.combined <- mean((est.combined - truth)^2)
+
+        Y.tilde <- (p/(1-p))^(1-2*A) * Y
+        ## coefs <- lm(Y.tilde ~ X)$coef
+        alpha.beta.pre <- matrix(lm(Y.tilde ~ X)$coef,ncol=1)
+        V <- (X%*%alpha.beta.pre[-1,]*(2*p-1)/sqrt(p*(1-p)) - (alpha.beta.pre[1]+X%*%gamma)*(1-p)*sqrt((1-p)/p))^2 + (1-3*p+3*p^2)/p/(1-p)*sigma.y^2
+        X.star <- cbind(1-p,X)
+        coefs <- solve(t(as.numeric(1/V)*X.star)%*%X.star) %*% (t(X.star) %*% (Y.tilde/V))
+
+        est.simple <- cbind(1,X) %*% coefs
+        MSE.simple <- mean((est.simple - truth)^2)
+        ## plot(EX.hat ~ truth); abline(0,1)
+
+        psi.hat.combined <- sum((A-p)*(Y-est.combined))/(n*p*(1-p))
+        ## psi.hat.combined <- sum((A-p)*(Y-truth))/(n*p*(1-p))
+        ## psi.hat.simple <- sum((A-p)*(Y-est.simple))/(n*p*(1-p))
+        psi.hat.simple <- unname(lm(resid ~ Ap - 1, data=data.frame(resid=Y-est.simple,Ap=A-p))$coef)
+
+        c(MSE.simple=MSE.simple,MSE.combined=MSE.combined,psi.hat.simple=psi.hat.simple,psi.hat.combined=psi.hat.combined,true=psi)
+
+    })
+
+    rowMeans(res)
+    ## plot(res['MSE.simple',],res['MSE.combined',]);abline(0,1)
+    ## mean(res['est.simple',]-res['true',])
+    ## mean(res['est.combined',]-res['true',])
+})
+
+## plot(ns,rowmeans['MSE.simple',])
+gg.df <- cbind(params,t(rowmeans))
+## helful: https://stackoverflow.com/questions/2185252/reshaping-data-frame-from-wide-to-long-format
+gg.df <- reshape(gg.df[,1:4],direction='long',varying=list(names(gg.df)[3:4]),timevar='estimator',times=c('simple','combined'),idvar=names(gg.df)[1:2],v.names='MSE')
+ggplot(gg.df,aes(x=n,y=MSE,group=estimator,color=estimator)) + geom_path() + facet_wrap(~p)
+## ggsave('041118.png')
+## ggsave('041118b.png')
+## ggsave('041118c.png') ## wiht random X and A...better but still not good
+
+var(rowmeans['psi.hat.simple',])
+var(rowmeans['psi.hat.combined',])
+gg.df <- cbind(params,t(rowmeans))
+gg.df$bias.simple <- with(gg.df, psi.hat.simple - true)
+gg.df$bias.combined <- with(gg.df, psi.hat.combined - true)
+gg.df <- reshape(gg.df[,c(1,2,8,9)],direction='long',varying=list(names(gg.df)[8:9]),timevar='estimator',times=c('simple','combined'),idvar=names(gg.df)[1:2],v.names='bias')
+ggplot(gg.df,aes(x=n,y=bias,group=estimator,color=estimator)) + geom_path() + facet_wrap(~p,scales='free') + geom_hline(yintercept=0,linetype=2,color='grey')
+## ggsave('041118d.png') ## bias of ATE estimator, using Eric's suggestion for combined estimator
+
+
+
